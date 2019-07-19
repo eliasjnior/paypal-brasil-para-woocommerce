@@ -93,7 +93,7 @@ class PayPal_Payments_API_Billing_Agreement_Token_Handler extends PayPal_Payment
 	// CUSTOM VALIDATORS
 
 	public function required_nonce( $data, $key ) {
-		if ( wp_verify_nonce( $data, 'paypal-payments-cart-checkout' ) ) {
+		if ( wp_verify_nonce( $data, 'paypal-payments-checkout' ) ) {
 			return true;
 		}
 
