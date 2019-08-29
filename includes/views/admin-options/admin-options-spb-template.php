@@ -360,14 +360,14 @@
             </th>
             <td class="forminp">
                 <fieldset>
-                    <legend class="screen-reader-text"><span>Prefixo de Invoice ID</span></legend>
+                    <legend class="screen-reader-text"><span>Prefixo no número do pedido</span></legend>
                     <input class="input-text regular-input"
                            type="text"
                            id="<?php echo esc_attr( $this->get_field_key( 'invoice_id_prefix' ) ); ?>"
                            name="<?php echo esc_attr( $this->get_field_key( 'invoice_id_prefix' ) ); ?>"
                            v-model="invoiceIdPrefix">
-                    <p class="description">Adicione um prefixo as transações feitas com PayPal Plus na sua loja. Isso
-                        pode auxiliar caso trabalhe com a mesma conta PayPal em mais de um site.</p>
+                    <p class="description">Adicione um prefixo no número do pedido, isto é útil para a sua identificação
+                        quando você possui mais de uma loja processando pelo PayPal.</p>
                 </fieldset>
             </td>
         </tr>
@@ -376,8 +376,7 @@
 
         <tr valign="top">
             <th scope="row" class="titledesc">
-                <label for="<?php echo esc_attr( $this->get_field_key( 'debug' ) ); ?>">Modo depuração <span
-                            class="woocommerce-help-tip"></span></label>
+                <label for="<?php echo esc_attr( $this->get_field_key( 'debug' ) ); ?>">Modo depuração</label>
             </th>
             <td class="forminp">
                 <fieldset>
