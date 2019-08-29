@@ -6,9 +6,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Get user billing agreement details.
-$user_billing_agreement_id         = get_user_meta( get_current_user_id(), 'paypal_payments_billing_agreement_id', true );
-$user_billing_agreement_payer_info = get_user_meta( get_current_user_id(), 'paypal_payments_billing_agreement_payer_info', true );
-$has_billing_agreement             = false;
+if ( is_user_logged_in() ) {
+	$user_billing_agreement_id         = get_user_meta( get_current_user_id(), 'paypal_payments_billing_agreement_id', true );
+	$user_billing_agreement_payer_info = get_user_meta( get_current_user_id(), 'paypal_payments_billing_agreement_payer_info', true );
+} else {
+	$user_billing_agreement_id         = WC()->session->get( 'paypal_payments_billing_agreement_id' );
+	$user_billing_agreement_payer_info = WC()->session->get( 'paypal_payments_billing_agreement_payer_info' );
+}
+$has_billing_agreement = false;
 ?>
 <ul class="paypal-payments-billing-agreement-options">
     <!-- USER DEFAULT BILLING AGREEMENT -->
@@ -23,7 +28,7 @@ $has_billing_agreement             = false;
                        name="paypal_payments_billing_agreement"
                        value="<?php echo esc_attr( $user_billing_agreement_id ); ?>"
                        checked="checked">
-				<?php echo sprintf( __( 'Acordo de pagamento de %s', 'paypal-payments' ), '<strong>' . $user_billing_agreement_payer_info['email'] . '</strong>' ); ?>
+				<?php echo sprintf( __( 'Conta PayPal vinculada: %s', 'paypal-payments' ), '<strong>' . $user_billing_agreement_payer_info['email'] . '</strong>' ); ?>
 
                 <select class="paypal-payments-billing-agreement-financing"
                         name="paypal_payments_billing_agreement_installment">
@@ -55,13 +60,18 @@ $has_billing_agreement             = false;
                    class="paypal-payments-billing-agreement-option-radio"
                    name="paypal_payments_billing_agreement"
                    value="" <?php checked( true, ! $has_billing_agreement ); ?>>
-			<?php _e( 'Novo acordo de pagamento', 'paypal-payments' ); ?>
+			<?php if ( $has_billing_agreement ): ?>
+				<?php _e( 'Alterar conta PayPal ou cartão de crédito', 'paypal-payments' ); ?>
+			<?php else: ?>
+				<?php _e( 'Adicionar conta PayPal', 'paypal-payments' ); ?>
+			<?php endif; ?>
         </label>
         <input type="hidden"
                class="paypal_payments_billing_agreement_token"
                name="paypal_payments_billing_agreement_token">
     </li>
 </ul>
+<input type="hidden" id="paypal-payments-uuid" name="paypal-payments-uuid">
 <?php if ( ! $has_billing_agreement ): ?>
     <p><?php _e( 'Prossiga com o  pagamento para criar uma nova autorização de pagamento.', 'paypal-payments' ); ?></p>
 <?php endif; ?>

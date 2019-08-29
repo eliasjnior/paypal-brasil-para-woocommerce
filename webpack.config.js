@@ -5,8 +5,8 @@ const TerserPlugin = require('terser-webpack-plugin');
 module.exports = {
     mode: 'development',
     entry: [
-        './assets/src/admin-options/admin-options-plus/admin-options-plus.ts',
-        './assets/src/admin-options/admin-options-plus/admin-options-plus.scss',
+        './assets/src/admin-options/admin-options-spb/admin-options-spb.ts',
+        './assets/src/admin-options/admin-options-spb/admin-options-spb.scss',
     ],
     output: {
         path: path.resolve(__dirname, './assets/dist/'),

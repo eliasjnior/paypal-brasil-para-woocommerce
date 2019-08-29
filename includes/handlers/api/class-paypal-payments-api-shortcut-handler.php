@@ -27,9 +27,10 @@ class PayPal_Payments_API_Shortcut_Mini_Cart_Handler extends PayPal_Payments_API
 	public function get_fields() {
 		return array(
 			array(
-				'key'        => 'nonce',
-				'sanitize'   => 'sanitize_text_field',
-				'validation' => array( $this, 'required_nonce' ),
+				'name'     => __( 'nonce', 'paypal-payments' ),
+				'key'      => 'nonce',
+				'sanitize' => 'sanitize_text_field',
+//				'validation' => array( $this, 'required_nonce' ),
 			),
 		);
 	}
@@ -94,63 +95,39 @@ class PayPal_Payments_API_Shortcut_Mini_Cart_Handler extends PayPal_Payments_API
 
 			$items = array();
 
-			// Add cart items.
-			foreach ( $cart->get_cart() as $cart_item ) {
-				/** @var WC_Product $product */
-				$id      = $cart_item['variation_id'] ? $cart_item['variation_id'] : $cart_item['product_id'];
-				$product = wc_get_product( $id );
+			// Add all items.
+			foreach ( WC()->cart->get_cart() as $key => $item ) {
+				$product = $item['variation_id'] ? wc_get_product( $item['variation_id'] ) : wc_get_product( $item['product_id'] );
+
+				// Force get product cents to avoid float problems.
+				$product_price_cents = intval( $item['line_subtotal'] * 100 ) / $item['quantity'];
+				$product_price       = number_format( $product_price_cents / 100, 2, '.', '' );
 
 				$items[] = array(
 					'name'     => $product->get_title(),
 					'currency' => get_woocommerce_currency(),
-					'quantity' => $cart_item['quantity'],
-					'price'    => $product->get_price(),
+					'quantity' => $item['quantity'],
+					'price'    => $product_price,
 					'sku'      => $product->get_sku() ? $product->get_sku() : $product->get_id(),
 					'url'      => $product->get_permalink(),
 				);
 			}
 
-			// Add taxes.
-			foreach ( $cart->get_tax_totals() as $tax ) {
-				$items[] = array(
-					'name'     => $tax->label,
-					'currency' => get_woocommerce_currency(),
-					'quantity' => 1,
-					'sku'      => sanitize_title( $tax->label ),
-					'price'    => $tax->amount,
-				);
-			}
-
-			// Add discounts.
-			if ( $discount = $cart->get_cart_discount_total() ) {
-				$items[] = array(
-					'name'     => __( 'Desconto', 'paypal-payments' ),
-					'currency' => get_woocommerce_currency(),
-					'quantity' => 1,
-					'sku'      => 'discount',
-					'price'    => $discount,
-				);
-			}
-
-			// Add fees.
-			foreach ( $cart->get_fees() as $fee ) {
-				$items[] = array(
-					'name'     => $fee->name,
-					'currency' => get_woocommerce_currency(),
-					'quantity' => 1,
-					'sku'      => $fee->id,
-					'price'    => $fee->total,
-				);
-			}
+			// Add all discounts.
+			$cart_totals = WC()->cart->get_totals();
 
 			// Set details
+			// Force get product cents to avoid float problems.
+			$subtotal_cents = intval( $cart_totals['subtotal'] * 100 );
+			$subtotal       = number_format( $subtotal_cents / 100, 2, '.', '' );
+
 			$data['transactions'][0]['amount']['details'] = array(
-				'shipping' => 0,
-				'subtotal' => $cart->get_subtotal(),
+				'shipping' => number_format( 0, 2, '.', '' ),
+				'subtotal' => $subtotal,
 			);
 
 			// Set total Total
-			$data['transactions'][0]['amount']['total'] = $cart->get_totals()['total'];
+			$data['transactions'][0]['amount']['total'] = $subtotal;
 
 			// Add items to data.
 			$data['transactions'][0]['item_list']['items'] = $items;
@@ -163,7 +140,7 @@ class PayPal_Payments_API_Shortcut_Mini_Cart_Handler extends PayPal_Payments_API
 			);
 
 			// Create the payment in API.
-			$create_payment = $gateway->api->create_payment( $data );
+			$create_payment = $gateway->api->create_payment( $data, array(), 'shortcut' );
 
 			// Get the response links.
 			$links = $gateway->api->parse_links( $create_payment['links'] );
@@ -190,12 +167,12 @@ class PayPal_Payments_API_Shortcut_Mini_Cart_Handler extends PayPal_Payments_API
 
 	// CUSTOM VALIDATORS
 
-	public function required_nonce( $data, $key ) {
+	public function required_nonce( $data, $key, $name ) {
 		if ( wp_verify_nonce( $data, 'paypal-payments-checkout' ) ) {
 			return true;
 		}
 
-		return __( 'Nonce inválido', 'paypal-payments' );
+		return sprintf( __( 'O %s é inválido.', 'paypal-payments' ), $name );
 	}
 
 	// CUSTOM SANITIZER

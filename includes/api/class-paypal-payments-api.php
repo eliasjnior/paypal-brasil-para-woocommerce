@@ -13,8 +13,16 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @property string client_id
  * @property string secret
  * @property string partner_attribution_id
+ * @property PayPal_Payments_Gateway gateway
  */
 class PayPal_Payments_API {
+
+	private $bn_code = array(
+		'reference' => 'WooCommerceBrazil_Ecom_RT',
+		'ec'        => 'WooCommerceBrazil_Ecom_EC',
+		'shortcut'  => 'WooCommerceBrazil_Ecom_ECS',
+		'default'   => 'WooCommerceBrazil_Ecom_EC',
+	);
 
 	/**
 	 * PayPal_Payments_API constructor.
@@ -22,18 +30,20 @@ class PayPal_Payments_API {
 	 * @param string $client_id
 	 * @param string $secret
 	 * @param string $mode The API mode sandbox|live.
-	 * @param string $partner_attribution_id
+	 * @param $gateway PayPal_Payments_Gateway
 	 */
-	public function __construct( $client_id, $secret, $mode, $partner_attribution_id = null ) {
+	public function __construct( $client_id, $secret, $mode, $gateway ) {
 		// Set the access token transient key to a MD5 hash of client id and secret. So transient will change if
 		// client id or secret changes also.
 		$this->access_token_transient_key = 'paypal_payments_access_token_' . md5( $client_id . ':' . $secret );
 
+		// Gateway
+		$this->gateway = $gateway;
+
 		// Save the API data.
-		$this->mode                   = $mode;
-		$this->client_id              = $client_id;
-		$this->secret                 = $secret;
-		$this->partner_attribution_id = $partner_attribution_id;
+		$this->mode      = $mode;
+		$this->client_id = $client_id;
+		$this->secret    = $secret;
 
 		// Define the API base URL for live or sandbox.
 		$this->base_url = ( $mode === 'live' ) ? 'https://api.paypal.com/v1' : 'https://api.sandbox.paypal.com/v1';
@@ -48,7 +58,7 @@ class PayPal_Payments_API {
 	 * @throws Paypal_Payments_Api_Exception
 	 * @throws Paypal_Payments_Connection_Exception
 	 */
-	public function get_access_token( $force = false ) {
+	public function get_access_token( $force = false, $client = null, $secret = null ) {
 		$url = $this->base_url . '/oauth2/token';
 
 		// Try to get the transient for access token.
@@ -59,14 +69,18 @@ class PayPal_Payments_API {
 			return $access_token;
 		}
 
+		$client = $client ? $client : $this->client_id;
+		$secret = $secret ? $secret : $this->secret;
+
 		$headers = array(
-			'Authorization' => 'Basic ' . base64_encode( $this->client_id . ':' . $this->secret ),
-			'Content-Type'  => 'application/x-www-form-urlencoded',
+			'Authorization'                 => 'Basic ' . base64_encode( $client . ':' . $secret ),
+			'Content-Type'                  => 'application/x-www-form-urlencoded',
+			'PayPal-Partner-Attribution-Id' => $this->bn_code['default'],
 		);
 
 		$data = 'grant_type=client_credentials';
 
-		$response      = $this->do_request( $url, 'POST', $data, $headers );
+		$response      = $this->do_request( $url, 'POST', $data, $headers, false );
 		$response_body = json_decode( wp_remote_retrieve_body( $response ), true );
 
 		// Check if is WP_Error
@@ -91,15 +105,22 @@ class PayPal_Payments_API {
 	 *
 	 * @param array $data
 	 *
+	 * @param array $headers
+	 *
 	 * @return mixed
 	 * @throws Paypal_Payments_Api_Exception
 	 * @throws Paypal_Payments_Connection_Exception
 	 */
-	public function create_payment( $data ) {
+	public function create_payment( $data, $headers = array(), $bn_code_key = null ) {
 		$url = $this->base_url . '/payments/payment';
 
+		// Add bn code if exits.
+		if ( $bn_code_key && array_key_exists( $bn_code_key, $this->bn_code ) ) {
+			$headers['PayPal-Partner-Attribution-Id'] = $this->bn_code[ $bn_code_key ];
+		}
+
 		// Get response.
-		$response      = $this->do_request( $url, 'POST', $data );
+		$response      = $this->do_request( $url, 'POST', $data, $headers );
 		$response_body = json_decode( wp_remote_retrieve_body( $response ), true );
 
 		// Check if is WP_Error
@@ -126,11 +147,16 @@ class PayPal_Payments_API {
 	 * @throws Paypal_Payments_Api_Exception
 	 * @throws Paypal_Payments_Connection_Exception
 	 */
-	public function get_payment( $payment_id ) {
+	public function get_payment( $payment_id, $headers = array(), $bn_code_key = null ) {
 		$url = $this->base_url . '/payments/payment/' . $payment_id;
 
+		// Add bn code if exits.
+		if ( $bn_code_key && array_key_exists( $bn_code_key, $this->bn_code ) ) {
+			$headers['PayPal-Partner-Attribution-Id'] = $this->bn_code[ $bn_code_key ];
+		}
+
 		// Get response.
-		$response      = $this->do_request( $url, 'GET' );
+		$response      = $this->do_request( $url, 'GET', array(), $headers );
 		$response_body = json_decode( wp_remote_retrieve_body( $response ), true );
 
 		// Check if is WP_Error
@@ -158,15 +184,20 @@ class PayPal_Payments_API {
 	 * @throws Paypal_Payments_Api_Exception
 	 * @throws Paypal_Payments_Connection_Exception
 	 */
-	public function execute_payment( $payment_id, $payer_id ) {
+	public function execute_payment( $payment_id, $payer_id, $headers = array(), $bn_code_key = null ) {
 		$url = $this->base_url . '/payments/payment/' . $payment_id . '/execute';
 
 		$data = array(
 			'payer_id' => $payer_id,
 		);
 
+		// Add bn code if exits.
+		if ( $bn_code_key && array_key_exists( $bn_code_key, $this->bn_code ) ) {
+			$headers['PayPal-Partner-Attribution-Id'] = $this->bn_code[ $bn_code_key ];
+		}
+
 		// Get response.
-		$response      = $this->do_request( $url, 'POST', $data );
+		$response      = $this->do_request( $url, 'POST', $data, $headers );
 		$response_body = json_decode( wp_remote_retrieve_body( $response ), true );
 
 		// Check if is WP_Error
@@ -192,11 +223,16 @@ class PayPal_Payments_API {
 	 * @throws Paypal_Payments_Api_Exception
 	 * @throws Paypal_Payments_Connection_Exception
 	 */
-	public function update_payment( $payment_id, $data ) {
+	public function update_payment( $payment_id, $data, $headers = array(), $bn_code_key = null ) {
 		$url = $this->base_url . '/payments/payment/' . $payment_id;
 
+		// Add bn code if exits.
+		if ( $bn_code_key && array_key_exists( $bn_code_key, $this->bn_code ) ) {
+			$headers['PayPal-Partner-Attribution-Id'] = $this->bn_code[ $bn_code_key ];
+		}
+
 		// Get response.
-		$response      = $this->do_request( $url, 'PATCH', $data );
+		$response      = $this->do_request( $url, 'PATCH', $data, $headers );
 		$response_body = json_decode( wp_remote_retrieve_body( $response ), true );
 
 		// Check if is WP_Error
@@ -229,7 +265,7 @@ class PayPal_Payments_API {
 				'payment_method' => 'PAYPAL',
 			),
 			'plan'        => array(
-				'type'                 => 'MERCHANT_INITIATED_BILLING_SINGLE_AGREEMENT',
+				'type'                 => 'MERCHANT_INITIATED_BILLING',
 				'merchant_preferences' => array(
 					'return_url'                 => esc_html( home_url() ),
 					'cancel_url'                 => esc_html( home_url() ),
@@ -242,7 +278,7 @@ class PayPal_Payments_API {
 		);
 
 		// Get response.
-		$response      = $this->do_request( $url, 'POST', $data );
+		$response      = $this->do_request( $url, 'POST', $data, array( 'PayPal-Partner-Attribution-Id' => $this->bn_code['reference'] ) );
 		$response_body = json_decode( wp_remote_retrieve_body( $response ), true );
 
 		// Check if is WP_Error
@@ -267,7 +303,7 @@ class PayPal_Payments_API {
 		);
 
 		// Get response.
-		$response      = $this->do_request( $url, 'POST', $data );
+		$response      = $this->do_request( $url, 'POST', $data, array( 'PayPal-Partner-Attribution-Id' => $this->bn_code['reference'] ) );
 		$response_body = json_decode( wp_remote_retrieve_body( $response ), true );
 
 		// Check if is WP_Error
@@ -302,7 +338,7 @@ class PayPal_Payments_API {
 		);
 
 		// Get response.
-		$response      = $this->do_request( $url, 'POST', $data );
+		$response      = $this->do_request( $url, 'POST', $data, array( 'PayPal-Partner-Attribution-Id' => $this->bn_code['reference'] ) );
 		$response_body = json_decode( wp_remote_retrieve_body( $response ), true );
 
 		// Check if is WP_Error
@@ -321,6 +357,37 @@ class PayPal_Payments_API {
 	}
 
 	/**
+	 * Verify PayPal signature.
+	 *
+	 * @param $data
+	 *
+	 * @return array|mixed|object
+	 * @throws Paypal_Payments_Api_Exception
+	 * @throws Paypal_Payments_Connection_Exception
+	 */
+	public function verify_signature( $data ) {
+		$url = $this->base_url . '/notifications/verify-webhook-signature';
+
+		// Get response.
+		$response      = $this->do_request( $url, 'POST', $data, array( 'PayPal-Partner-Attribution-Id' => $this->bn_code['ec'] ) );
+		$response_body = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		// Check if is WP_Error
+		if ( is_wp_error( $response ) ) {
+			throw new Paypal_Payments_Connection_Exception( $response->get_error_code(), $response->errors );
+		}
+
+		$code = wp_remote_retrieve_response_code( $response );
+
+		// Check if response was created.
+		if ( $code === 200 ) {
+			return $response_body;
+		}
+
+		throw new Paypal_Payments_Api_Exception( $code, __( 'Não foi possível verificar a assinatura do PayPal.', 'paypal-payments' ), $response_body );
+	}
+
+	/**
 	 * Do requests in the API.
 	 *
 	 * @param string $url URL.
@@ -332,7 +399,7 @@ class PayPal_Payments_API {
 	 * @throws Paypal_Payments_Api_Exception
 	 * @throws Paypal_Payments_Connection_Exception
 	 */
-	protected function do_request( $url, $method = 'POST', $data = array(), $headers = array() ) {
+	protected function do_request( $url, $method = 'POST', $data = array(), $headers = array(), $log = true ) {
 
 		// Default headers.
 		$headers = wp_parse_args( array(
@@ -361,13 +428,31 @@ class PayPal_Payments_API {
 		// Add the body for post requests.
 		if ( in_array( $method, array( 'POST', 'PATCH' ) ) && ! empty( $data ) ) {
 			if ( preg_match( '/(application\/json)/', $headers['Content-Type'] ) && is_array( $data ) ) {
-				$data = json_encode( $data, JSON_UNESCAPED_UNICODE );
+				$data = json_encode( $data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
 			}
 
 			$params['body'] = $data;
 		}
 
-		return wp_safe_remote_request( $url, $params );
+//		$this->gateway->log( "Request params:\n" . print_r( $params, true ) );
+
+		if ( $log ) {
+			if ( isset( $params['body'] ) ) {
+				$this->gateway->log( "Fazendo requisição ({$method}) para {$url}:\n" . $data . "\n" );
+			} else {
+				$this->gateway->log( "Fazendo requisição ({$method}) para {$url}\n" );
+			}
+		}
+
+		$request = wp_safe_remote_request( $url, $params );
+
+		if ( is_wp_error( $request ) ) {
+			$this->gateway->log( 'Erro HTTP ao fazer a requisição.' );
+		} else {
+			$this->gateway->log( "Resposta da requisição:\n" . wp_remote_retrieve_body( $request ) . "\n" );
+		}
+
+		return $request;
 	}
 
 	/**

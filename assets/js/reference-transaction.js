@@ -11,13 +11,25 @@ jQuery(document).ready(function ($) {
             $('form.woocommerce-checkout').on('change', '.paypal-payments-billing-agreement-option-radio', paypalPaymentsReferenceCheckout.updateCheckoutButton);
             // Render button when WooCommerce checkout is updated.
             $('body').on('updated_checkout', paypalPaymentsReferenceCheckout.renderPayPalButton);
+            // Insert uuid
+            paypalPaymentsReferenceCheckout.insertUuid();
+            $('body').on('updated_checkout', paypalPaymentsReferenceCheckout.insertUuid);
+        },
+
+        /**
+         * Insert UUID when checkout is updated.
+         */
+        insertUuid: function () {
+            const uuid = paypal_payments_reference_transaction_settings.uuid;
+            const $container = $('#paypal-payments-uuid');
+
+            $container.val(uuid);
         },
 
         /**
          * Update the status of checkout button.
          */
         updateCheckoutButton: function () {
-            console.log('updateCheckoutButton');
             // If the Paypal Payments is selected and is to create a new billing agreement, show the PayPal button.
             if (paypalPayments.isPaypalPaymentsSelected() && paypalPaymentsReferenceCheckout.isCreateBillingAgreementSelected()) {
                 paypalPayments.showPaypalButton();
@@ -38,6 +50,13 @@ jQuery(document).ready(function ($) {
          */
         renderPayPalButton() {
             paypal.Buttons({
+                locale: 'pt_BR',
+                style: {
+                    size: 'responsive',
+                    color: paypal_payments_settings.style.color,
+                    shape: paypal_payments_settings.style.format,
+                    label: 'pay',
+                },
                 createBillingAgreement: paypalPaymentsReferenceCheckout.billingAgreement.create,
                 onApprove: paypalPaymentsReferenceCheckout.billingAgreement.approve,
                 onError: paypalPaymentsReferenceCheckout.billingAgreement.error,
@@ -108,6 +127,8 @@ jQuery(document).ready(function ($) {
     };
 
     // Init reference checkout.
-    paypalPaymentsReferenceCheckout.init();
+    if (paypalPayments.checkSdkLoaded()) {
+        paypalPaymentsReferenceCheckout.init();
+    }
 
 });

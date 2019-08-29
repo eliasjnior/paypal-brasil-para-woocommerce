@@ -4,8 +4,9 @@ jQuery(document).ready(function ($) {
 
         init: function () {
             // Render cart button.
-            $('body').on('updated_wc_div', paypalPaymentsShortcut.renderCartButton);
-            $('body').on('updated_mini_cart', paypalPaymentsShortcut.renderMiniCartButton);
+            $('body')
+                .on('updated_wc_div', paypalPaymentsShortcut.renderCartButton)
+                .on('updated_mini_cart', paypalPaymentsShortcut.renderMiniCartButton);
             // Render cart for the first time.
             paypalPaymentsShortcut.renderCartButton();
             paypalPaymentsShortcut.renderMiniCartButton();
@@ -15,6 +16,13 @@ jQuery(document).ready(function ($) {
             const $elements = $('.shortcut-button-mini-cart');
             $elements.each(function () {
                 paypal.Buttons({
+                    locale: 'pt_BR',
+                    style: {
+                        size: 'responsive',
+                        color: paypal_payments_settings.style.color,
+                        shape: paypal_payments_settings.style.format,
+                        label: 'buynow',
+                    },
                     createOrder: paypalPaymentsShortcut.paymentMiniCart.create,
                     onApprove: paypalPaymentsShortcut.paymentMiniCart.approve,
                     onError: paypalPaymentsShortcut.paymentMiniCart.error,
@@ -26,7 +34,15 @@ jQuery(document).ready(function ($) {
         renderCartButton: function () {
             const $elements = $('.wc-proceed-to-checkout .shortcut-button');
             $elements.each(function () {
+                console.log('criou aqui', paypal_payments_settings.style.color);
                 paypal.Buttons({
+                    locale: 'pt_BR',
+                    style: {
+                        size: 'responsive',
+                        color: paypal_payments_settings.style.color,
+                        shape: paypal_payments_settings.style.format,
+                        label: 'buynow',
+                    },
                     createOrder: paypalPaymentsShortcut.paymentCart.create,
                     onApprove: paypalPaymentsShortcut.paymentCart.approve,
                     onError: paypalPaymentsShortcut.paymentCart.error,
@@ -37,7 +53,6 @@ jQuery(document).ready(function ($) {
 
         paymentMiniCart: {
             create: function () {
-                console.log('create');
                 return new Promise((resolve, reject) => {
                     paypalPayments.makeRequest('shortcut', {
                         nonce: paypal_payments_settings.nonce,
@@ -111,6 +126,8 @@ jQuery(document).ready(function ($) {
         },
     };
 
-    paypalPaymentsShortcut.init();
+    if (paypalPayments.checkSdkLoaded()) {
+        paypalPaymentsShortcut.init();
+    }
 
 });

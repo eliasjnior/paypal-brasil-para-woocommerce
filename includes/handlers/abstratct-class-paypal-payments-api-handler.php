@@ -142,7 +142,7 @@ abstract class PayPal_Payments_API_Handler {
 			// Check first is there is any validation for this field.
 			if ( isset( $item['validation'] ) ) {
 				// Call for validation method.
-				$validation = call_user_func( $item['validation'], $sanitized_data, $item['key'] );
+				$validation = call_user_func( $item['validation'], $sanitized_data, $item['key'], $item['name'] );
 
 				// If there is any validation error, add to error items.
 				if ( $validation !== true ) {

@@ -15,7 +15,6 @@ jQuery(document).ready(function ($) {
          * Update the status of checkout button.
          */
         updateCheckoutButton: function () {
-            console.log('updateCheckoutButton');
             // If the Paypal Payments is selected show the PayPal button.
             if (paypalPayments.isPaypalPaymentsSelected()) {
                 paypalPayments.showPaypalButton();
@@ -29,6 +28,13 @@ jQuery(document).ready(function ($) {
          */
         renderPayPalButton() {
             paypal.Buttons({
+                locale: 'pt_BR',
+                style: {
+                    size: 'responsive',
+                    color: paypal_payments_settings.style.color,
+                    shape: paypal_payments_settings.style.format,
+                    label: 'pay',
+                },
                 createOrder: paypalPaymentsSpb.payment.create,
                 onApprove: paypalPaymentsSpb.payment.approve,
                 onError: paypalPaymentsSpb.payment.error,
@@ -108,6 +114,8 @@ jQuery(document).ready(function ($) {
 
     };
 
-    paypalPaymentsSpb.init();
+    if (paypalPayments.checkSdkLoaded()) {
+        paypalPaymentsSpb.init();
+    }
 
 });

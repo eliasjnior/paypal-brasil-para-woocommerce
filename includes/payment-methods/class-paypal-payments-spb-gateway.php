@@ -8,32 +8,34 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Class PayPal_Payments_Plus.
  *
- * @property string live_client_id
- * @property string live_secret
- * @property string webhook_id
- * @property string mode
+ * @property string client_live
+ * @property string client_sandbox
+ * @property string secret_live
+ * @property string secret_sandbox
+ * @property string format
+ * @property string color
+ * @property string shortcut_enabled
+ * @property string reference_enabled
  * @property string debug
- * @property string iframe_height
  * @property string invoice_id_prefix
- * @property string sandbox_client_id
- * @property string sandbox_secret
- * @property bool reference_transaction_enabled
- * @property bool shortcut_enabled
  */
 class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 
 	private static $instance;
+	private static $uuid;
 
 	/**
 	 * PayPal_Payments_Plus constructor.
 	 */
 	public function __construct() {
+		parent::__construct();
+
 		// Store some default gateway settings.
 		$this->id                 = 'paypal-payments-spb-gateway';
 		$this->has_fields         = true;
-		$this->method_title       = __( 'PayPal SPB', 'paypal-payments' );
-		$this->icon               = 'https://www.paypal-brasil.com.br/logocenter/util/img/botao-checkout_horizontal_pb.png';
-		$this->method_description = '';
+		$this->method_title       = __( 'PayPal Brasil', 'paypal-payments' );
+		$this->icon               = plugins_url( 'assets/images/paypal-logo.png', PAYPAL_PAYMENTS_MAIN_FILE );
+		$this->method_description = __( 'Adicione as soluções de carteira digital do PayPal em sua loja do WooCommerce', 'paypal-payments' );
 		$this->supports           = array(
 			'products',
 			'refunds',
@@ -45,22 +47,21 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 
 		// Get available options.
 		$this->enabled           = $this->get_option( 'enabled' );
-		$this->title             = 'PayPal SPB';
-		$this->live_client_id    = $this->get_option( 'live_client_id' );
-		$this->live_secret       = $this->get_option( 'live_secret' );
-		$this->sandbox_client_id = 'ASpwwK3e6Xq319fcTEY4asiXBYzRZQK3kJLVZH5mQYf_7ZJw7cKzIScarLFGWwqcObuTKKYMPw6RLADw';
-		$this->sandbox_secret    = 'EJWh8j2_IvgH-4CWwCnqrWOgvj_epwM0YCNrCRKfevUS9GIH04NEiK27H7hna3JofiRZ7hUj789aDX6j';
-		$this->webhook_id        = $this->get_option( 'webhook_id' );
-		$this->mode              = 'sandbox';
-		$this->debug             = $this->get_option( 'debug' );
-		$this->iframe_height     = $this->get_option( 'iframe_height' );
+		$this->title             = $this->get_option( 'title' );
+		$this->mode              = $this->get_option( 'mode' );
+		$this->client_live       = $this->get_option( 'client_live' );
+		$this->client_sandbox    = $this->get_option( 'client_sandbox' );
+		$this->secret_live       = $this->get_option( 'secret_live' );
+		$this->secret_sandbox    = $this->get_option( 'secret_sandbox' );
+		$this->format            = $this->get_option( 'format' );
+		$this->color             = $this->get_option( 'color' );
+		$this->shortcut_enabled  = $this->get_option( 'shortcut_enabled' );
+		$this->reference_enabled = $this->get_option( 'reference_enabled' );
 		$this->invoice_id_prefix = $this->get_option( 'invoice_id_prefix' );
-
-		$this->reference_transaction_enabled = true;
-		$this->shortcut_enabled              = true;
+		$this->debug             = $this->get_option( 'debug' );
 
 		// Instance the API.
-		$this->api = new PayPal_Payments_API( $this->get_client_id(), $this->get_secret(), $this->mode );
+		$this->api = new PayPal_Payments_API( $this->get_client_id(), $this->get_secret(), $this->mode, $this );
 
 		// Save settings.
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array(
@@ -68,10 +69,19 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 			'process_admin_options'
 		), 10 );
 
+		// Save custom settings.
+		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array(
+			$this,
+			'before_process_admin_options'
+		), 20 );
+
 		// Stop here if is not the first load.
 		if ( ! $this->is_first_load() ) {
 			return;
 		}
+
+		// Handler for IPN.
+		add_action( 'woocommerce_api_' . $this->id, array( $this, 'webhook_handler' ) );
 
 		// Enqueue scripts.
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_scripts' ) );
@@ -84,13 +94,16 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 		add_action( 'woocommerce_checkout_update_order_review', array( $this, 'create_billing_agreement' ) );
 
 		// Add shortcut button in cart.
-		add_action( 'woocommerce_proceed_to_checkout', array( $this, 'shortcut_button_cart' ) );
+		add_action( 'woocommerce_proceed_to_checkout', array( $this, 'shortcut_button_cart' ), 9999 );
 
 		// Add shortcut button in mini cart.
 		add_action( 'woocommerce_after_mini_cart', array( $this, 'shortcut_button_mini_cart' ) );
 
 		// Add custom trigger for mini cart.
 		add_action( 'woocommerce_after_mini_cart', array( $this, 'trigger_mini_cart_update' ) );
+
+		// Add fraudnet to footer.
+		add_action( 'wp_footer', array( $this, 'fraudnet_script' ) );
 
 		// Render different things if is shortcut process.
 		if ( $this->is_processing_shortcut() ) {
@@ -139,15 +152,112 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 	}
 
 	/**
+	 * Return the gateway's title.
+	 *
+	 * @return string
+	 */
+	public function get_title() {
+		// A description only for admin section.
+		if ( is_admin() ) {
+			global $pagenow;
+
+			return $pagenow === 'post.php' ? __( 'PayPal - Carteira Digital', 'paypal-payments' ) : __( 'Carteira Digital', 'paypal-payments' );
+		}
+
+		// Title for frontend.
+		$title = __( 'PayPal', 'paypal-payments' );
+		if ( ! empty( $this->title ) ) {
+			$title .= ' (' . $this->title . ')';
+		}
+
+		return apply_filters( 'woocommerce_gateway_title', $title, $this->id );
+	}
+
+	/**
 	 * Define gateway form fields.
 	 */
 	public function init_form_fields() {
 		$this->form_fields = array(
-			'enabled' => array(
-				'title'   => __( 'Habilitar/Desabilitar', 'paypal-plus-brasil' ),
+			'enabled'           => array(
+				'title'   => __( 'Habilitar/Desabilitar', 'paypal-payments' ),
 				'type'    => 'checkbox',
-				'label'   => __( 'Habilitar', 'paypal-plus-brasil' ),
+				'label'   => __( 'Habilitar', 'paypal-payments' ),
 				'default' => 'no',
+			),
+			'title'             => array(
+				'title' => __( 'Nome de exibição', 'paypal-payments' ),
+				'type'  => 'text',
+			),
+			'mode'              => array(
+				'title'   => __( 'Modo', 'paypal-payments' ),
+				'type'    => 'select',
+				'options' => array(
+					'live'    => __( 'Live', 'paypal-payments' ),
+					'sandbox' => __( 'Sandbox', 'paypal-payments' ),
+				),
+			),
+			'client_live'       => array(
+				'title' => __( 'Client (live)', 'paypal-payments' ),
+				'type'  => 'text',
+			),
+			'client_sandbox'    => array(
+				'title' => __( 'Client (sandbox)', 'paypal-payments' ),
+				'type'  => 'text',
+			),
+			'secret_live'       => array(
+				'title' => __( 'Secret (live)', 'paypal-payments' ),
+				'type'  => 'text',
+			),
+			'secret_sandbox'    => array(
+				'title' => __( 'Secret (sandbox)', 'paypal-payments' ),
+				'type'  => 'text',
+			),
+			'format'            => array(
+				'title'   => __( 'Formato', 'paypal-payments' ),
+				'type'    => 'select',
+				'label'   => __( 'Habilitar', 'paypal-payments' ),
+				'options' => array(
+					'rect' => __( 'Retângulo', 'paypal-payments' ),
+					'pill' => __( 'Arredondado', 'paypal-payments' ),
+				),
+				'default' => 'rect',
+			),
+			'color'             => array(
+				'title'   => __( 'Cor', 'paypal-payments' ),
+				'type'    => 'select',
+				'label'   => __( 'Habilitar', 'paypal-payments' ),
+				'options' => array(
+					'blue'   => __( 'Azul', 'paypal-payments' ),
+					'gold'   => __( 'Dourado', 'paypal-payments' ),
+					'silver' => __( 'Prateado', 'paypal-payments' ),
+					'white'  => __( 'Branco', 'paypal-payments' ),
+					'black'  => __( 'Preto', 'paypal-payments' ),
+				),
+				'default' => 'blue',
+			),
+			'shortcut_enabled'  => array(
+				'title'   => __( 'Habilitar/Desabilitar', 'paypal-payments' ),
+				'type'    => 'checkbox',
+				'label'   => __( 'Habilitar', 'paypal-payments' ),
+				'default' => 'yes',
+			),
+			'reference_enabled' => array(
+				'title'   => __( 'Habilitar/Desabilitar', 'paypal-payments' ),
+				'type'    => 'checkbox',
+				'label'   => __( 'Habilitar', 'paypal-payments' ),
+				'default' => 'no',
+			),
+			'debug'             => array(
+				'title'   => __( 'Habilitar/Desabilitar', 'paypal-payments' ),
+				'type'    => 'checkbox',
+				'label'   => __( 'Habilitar', 'paypal-payments' ),
+				'default' => 'no',
+			),
+			'invoice_id_prefix' => array(
+				'title'       => __( 'Prefixo de Invoice ID', 'paypal-plus-brasil' ),
+				'type'        => 'text',
+				'default'     => '',
+				'description' => __( 'Adicione um prefixo as transações feitas com PayPal Plus na sua loja. Isso pode auxiliar caso trabalhe com a mesma conta PayPal em mais de um site.', 'paypal-plus-brasil' ),
 			),
 		);
 	}
@@ -244,6 +354,51 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 		return ! $this->is_processing_reference_transaction() && ! $this->is_processing_shortcut();
 	}
 
+	public function before_process_admin_options() {
+		// Check first if is enabled
+		$mode = $this->get_field_value( 'enabled', $this->form_fields['enabled'] );
+		if ( $mode !== 'yes' ) {
+			return;
+		}
+
+		// CREDENTIALS
+		try {
+			$mode        = $this->get_field_value( 'mode', $this->form_fields['mode'] );
+			$client_type = $mode === 'sandbox' ? 'client_sandbox' : 'client_live';
+			$secret_type = $mode === 'sandbox' ? 'secret_sandbox' : 'secret_live';
+			$client      = $this->get_field_value( $client_type, $this->form_fields[ $client_type ] );
+			$secret      = $this->get_field_value( $secret_type, $this->form_fields[ $secret_type ] );
+
+			$this->api->get_access_token( true, $client, $secret );
+			update_option( $this->get_option_key() . '_validator', 'yes' );
+		} catch ( Exception $ex ) {
+			update_option( $this->get_option_key() . '_validator', 'no' );
+		}
+
+		// BILLING AGREEMENT
+		try {
+			$this->api->create_billing_agreement_token();
+			update_option( $this->get_option_key() . '_reference_transaction_validator', 'yes' );
+		} catch ( Paypal_Payments_Api_Exception $ex ) {
+			$data = $ex->getData();
+			if ( isset( $data['name'] ) && $data['name'] === 'AUTHORIZATION_ERROR'
+			     && isset( $data['details'] ) && $data['details'][0]['name'] === 'REFUSED_MARK_REF_TXN_NOT_ENABLED' ) {
+				update_option( $this->get_option_key() . '_reference_transaction_validator', 'no' );
+			}
+		} catch ( Exception $ex ) {
+			update_option( $this->get_option_key() . '_reference_transaction_validator', 'no' );
+		}
+	}
+
+	public function get_updated_values() {
+		$fields = array();
+		foreach ( $this->get_form_fields() as $key => $field ) {
+			$fields[ $key ] = $this->get_field_value( $key, $this->form_fields[ $key ] );
+		}
+
+		return $fields;
+	}
+
 	/**
 	 * Populate checkout fields if is running shortcut override address.
 	 *
@@ -298,7 +453,7 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 	 */
 	private function is_processing_shortcut() {
 		// If shortcut is not enabled, we can say it's not.
-		if ( ! $this->shortcut_enabled ) {
+		if ( $this->shortcut_enabled !== 'yes' ) {
 			return false;
 		}
 
@@ -330,8 +485,12 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 		return false;
 	}
 
+	public function is_reference_enabled() {
+		return $this->reference_enabled === 'yes' && $this->is_reference_transaction_credentials_validated() && paypal_payments_wc_settings_valid();
+	}
+
 	private function is_reference_transaction() {
-		if ( ! $this->reference_transaction_enabled || ! is_user_logged_in() || $this->is_processing_shortcut() ) {
+		if ( ! $this->is_reference_enabled() || $this->is_processing_shortcut() ) {
 			return false;
 		}
 
@@ -416,8 +575,13 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 						// Create the billing agreement.
 						$billing_agreement = $this->api->create_billing_agreement( $post_data['paypal_payments_billing_agreement_token'] );
 						// Save the billing agreement to the user.
-						update_user_meta( get_current_user_id(), 'paypal_payments_billing_agreement_id', $billing_agreement['id'] );
-						update_user_meta( get_current_user_id(), 'paypal_payments_billing_agreement_payer_info', $billing_agreement['payer']['payer_info'] );
+						if ( is_user_logged_in() ) {
+							update_user_meta( get_current_user_id(), 'paypal_payments_billing_agreement_id', $billing_agreement['id'] );
+							update_user_meta( get_current_user_id(), 'paypal_payments_billing_agreement_payer_info', $billing_agreement['payer']['payer_info'] );
+						} else {
+							wC()->session->set( 'paypal_payments_billing_agreement_id', $billing_agreement['id'] );
+							wC()->session->set( 'paypal_payments_billing_agreement_payer_info', $billing_agreement['payer']['payer_info'] );
+						}
 					} catch ( Paypal_Payments_Api_Exception $ex ) {
 						// Some problem happened creating billing agreement.
 						wc_add_notice( __( 'Houve um erro na criação da autorização de pagamento.', 'paypal-payments' ), 'error' );
@@ -582,13 +746,31 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 		echo '</div><!-- #paypal-spb-container -->';
 	}
 
+	public function is_credentials_validated() {
+		return get_option( $this->get_option_key() . '_validator' ) === 'yes';
+	}
+
+	public function is_reference_transaction_credentials_validated() {
+		return get_option( $this->get_option_key() . '_reference_transaction_validator' ) === 'yes';
+	}
+
 	/**
 	 * Get if gateway is available.
 	 *
 	 * @return bool
 	 */
 	public function is_available() {
-		return true;
+		$is_available = ( 'yes' === $this->enabled );
+
+		if ( WC()->cart && 0 < $this->get_order_total() && 0 < $this->max_amount && $this->max_amount < $this->get_order_total() ) {
+			$is_available = false;
+		}
+
+		if ( ! $this->is_credentials_validated() ) {
+			$is_available = false;
+		}
+
+		return $is_available;
 	}
 
 	/**
@@ -618,6 +800,15 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 	 * @throws Paypal_Payments_Connection_Exception
 	 */
 	private function process_payment_shortcut( $order ) {
+
+		// Force get product cents to avoid float problems.
+		$subtotal_cents = intval( $order->get_subtotal() * 100 );
+		$discount_cents = intval( $order->get_discount_total() * 100 );
+		$shipping_cents = intval( $order->get_shipping_total() * 100 );
+		$tax_cents      = intval( $order->get_total_tax() * 100 );
+		$subtotal       = number_format( ( $subtotal_cents - $discount_cents + $tax_cents ) / 100, 2, '.', '' );
+		$shipping       = number_format( $shipping_cents / 100, 2, '.', '' );
+
 		$data = array(
 			array(
 				'op'    => 'replace',
@@ -626,8 +817,8 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 					'total'    => $order->get_total(),
 					'currency' => $order->get_currency(),
 					'details'  => array(
-						'subtotal' => $order->get_subtotal(),
-						'shipping' => $order->get_shipping_total(),
+						'subtotal' => $shipping,
+						'shipping' => $subtotal,
 					),
 				),
 			),
@@ -635,6 +826,11 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 				'op'    => 'replace',
 				'path'  => '/transactions/0/item_list/items',
 				'value' => paypal_payments_get_order_items( $order ),
+			),
+			array(
+				'op'    => 'add',
+				'path'  => '/transactions/0/invoice_number',
+				'value' => sprintf( '%s%s-%s', $this->invoice_id_prefix, $order->get_id(), uniqid() ),
 			),
 		);
 
@@ -651,11 +847,50 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 		$payer_id = isset( $_POST['paypal-payments-shortcut-payer-id'] ) ? sanitize_text_field( $_POST['paypal-payments-shortcut-payer-id'] ) : '';
 
 		// Execute API requests.
-		$this->api->update_payment( $session['pay_id'], $data );
-		$this->api->execute_payment( $session['pay_id'], $payer_id );
+		$this->api->update_payment( $session['pay_id'], $data, array(), 'shortcut' );
+		$response = $this->api->execute_payment( $session['pay_id'], $payer_id, array(), 'shortcut' );
+
+		update_post_meta( $order->get_id(), 'paypal_payments_execute_data', $response );
+		update_post_meta( $order->get_id(), 'paypal_payments_id', $response['id'] );
+		update_post_meta( $order->get_id(), 'paypal_payments_sale_id', $response['transactions'][0]['related_resources'][0]['sale']['id'] );
+
+		$order->add_order_note( 'Pagamento processado pelo PayPal. ID da transação: ' . $response['transactions'][0]['related_resources'][0]['sale']['id'] );
 
 		// Process the order.
-		$order->payment_complete();
+		switch ( $response['transactions'][0]['related_resources'][0]['sale']['state'] ) {
+			case 'completed';
+				$order->payment_complete();
+				break;
+			case 'pending':
+				wc_reduce_stock_levels( $order->get_id() );
+				$order->update_status( 'on-hold', __( 'O pagamento está em revisão pelo PayPal.', 'paypal-payments' ) );
+				break;
+		}
+
+		// Check if user isn't logged in.
+		if ( ! is_user_logged_in() ) {
+			try {
+				// We should create or associate the user.
+				$user_email = $order->get_billing_email();
+				$user       = get_user_by( 'email', $user_email );
+
+				// Create new user if doesn't exists.
+				if ( ! $user ) {
+					$user_password = wp_generate_password();
+					$user_username = wc_create_new_customer_username( $user_email, array(
+						'first_name' => $order->get_billing_first_name(),
+						'last_name'  => $order->get_billing_last_name(),
+					) );
+					$user_id       = wc_create_new_customer( $user_email, $user_username, $user_password );
+					$user          = get_user_by( 'id', $user_id );
+				}
+
+				$order->set_customer_id( $user->ID );
+				$order->save();
+			} catch ( Exception $ex ) {
+				// do nothing
+			}
+		}
 
 		// Clear all sessions for this order.
 		$this->clear_all_sessions();
@@ -676,6 +911,73 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 	private function process_payment_reference_transaction( $order ) {
 		$installment = isset( $_POST['paypal_payments_billing_agreement_installment'] ) ? json_decode( stripslashes( $_POST['paypal_payments_billing_agreement_installment'] ), true ) : array();
 
+		$uuid = isset( $_POST['paypal-payments-uuid'] ) ? sanitize_text_field( $_POST['paypal-payments-uuid'] ) : '';
+
+		// Check if we got uuid.
+		if ( ! $uuid ) {
+			wc_add_notice( __( 'Houve um problema ao verificar o token do fraudnet.', 'paypal-payments' ), 'error' );
+
+			return;
+		}
+
+		$items = array();
+
+		// Add all items.
+		/** @var WC_Order_Item_Product $item */
+		foreach ( $order->get_items() as $id => $item ) {
+			$product = $item->get_variation_id() ? wc_get_product( $item->get_variation_id() ) : wc_get_product( $item->get_product_id() );
+			// Force get product cents to avoid float problems.
+			$product_price_cents = intval( $item->get_subtotal() * 100 ) / $item->get_quantity();
+			$product_price       = number_format( $product_price_cents / 100, 2, '.', '' );
+
+			$items[] = array(
+				'name'     => $product->get_title(),
+				'currency' => get_woocommerce_currency(),
+				'quantity' => $item->get_quantity(),
+				'price'    => $product_price,
+				'sku'      => $product->get_sku() ? $product->get_sku() : $product->get_id(),
+				'url'      => $product->get_permalink(),
+			);
+		}
+
+		// Add discounts.
+		if ( $order->get_discount_total() ) {
+			$discount_cents = intval( $order->get_discount_total() * 100 );
+			$items[]        = array(
+				'name'     => __( 'Desconto', 'paypal-payments' ),
+				'currency' => get_woocommerce_currency(),
+				'quantity' => 1,
+				'price'    => number_format( ( - $discount_cents ) / 100, 2, '.', '' ),
+				'sku'      => 'discount',
+			);
+		}
+
+		// Add fees.
+		if ( $order->get_total_tax() ) {
+			$tax_cents = intval( $order->get_total_tax() * 100 );
+			$items[]   = array(
+				'name'     => __( 'Taxas', 'paypal-payments' ),
+				'currency' => get_woocommerce_currency(),
+				'quantity' => 1,
+				'price'    => number_format( $tax_cents / 100, 2, '.', '' ),
+				'sku'      => 'taxes',
+			);
+		}
+
+		// Force get product cents to avoid float problems.
+		$subtotal_cents = intval( $order->get_subtotal() * 100 );
+		$discount_cents = intval( $order->get_discount_total() * 100 );
+		$shipping_cents = intval( $order->get_shipping_total() * 100 );
+		$tax_cents      = intval( $order->get_total_tax() * 100 );
+		$subtotal       = number_format( ( $subtotal_cents - $discount_cents + $tax_cents ) / 100, 2, '.', '' );
+		$shipping       = number_format( $shipping_cents / 100, 2, '.', '' );
+
+		if ( is_user_logged_in() ) {
+			$billing_agreement_id = get_user_meta( get_current_user_id(), 'paypal_payments_billing_agreement_id', true );
+		} else {
+			$billing_agreement_id = WC()->session->get( 'paypal_payments_billing_agreement_id' );
+		}
+
 		$data = array(
 			'intent'        => 'sale',
 			'payer'         => array(
@@ -683,7 +985,7 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 				'funding_instruments' => array(
 					array(
 						'billing' => array(
-							'billing_agreement_id'        => get_user_meta( get_current_user_id(), 'paypal_payments_billing_agreement_id', true ),
+							'billing_agreement_id'        => $billing_agreement_id,
 							'selected_installment_option' => $installment,
 						),
 					),
@@ -695,15 +997,15 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 						'currency' => $order->get_currency(),
 						'total'    => $order->get_total(),
 						'details'  => array(
-							'shipping' => $order->get_shipping_total(),
-							'subtotal' => $order->get_subtotal(),
+							'shipping' => $shipping,
+							'subtotal' => $subtotal,
 						),
 					),
 					'description'    => sprintf( __( 'Pagamento do pedido #%s na loja %s', 'paypal-payments' ), $order->get_id(), get_bloginfo( 'name' ) ),
-					'invoice_number' => sprintf( '%s-%s', $order->get_id(), uniqid() ),
+					'invoice_number' => sprintf( '%s%s-%s', $this->invoice_id_prefix, $order->get_id(), uniqid() ),
 					'item_list'      => array(
 						'shipping_address' => paypal_payments_get_shipping_address( $order ),
-						'items'            => paypal_payments_get_order_items( $order ),
+						'items'            => $items,
 					),
 
 				),
@@ -715,7 +1017,7 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 		);
 
 		// Make API request.
-		$this->api->create_payment( $data );
+		$response = $this->api->create_payment( $data, array( 'PAYPAL-CLIENT-METADATA-ID' => $uuid ), 'reference' );
 
 		// If has discount, add to order information.
 		if ( $discount_value = floatval( $installment['discount_amount']['value'] ) ) {
@@ -731,7 +1033,53 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 		}
 
 		// Process the order.
-		$order->payment_complete();
+		switch ( $response['transactions'][0]['related_resources'][0]['sale']['state'] ) {
+			case 'completed';
+				$order->payment_complete();
+				break;
+			case 'pending':
+				wc_reduce_stock_levels( $order->get_id() );
+				$order->update_status( 'on-hold', __( 'O pagamento está em revisão pelo PayPal.', 'paypal-payments' ) );
+				break;
+		}
+
+		// Check if user isn't logged in.
+		if ( ! is_user_logged_in() ) {
+			try {
+				// We should create or associate the user.
+				$user_email = $order->get_billing_email();
+				$user       = get_user_by( 'email', $user_email );
+
+				// Create new user if doesn't exists.
+				if ( ! $user ) {
+					$user_password = wp_generate_password();
+					$user_username = wc_create_new_customer_username( $user_email, array(
+						'first_name' => $order->get_billing_first_name(),
+						'last_name'  => $order->get_billing_last_name(),
+					) );
+					$user_id       = wc_create_new_customer( $user_email, $user_username, $user_password );
+					$user          = get_user_by( 'id', $user_id );
+				}
+
+				$order->set_customer_id( $user->ID );
+				$order->save();
+
+				update_user_meta( get_current_user_id(), 'paypal_payments_billing_agreement_id', WC()->session->get( 'paypal_payments_billing_agreement_id' ) );
+				update_user_meta( get_current_user_id(), 'paypal_payments_billing_agreement_payer_info', WC()->session->get( 'paypal_payments_billing_agreement_payer_info' ) );
+
+				unset( WC()->session->paypal_payments_billing_agreement_id );
+				unset( WC()->session->paypal_payments_billing_agreement_payer_info );
+
+			} catch ( Exception $ex ) {
+				// do nothing
+			}
+		}
+
+		update_post_meta( $order->get_id(), 'paypal_payments_execute_data', $response );
+		update_post_meta( $order->get_id(), 'paypal_payments_id', $response['id'] );
+		update_post_meta( $order->get_id(), 'paypal_payments_sale_id', $response['transactions'][0]['related_resources'][0]['sale']['id'] );
+
+		$order->add_order_note( 'Pagamento processado pelo PayPal. ID da transação: ' . $response['transactions'][0]['related_resources'][0]['sale']['id'] );
 
 		return array(
 			'result'   => 'success',
@@ -751,9 +1099,34 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 		$spb_payer_id = sanitize_text_field( $_POST['paypal-payments-spb-payer-id'] );
 		$spb_pay_id   = sanitize_text_field( $_POST['paypal-payments-spb-pay-id'] );
 
-		$this->api->execute_payment( $spb_pay_id, $spb_payer_id );
+		$data = array(
+			array(
+				'op'    => 'add',
+				'path'  => '/transactions/0/invoice_number',
+				'value' => sprintf( '%s%s-%s', $this->invoice_id_prefix, $order->get_id(), uniqid() ),
+			),
+		);
 
-		$order->payment_complete();
+		// Execute API requests.
+		$this->api->update_payment( $spb_pay_id, $data, array(), 'ec' );
+		$response = $this->api->execute_payment( $spb_pay_id, $spb_payer_id, array(), 'ec' );
+
+		// Process the order.
+		switch ( $response['transactions'][0]['related_resources'][0]['sale']['state'] ) {
+			case 'completed';
+				$order->payment_complete();
+				break;
+			case 'pending':
+				wc_reduce_stock_levels( $order->get_id() );
+				$order->update_status( 'on-hold', __( 'O pagamento está em revisão pelo PayPal.', 'paypal-payments' ) );
+				break;
+		}
+
+		update_post_meta( $order->get_id(), 'paypal_payments_execute_data', $response );
+		update_post_meta( $order->get_id(), 'paypal_payments_id', $response['id'] );
+		update_post_meta( $order->get_id(), 'paypal_payments_sale_id', $response['transactions'][0]['related_resources'][0]['sale']['id'] );
+
+		$order->add_order_note( 'Pagamento processado pelo PayPal. ID da transação: ' . $response['transactions'][0]['related_resources'][0]['sale']['id'] );
 
 		return array(
 			'result'   => 'success',
@@ -802,7 +1175,7 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 	 */
 	public function payment_fields() {
 		if ( $this->is_processing_shortcut() ) {
-			echo 'Seu pagamento já está aprovado, revise seu pagamento e finalize a compra.';
+			echo 'Pronto! A sua conta PayPal já está habilitada para este pagamento, revise as informações do pedido e finalize sua compra.';
 		} else if ( $this->is_reference_transaction() ) {
 			include dirname( PAYPAL_PAYMENTS_MAIN_FILE ) . '/includes/views/checkout/reference-transaction-html-fields.php';
 		} else {
@@ -814,7 +1187,31 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 	 * Backend view for admin options.
 	 */
 	public function admin_options() {
-		include dirname( PAYPAL_PAYMENTS_MAIN_FILE ) . '/includes/views/admin-options/admin-options-plus.php';
+		include dirname( PAYPAL_PAYMENTS_MAIN_FILE ) . '/includes/views/admin-options/admin-options-spb.php';
+	}
+
+	private function get_fields_values() {
+		return array(
+			'enabled'           => $this->enabled,
+			'shortcut_enabled'  => $this->shortcut_enabled,
+			'reference_enabled' => $this->reference_enabled,
+			'mode'              => $this->mode,
+			'client'            => array(
+				'live'    => $this->client_live,
+				'sandbox' => $this->client_sandbox,
+			),
+			'secret'            => array(
+				'live'    => $this->secret_live,
+				'sandbox' => $this->secret_sandbox,
+			),
+			'button'            => array(
+				'format' => $this->format,
+				'color'  => $this->color,
+			),
+			'title'             => $this->title,
+			'invoice_id_prefix' => $this->invoice_id_prefix,
+			'debug'             => $this->debug,
+		);
 	}
 
 	/**
@@ -823,7 +1220,7 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 	public function admin_scripts() {
 		$screen         = get_current_screen();
 		$screen_id      = $screen ? $screen->id : '';
-		$wc_screen_id   = sanitize_title( __( 'WooCommerce', 'paypal-plus-brasil' ) );
+		$wc_screen_id   = sanitize_title( __( 'WooCommerce', 'paypal-payments' ) );
 		$wc_settings_id = $wc_screen_id . '_page_wc-settings';
 
 		// Check if we are on the gateway settings page.
@@ -831,24 +1228,36 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 
 			// Add shared file if exists.
 			if ( file_exists( dirname( PAYPAL_PAYMENTS_MAIN_FILE ) . '/assets/dist/shared.js' ) ) {
-				wp_enqueue_script( 'paypal_payments_admin_options_shared', plugins_url( 'assets/dist/shared.js', PAYPAL_PAYMENTS_MAIN_FILE ), array(), '1.0.0', true );
+				wp_enqueue_script( 'paypal_payments_admin_options_shared', plugins_url( 'assets/dist/shared.js', PAYPAL_PAYMENTS_MAIN_FILE ), array(), PAYPAL_PAYMENTS_VERSION, true );
 			}
 
 			// Enqueue admin options and localize settings.
-			wp_enqueue_script( $this->id . '_script', plugins_url( 'assets/dist/main.js', PAYPAL_PAYMENTS_MAIN_FILE ), array(), '1.0.0', true );
+			wp_enqueue_script( $this->id . '_script', plugins_url( 'assets/dist/main.js', PAYPAL_PAYMENTS_MAIN_FILE ), array(), PAYPAL_PAYMENTS_VERSION, true );
 			wp_localize_script( $this->id . '_script', 'paypal_payments_admin_options_plus', array(
 				'template'          => $this->get_admin_options_template(),
 				'enabled'           => $this->enabled,
-				'title'             => $this->title,
+				'shortcut_enabled'  => $this->shortcut_enabled,
+				'reference_enabled' => $this->reference_enabled,
 				'mode'              => $this->mode,
-				'live_client_id'    => $this->live_client_id,
-				'live_secret'       => $this->live_secret,
-				'sandbox_client_id' => $this->sandbox_client_id,
-				'sandbox_secret'    => $this->sandbox_secret,
+				'client'            => array(
+					'live'    => $this->client_live,
+					'sandbox' => $this->client_sandbox,
+				),
+				'secret'            => array(
+					'live'    => $this->secret_live,
+					'sandbox' => $this->secret_sandbox,
+				),
+				'button'            => array(
+					'format' => $this->format,
+					'color'  => $this->color,
+				),
+				'title'             => $this->title,
+				'invoice_id_prefix' => $this->invoice_id_prefix,
 				'debug'             => $this->debug,
+				'images_path'       => plugins_url( 'assets/images/buttons', PAYPAL_PAYMENTS_MAIN_FILE ),
 			) );
 
-			wp_enqueue_style( $this->id . '_script', plugins_url( 'assets/dist/main.js', PAYPAL_PAYMENTS_MAIN_FILE ), array(), '1.0.0', true );
+			wp_enqueue_style( $this->id . '_style', plugins_url( 'assets/dist/css/admin-options-spb.css', PAYPAL_PAYMENTS_MAIN_FILE ), array(), PAYPAL_PAYMENTS_VERSION, 'all' );
 
 		}
 	}
@@ -858,7 +1267,7 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 	 */
 	private function get_admin_options_template() {
 		ob_start();
-		include dirname( PAYPAL_PAYMENTS_MAIN_FILE ) . '/includes/views/admin-options/admin-options-plus-template.php';
+		include dirname( PAYPAL_PAYMENTS_MAIN_FILE ) . '/includes/views/admin-options/admin-options-spb-template.php';
 
 		return ob_get_clean();
 	}
@@ -868,29 +1277,57 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 	 * @return bool
 	 */
 	private function is_shortcut_enabled() {
-		return $this->shortcut_enabled;
+		return $this->shortcut_enabled === 'yes';
+	}
+
+	public static function get_uuid() {
+		if ( ! self::$uuid ) {
+			self::$uuid = md5( uniqid( rand(), true ) );
+		}
+
+		return self::$uuid;
+	}
+
+	public function fraudnet_script() {
+		if ( $this->is_reference_transaction() ) {
+			$token = $this->get_uuid();
+			echo '<script type="application/json" fncls="fnparams-dede7cc5-15fd-4c75-a9f4-36c430ee3a99">{"f":"' . $token . '", "s":"WOO_WOOCOMMERCEBRAZIL_RT_PYMNT"}</script>';
+			echo '<script type="text/javascript" src="https://c.paypal.com/da/r/fb.js"></script>';
+		}
 	}
 
 	/**
 	 * Enqueue scripts in checkout.
 	 */
 	public function checkout_scripts() {
+		if ( ! $this->is_credentials_validated() ) {
+			return;
+		}
+
 		// PayPal SDK arguments.
 		$paypal_args = array(
 			'currency'  => 'BRL',
 			'client-id' => $this->get_client_id(),
+			'commit'    => 'false',
+			'locale'    => get_locale(),
+//			'disable-card' => 'amex,jcb,visa,discover,mastercard,hiper,elo',
 		);
 
 		// Enqueue shared.
-		wp_enqueue_script( 'paypal-payments-shared', plugins_url( 'assets/js/shared.js', PAYPAL_PAYMENTS_MAIN_FILE ), array(), null, true );
+		wp_enqueue_script( 'underscore' );
+		wp_enqueue_script( 'paypal-payments-shared', plugins_url( 'assets/js/shared.js', PAYPAL_PAYMENTS_MAIN_FILE ), array(), PAYPAL_PAYMENTS_VERSION, true );
 		wp_localize_script( 'paypal-payments-shared', 'paypal_payments_settings', array(
 			'nonce'                       => wp_create_nonce( 'paypal-payments-checkout' ),
-			'is_reference_transaction'    => $this->reference_transaction_enabled,
+			'is_reference_transaction'    => $this->is_reference_enabled(),
 			'current_user_id'             => get_current_user_id(),
+			'style'                       => array(
+				'color'  => $this->color,
+				'format' => $this->format,
+			),
 			'paypal_payments_handler_url' => add_query_arg( array(
 				'wc-api' => 'paypal_payments_handler',
 				'action' => '{ACTION}'
-			), home_url() ),
+			), home_url() . '/' ),
 			'checkout_page_url'           => wc_get_checkout_url(),
 			'checkout_review_page_url'    => add_query_arg( array(
 				'review-payment' => '1',
@@ -901,17 +1338,18 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 
 		if ( $this->is_reference_transaction() ) { // reference transaction checkout
 			$paypal_args['vault'] = 'true';
-			wp_enqueue_script( 'paypal-payments-reference-transaction', plugins_url( 'assets/js/reference-transaction.js', PAYPAL_PAYMENTS_MAIN_FILE ), array(), null, true );
+			wp_enqueue_script( 'paypal-payments-reference-transaction', plugins_url( 'assets/js/reference-transaction.js', PAYPAL_PAYMENTS_MAIN_FILE ), array(), PAYPAL_PAYMENTS_VERSION, true );
 			ob_start();
 			wc_print_notice( __( 'Você cancelou a criação do token. Reinicie o processo de checkout.', 'paypal-payments' ), 'error' );
 			$cancel_message = ob_get_clean();
 
 			wp_localize_script( 'paypal-payments-reference-transaction', 'paypal_payments_reference_transaction_settings', array(
 				'cancel_message' => $cancel_message,
+				'uuid'           => $this->get_uuid(),
 			) );
 
 		} else if ( ! $this->is_processing_shortcut() ) { // spb checkout
-			wp_enqueue_script( 'paypal-payments-spb', plugins_url( 'assets/js/spb.js', PAYPAL_PAYMENTS_MAIN_FILE ), array(), null, true );
+			wp_enqueue_script( 'paypal-payments-spb', plugins_url( 'assets/js/spb.js', PAYPAL_PAYMENTS_MAIN_FILE ), array(), PAYPAL_PAYMENTS_VERSION, true );
 
 			ob_start();
 			wc_print_notice( __( 'Você cancelou o pagamento.', 'paypal-payments' ), 'error' );
@@ -924,7 +1362,8 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 
 		// Shortcut
 		if ( $this->is_shortcut_enabled() ) {
-			wp_enqueue_script( 'paypal-payments-shortcut', plugins_url( 'assets/js/shortcut.js', PAYPAL_PAYMENTS_MAIN_FILE ), array(), null, true );
+			wp_enqueue_script( 'paypal-payments-shortcut', plugins_url( 'assets/js/shortcut.js', PAYPAL_PAYMENTS_MAIN_FILE ), array(), PAYPAL_PAYMENTS_VERSION, true );
+			wp_enqueue_style( 'paypal-payments-shortcut', plugins_url( 'assets/css/shortcut.css', PAYPAL_PAYMENTS_MAIN_FILE ), array(), PAYPAL_PAYMENTS_VERSION, 'all' );
 		}
 
 		wp_enqueue_script( 'paypal-payments-scripts', add_query_arg( $paypal_args, 'https://www.paypal.com/sdk/js' ), array(), null, true );

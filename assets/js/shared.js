@@ -2,6 +2,10 @@ jQuery(document).ready(function ($) {
 
     window.paypalPayments = {
 
+        checkSdkLoaded: function () {
+            return typeof paypal !== 'undefined';
+        },
+
         /**
          * Scroll window to top.
          */
@@ -67,6 +71,8 @@ jQuery(document).ready(function ($) {
             $(document.body).trigger('update_checkout');
         },
 
+        triggerUpdateCheckoutDebounce: _.debounce(() => $(document.body).trigger('update_checkout'), 500),
+
         /**
          * Trigger update cart.
          */
@@ -98,5 +104,12 @@ jQuery(document).ready(function ($) {
         }
 
     };
+
+    // Check if PayPal is loaded.
+    if (!paypalPayments.checkSdkLoaded()) {
+        const msg = 'O SDK do PayPal não foi carregado corretamente. Verifique as credenciais nas configurações da loja.';
+        console.error(msg);
+        alert(msg);
+    }
 
 });

@@ -27,15 +27,17 @@ class PayPal_Payments_API_Billing_Agreement_Token_Handler extends PayPal_Payment
 	public function get_fields() {
 		return array(
 			array(
+				'name'       => __( 'nonce', 'paypal-payments' ),
 				'key'      => 'nonce',
 				'sanitize' => 'sanitize_text_field',
 				'validation' => array( $this, 'required_nonce' ),
 			),
-			array(
-				'key'        => 'user_id',
-				'sanitize'   => 'sanitize_text_field',
-				'validation' => array( $this, 'required_current_user_id' ),
-			),
+//			array(
+//				'name'       => __( 'ID do usuário', 'paypal-payments' ),
+//				'key'        => 'user_id',
+//				'sanitize'   => 'sanitize_text_field',
+//				'validation' => array( $this, 'required_current_user_id' ),
+//			),
 		);
 	}
 
@@ -92,12 +94,12 @@ class PayPal_Payments_API_Billing_Agreement_Token_Handler extends PayPal_Payment
 
 	// CUSTOM VALIDATORS
 
-	public function required_nonce( $data, $key ) {
+	public function required_nonce( $data, $key, $name ) {
 		if ( wp_verify_nonce( $data, 'paypal-payments-checkout' ) ) {
 			return true;
 		}
 
-		return __( 'Nonce inválido', 'paypal-payments' );
+		return sprintf( __( 'O %s é inválido.', 'paypal-payments' ), $name );
 	}
 
 	public function required_current_user_id( $data, $key ) {

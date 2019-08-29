@@ -19,6 +19,7 @@ function paypal_payments_init() {
 
 	// Define files.
 	define( 'PAYPAL_PAYMENTS_MAIN_FILE', __FILE__ );
+	define( 'PAYPAL_PAYMENTS_VERSION', '0.0.3' );
 
 	// Init plugin.
 	PayPal_Payments::get_instance();

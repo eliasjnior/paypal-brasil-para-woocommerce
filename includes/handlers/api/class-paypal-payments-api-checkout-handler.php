@@ -27,60 +27,72 @@ class PayPal_Payments_API_Checkout_Handler extends PayPal_Payments_API_Handler {
 	public function get_fields() {
 		return array(
 			array(
+				'name'       => __( 'nonce', 'paypal-payments' ),
 				'key'        => 'nonce',
 				'sanitize'   => 'sanitize_text_field',
-				'validation' => array( $this, 'required_nonce' ),
+//				'validation' => array( $this, 'required_nonce' ),
 			),
 			array(
+				'name'       => __( 'nome', 'paypal-payments' ),
 				'key'        => 'first_name',
 				'sanitize'   => 'sanitize_text_field',
 				'validation' => array( $this, 'required_text' ),
 			),
 			array(
+				'name'       => __( 'sobrenome', 'paypal-payments' ),
 				'key'        => 'last_name',
 				'sanitize'   => 'sanitize_text_field',
 				'validation' => array( $this, 'required_text' ),
 			),
 			array(
+				'name'       => __( 'cidade', 'paypal-payments' ),
 				'key'        => 'city',
 				'sanitize'   => 'sanitize_text_field',
 				'validation' => array( $this, 'required_text' ),
 			),
 			array(
+				'name'       => __( 'país', 'paypal-payments' ),
 				'key'        => 'country',
 				'sanitize'   => 'sanitize_text_field',
 				'validation' => array( $this, 'required_country' ),
 			),
 			array(
+				'name'       => __( 'cep', 'paypal-payments' ),
 				'key'        => 'postcode',
 				'sanitize'   => 'sanitize_text_field',
 				'validation' => array( $this, 'required_postcode' ),
 			),
 			array(
+				'name'       => __( 'estado', 'paypal-payments' ),
 				'key'        => 'state',
 				'sanitize'   => 'sanitize_text_field',
 				'validation' => array( $this, 'required_text' ),
 			),
 			array(
+				'name'       => __( 'endereço', 'paypal-payments' ),
 				'key'        => 'address_line_1',
 				'sanitize'   => 'sanitize_text_field',
 				'validation' => array( $this, 'required_text' ),
 			),
 			array(
+				'name'       => __( 'número', 'paypal-payments' ),
 				'key'        => 'number',
 				'sanitize'   => 'sanitize_text_field',
 				'validation' => array( $this, 'required_text' ),
 			),
 			array(
+				'name'     => __( 'complemento', 'paypal-payments' ),
 				'key'      => 'address_line_2',
 				'sanitize' => 'sanitize_text_field',
 			),
 			array(
+				'name'       => __( 'bairro', 'paypal-payments' ),
 				'key'        => 'neighborhood',
 				'sanitize'   => 'sanitize_text_field',
-				'validation' => array( $this, 'required_text' ),
+//				'validation' => array( $this, 'required_text' ),
 			),
 			array(
+				'name'       => __( 'telefone', 'paypal-payments' ),
 				'key'        => 'phone',
 				'sanitize'   => 'sanitize_text_field',
 				'validation' => array( $this, 'required_text' ),
@@ -144,63 +156,65 @@ class PayPal_Payments_API_Checkout_Handler extends PayPal_Payments_API_Handler {
 
 			$items = array();
 
-			// Add cart items.
-			foreach ( $cart->get_cart() as $cart_item ) {
-				/** @var WC_Product $product */
-				$id      = $cart_item['variation_id'] ? $cart_item['variation_id'] : $cart_item['product_id'];
-				$product = wc_get_product( $id );
+			// Add all items.
+			foreach ( WC()->cart->get_cart() as $key => $item ) {
+				$product = $item['variation_id'] ? wc_get_product( $item['variation_id'] ) : wc_get_product( $item['product_id'] );
+
+				// Force get product cents to avoid float problems.
+				$product_price_cents = intval( $item['line_subtotal'] * 100 ) / $item['quantity'];
+				$product_price       = number_format( $product_price_cents / 100, 2, '.', '' );
 
 				$items[] = array(
 					'name'     => $product->get_title(),
 					'currency' => get_woocommerce_currency(),
-					'quantity' => $cart_item['quantity'],
-					'price'    => $product->get_price(),
+					'quantity' => $item['quantity'],
+					'price'    => $product_price,
 					'sku'      => $product->get_sku() ? $product->get_sku() : $product->get_id(),
 					'url'      => $product->get_permalink(),
 				);
 			}
 
-			// Add taxes.
-			foreach ( $cart->get_tax_totals() as $tax ) {
-				$items[] = array(
-					'name'     => $tax->label,
-					'currency' => get_woocommerce_currency(),
-					'quantity' => 1,
-					'sku'      => sanitize_title( $tax->label ),
-					'price'    => $tax->amount,
-				);
-			}
+			// Add all discounts.
+			$cart_totals = WC()->cart->get_totals();
 
 			// Add discounts.
-			if ( $discount = $cart->get_cart_discount_total() ) {
+			if ( $cart_totals['discount_total'] ) {
 				$items[] = array(
 					'name'     => __( 'Desconto', 'paypal-payments' ),
 					'currency' => get_woocommerce_currency(),
 					'quantity' => 1,
+					'price'    => number_format( - $cart_totals['discount_total'], 2, '.', '' ),
 					'sku'      => 'discount',
-					'price'    => $discount,
 				);
 			}
 
 			// Add fees.
-			foreach ( $cart->get_fees() as $fee ) {
+			if ( $cart_totals['total_tax'] ) {
 				$items[] = array(
-					'name'     => $fee->name,
+					'name'     => __( 'Taxas', 'paypal-payments' ),
 					'currency' => get_woocommerce_currency(),
 					'quantity' => 1,
-					'sku'      => $fee->id,
-					'price'    => $fee->total,
+					'price'    => number_format( $cart_totals['total_tax'], 2, '.', '' ),
+					'sku'      => 'taxes',
 				);
 			}
 
+			// Force get product cents to avoid float problems.
+			$subtotal_cents = intval( $cart_totals['subtotal'] * 100 );
+			$discount_cents = intval( $cart_totals['discount_total'] * 100 );
+			$shipping_cents = intval( $cart_totals['shipping_total'] * 100 );
+			$tax_cents      = intval( $cart_totals['total_tax'] * 100 );
+			$subtotal       = number_format( ( $subtotal_cents - $discount_cents + $tax_cents ) / 100, 2, '.', '' );
+			$shipping       = number_format( $shipping_cents / 100, 2, '.', '' );
+
 			// Set details
 			$data['transactions'][0]['amount']['details'] = array(
-				'shipping' => $cart->get_shipping_total(),
-				'subtotal' => $cart->get_subtotal(),
+				'shipping' => $shipping,
+				'subtotal' => $subtotal,
 			);
 
 			// Set total Total
-			$data['transactions'][0]['amount']['total'] = $cart->get_totals()['total'];
+			$data['transactions'][0]['amount']['total'] = $cart_totals['total'];
 
 			// Add items to data.
 			$data['transactions'][0]['item_list']['items'] = $items;
@@ -250,7 +264,7 @@ class PayPal_Payments_API_Checkout_Handler extends PayPal_Payments_API_Handler {
 			);
 
 			// Create the payment in API.
-			$create_payment = $gateway->api->create_payment( $data );
+			$create_payment = $gateway->api->create_payment( $data, array(), 'ec' );
 
 			// Get the response links.
 			$links = $gateway->api->parse_links( $create_payment['links'] );
@@ -276,28 +290,28 @@ class PayPal_Payments_API_Checkout_Handler extends PayPal_Payments_API_Handler {
 
 	// CUSTOM VALIDATORS
 
-	public function required_text( $data, $key ) {
+	public function required_text( $data, $key, $name ) {
 		if ( ! empty( $data ) ) {
 			return true;
 		}
 
-		return __( 'O item não pode estar vazio.', 'paypal-payments' );
+		return sprintf( __( 'O campo <strong>%s</strong> é obrigatório.', 'paypal-payments' ), $name );
 	}
 
-	public function required_country( $data, $key ) {
-		return $this->required_text( $data, $key );
+	public function required_country( $data, $key, $name ) {
+		return $this->required_text( $data, $key, $name );
 	}
 
-	public function required_postcode( $data, $key ) {
-		return $this->required_text( $data, $key );
+	public function required_postcode( $data, $key, $name ) {
+		return $this->required_text( $data, $key, $name );
 	}
 
-	public function required_nonce( $data, $key ) {
+	public function required_nonce( $data, $key, $name ) {
 		if ( wp_verify_nonce( $data, 'paypal-payments-checkout' ) ) {
 			return true;
 		}
 
-		return __( 'Nonce inválido', 'paypal-payments' );
+		return sprintf( __( 'O %s é inválido.', 'paypal-payments' ), $name );
 	}
 
 }
