@@ -57,6 +57,8 @@ class PayPal_Payments_API {
 	 * @return array|WP_Error
 	 * @throws Paypal_Payments_Api_Exception
 	 * @throws Paypal_Payments_Connection_Exception
+	 * @todo: adicionar forçar um mode
+	 *
 	 */
 	public function get_access_token( $force = false, $client = null, $secret = null ) {
 		$url = $this->base_url . '/oauth2/token';
@@ -385,6 +387,79 @@ class PayPal_Payments_API {
 		}
 
 		throw new Paypal_Payments_Api_Exception( $code, __( 'Não foi possível verificar a assinatura do PayPal.', 'paypal-payments' ), $response_body );
+	}
+
+	/**
+	 * Get webhook list.
+	 *
+	 * @return array|mixed|object
+	 * @throws Paypal_Payments_Api_Exception
+	 * @throws Paypal_Payments_Connection_Exception
+	 */
+	public function get_webhooks() {
+		$url = $this->base_url . '/notifications/webhooks';
+
+		// Get response.
+		$response      = $this->do_request( $url, 'GET', array(), array( 'PayPal-Partner-Attribution-Id' => $this->bn_code['ec'] ) );
+		$response_body = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		// Check if is WP_Error
+		if ( is_wp_error( $response ) ) {
+			throw new Paypal_Payments_Connection_Exception( $response->get_error_code(), $response->errors );
+		}
+
+		$code = wp_remote_retrieve_response_code( $response );
+
+		// Check if response was created.
+		if ( $code === 200 ) {
+			return $response_body;
+		}
+
+		throw new Paypal_Payments_Api_Exception( $code, __( 'Não foi possível obter os webhooks.', 'paypal-payments' ), $response_body );
+	}
+
+	/**
+	 * Create a webhook.
+	 *
+	 * @param $webhook_url
+	 * @param $events
+	 *
+	 * @return array|mixed|object
+	 * @throws Paypal_Payments_Api_Exception
+	 * @throws Paypal_Payments_Connection_Exception
+	 */
+	public function create_webhook( $webhook_url, $events ) {
+		$url = $this->base_url . '/notifications/webhooks';
+
+		$data = array(
+			'url'         => $webhook_url,
+			'event_types' => array(),
+		);
+
+		// Add events.
+		foreach ( $events as $event ) {
+			$data['event_types'][] = array(
+				'name' => $event,
+			);
+		}
+
+		// Get response.
+		$response      = $this->do_request( $url, 'POST', $data, array( 'PayPal-Partner-Attribution-Id' => $this->bn_code['ec'] ) );
+		$response_body = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		// Check if is WP_Error
+		if ( is_wp_error( $response ) ) {
+			throw new Paypal_Payments_Connection_Exception( $response->get_error_code(), $response->errors );
+		}
+
+		$code = wp_remote_retrieve_response_code( $response );
+
+		// Check if response was created.
+		if ( $code === 201 ) {
+			return $response_body;
+		}
+
+		throw new Paypal_Payments_Api_Exception( $code, __( 'Não foi possível criar o webhook.', 'paypal-payments' ), $response_body );
 	}
 
 	/**

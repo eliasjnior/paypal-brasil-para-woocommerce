@@ -30,7 +30,7 @@
 	<?php endif; ?>
 
     <img class="banner"
-         src="<?php echo esc_attr( plugins_url( 'assets/images/banner.png', PAYPAL_PAYMENTS_MAIN_FILE ) ); ?>">
+         src="<?php echo esc_attr( plugins_url( 'assets/images/banner-spb.png', PAYPAL_PAYMENTS_MAIN_FILE ) ); ?>">
 
 	<?php echo wp_kses_post( wpautop( $this->get_method_description() ) ); ?>
 

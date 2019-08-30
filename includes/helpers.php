@@ -190,3 +190,11 @@ function paypal_payments_wc_settings_valid() {
 	       get_option( 'woocommerce_enable_signup_and_login_from_checkout' ) === 'yes' &&
 	       get_option( 'woocommerce_enable_guest_checkout' ) === 'no';
 }
+
+/**
+ * Return if needs CPF.
+ * @return bool
+ */
+function paypal_payments_needs_cpf() {
+	return function_exists( 'get_woocommerce_currency' ) ? get_woocommerce_currency() === 'BRL' : false;
+}

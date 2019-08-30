@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Class PayPal_Payments_Plus.
+ * Class PayPal_Payments_SPB_Gateway.
  *
  * @property string client_live
  * @property string client_sandbox
@@ -356,8 +356,8 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 
 	public function before_process_admin_options() {
 		// Check first if is enabled
-		$mode = $this->get_field_value( 'enabled', $this->form_fields['enabled'] );
-		if ( $mode !== 'yes' ) {
+		$enabled = $this->get_field_value( 'enabled', $this->form_fields['enabled'] );
+		if ( $enabled !== 'yes' ) {
 			return;
 		}
 
@@ -1227,12 +1227,12 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 		if ( $wc_settings_id === $screen_id && isset( $_GET['section'] ) && $_GET['section'] === $this->id ) {
 
 			// Add shared file if exists.
-			if ( file_exists( dirname( PAYPAL_PAYMENTS_MAIN_FILE ) . '/assets/dist/shared.js' ) ) {
-				wp_enqueue_script( 'paypal_payments_admin_options_shared', plugins_url( 'assets/dist/shared.js', PAYPAL_PAYMENTS_MAIN_FILE ), array(), PAYPAL_PAYMENTS_VERSION, true );
+			if ( file_exists( dirname( PAYPAL_PAYMENTS_MAIN_FILE ) . '/assets/dist/js/shared.js' ) ) {
+				wp_enqueue_script( 'paypal_payments_admin_options_shared', plugins_url( 'assets/dist/js/shared.js', PAYPAL_PAYMENTS_MAIN_FILE ), array(), PAYPAL_PAYMENTS_VERSION, true );
 			}
 
 			// Enqueue admin options and localize settings.
-			wp_enqueue_script( $this->id . '_script', plugins_url( 'assets/dist/main.js', PAYPAL_PAYMENTS_MAIN_FILE ), array(), PAYPAL_PAYMENTS_VERSION, true );
+			wp_enqueue_script( $this->id . '_script', plugins_url( 'assets/dist/js/admin-options-spb.js', PAYPAL_PAYMENTS_MAIN_FILE ), array(), PAYPAL_PAYMENTS_VERSION, true );
 			wp_localize_script( $this->id . '_script', 'paypal_payments_admin_options_plus', array(
 				'template'          => $this->get_admin_options_template(),
 				'enabled'           => $this->enabled,
@@ -1304,6 +1304,9 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 			return;
 		}
 
+		$enqueues  = array();
+		$localizes = array();
+
 		// PayPal SDK arguments.
 		$paypal_args = array(
 			'currency'  => 'BRL',
@@ -1314,60 +1317,103 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 		);
 
 		// Enqueue shared.
-		wp_enqueue_script( 'underscore' );
-		wp_enqueue_script( 'paypal-payments-shared', plugins_url( 'assets/js/shared.js', PAYPAL_PAYMENTS_MAIN_FILE ), array(), PAYPAL_PAYMENTS_VERSION, true );
-		wp_localize_script( 'paypal-payments-shared', 'paypal_payments_settings', array(
-			'nonce'                       => wp_create_nonce( 'paypal-payments-checkout' ),
-			'is_reference_transaction'    => $this->is_reference_enabled(),
-			'current_user_id'             => get_current_user_id(),
-			'style'                       => array(
-				'color'  => $this->color,
-				'format' => $this->format,
-			),
-			'paypal_payments_handler_url' => add_query_arg( array(
-				'wc-api' => 'paypal_payments_handler',
-				'action' => '{ACTION}'
-			), home_url() . '/' ),
-			'checkout_page_url'           => wc_get_checkout_url(),
-			'checkout_review_page_url'    => add_query_arg( array(
-				'review-payment' => '1',
-				'pay-id'         => '{PAY_ID}',
-				'payer-id'       => '{PAYER_ID}',
-			), wc_get_checkout_url() ),
-		) );
+		$enqueues[]  = array( 'underscore' );
+		$enqueues[]  = array(
+			'paypal-payments-shared',
+			plugins_url( 'assets/dist/js/frontend-shared.js', PAYPAL_PAYMENTS_MAIN_FILE ),
+			array(),
+			PAYPAL_PAYMENTS_VERSION,
+			true
+		);
+		$localizes[] = array(
+			'paypal-payments-shared',
+			'paypal_payments_settings',
+			array(
+				'nonce'                       => wp_create_nonce( 'paypal-payments-checkout' ),
+				'is_reference_transaction'    => $this->is_reference_enabled(),
+				'current_user_id'             => get_current_user_id(),
+				'style'                       => array(
+					'color'  => $this->color,
+					'format' => $this->format,
+				),
+				'paypal_payments_handler_url' => add_query_arg( array(
+					'wc-api' => 'paypal_payments_handler',
+					'action' => '{ACTION}'
+				), home_url() . '/' ),
+				'checkout_page_url'           => wc_get_checkout_url(),
+				'checkout_review_page_url'    => add_query_arg( array(
+					'review-payment' => '1',
+					'pay-id'         => '{PAY_ID}',
+					'payer-id'       => '{PAYER_ID}',
+				), wc_get_checkout_url() ),
+			)
+		);
 
 		if ( $this->is_reference_transaction() ) { // reference transaction checkout
 			$paypal_args['vault'] = 'true';
-			wp_enqueue_script( 'paypal-payments-reference-transaction', plugins_url( 'assets/js/reference-transaction.js', PAYPAL_PAYMENTS_MAIN_FILE ), array(), PAYPAL_PAYMENTS_VERSION, true );
+			$enqueues[]           = array(
+				'paypal-payments-reference-transaction',
+				plugins_url( 'assets/dist/js/frontend-reference-transaction.js', PAYPAL_PAYMENTS_MAIN_FILE ),
+				array(),
+				PAYPAL_PAYMENTS_VERSION,
+				true
+			);
 			ob_start();
 			wc_print_notice( __( 'Você cancelou a criação do token. Reinicie o processo de checkout.', 'paypal-payments' ), 'error' );
 			$cancel_message = ob_get_clean();
 
-			wp_localize_script( 'paypal-payments-reference-transaction', 'paypal_payments_reference_transaction_settings', array(
-				'cancel_message' => $cancel_message,
-				'uuid'           => $this->get_uuid(),
-			) );
+			$localizes[] = array(
+				'paypal-payments-reference-transaction',
+				'paypal_payments_reference_transaction_settings',
+				array(
+					'cancel_message' => $cancel_message,
+					'uuid'           => $this->get_uuid(),
+				)
+			);
 
 		} else if ( ! $this->is_processing_shortcut() ) { // spb checkout
-			wp_enqueue_script( 'paypal-payments-spb', plugins_url( 'assets/js/spb.js', PAYPAL_PAYMENTS_MAIN_FILE ), array(), PAYPAL_PAYMENTS_VERSION, true );
+			$enqueues[] = array(
+				'paypal-payments-spb',
+				plugins_url( 'assets/dist/js/frontend-spb.js', PAYPAL_PAYMENTS_MAIN_FILE ),
+				array(),
+				PAYPAL_PAYMENTS_VERSION,
+				true
+			);
 
 			ob_start();
 			wc_print_notice( __( 'Você cancelou o pagamento.', 'paypal-payments' ), 'error' );
 			$cancel_message = ob_get_clean();
 
-			wp_localize_script( 'paypal-payments-spb', 'paypal_payments_spb_settings', array(
-				'cancel_message' => $cancel_message,
-			) );
+			$localizes[] = array(
+				'paypal-payments-spb',
+				'paypal_payments_spb_settings',
+				array(
+					'cancel_message' => $cancel_message,
+				)
+			);
 		}
 
 		// Shortcut
 		if ( $this->is_shortcut_enabled() ) {
-			wp_enqueue_script( 'paypal-payments-shortcut', plugins_url( 'assets/js/shortcut.js', PAYPAL_PAYMENTS_MAIN_FILE ), array(), PAYPAL_PAYMENTS_VERSION, true );
-			wp_enqueue_style( 'paypal-payments-shortcut', plugins_url( 'assets/css/shortcut.css', PAYPAL_PAYMENTS_MAIN_FILE ), array(), PAYPAL_PAYMENTS_VERSION, 'all' );
+			$enqueues[] = array(
+				'paypal-payments-shortcut',
+				plugins_url( 'assets/dist/js/frontend-shortcut.js', PAYPAL_PAYMENTS_MAIN_FILE ),
+				array(),
+				PAYPAL_PAYMENTS_VERSION,
+				true
+			);
+			wp_enqueue_style( 'paypal-payments-shortcut', plugins_url( 'assets/dist/css/frontend-shortcut.css', PAYPAL_PAYMENTS_MAIN_FILE ), array(), PAYPAL_PAYMENTS_VERSION, 'all' );
 		}
 
 		wp_enqueue_script( 'paypal-payments-scripts', add_query_arg( $paypal_args, 'https://www.paypal.com/sdk/js' ), array(), null, true );
 
+		foreach ( $enqueues as $enqueue ) {
+			call_user_func_array( 'wp_enqueue_script', $enqueue );
+		}
+
+		foreach ( $localizes as $localize ) {
+			call_user_func_array( 'wp_localize_script', $localize );
+		}
 	}
 
 }

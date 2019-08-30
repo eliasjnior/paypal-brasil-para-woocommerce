@@ -49,15 +49,26 @@ class PayPal_Payments {
 
 	}
 
+	/**
+	 * In WC payments section, filter the gateways to be displayed based in a param in URL.
+	 */
 	public function filter_gateways_settings() {
 		if ( isset( $_GET['page'] ) && isset( $_GET['tab'] ) && $_GET['page'] === 'wc-settings' && $_GET['tab'] && $_GET['tab'] === 'checkout' && isset( $_REQUEST['paypal-payments'] ) ) {
 			add_filter( 'woocommerce_payment_gateways', array( $this, 'filter_allowed_gateways' ) );
 		}
 	}
 
+	/**
+	 * Filter gateways that will be displayed in a custom settings page.
+	 *
+	 * @param $load_gateways
+	 *
+	 * @return mixed
+	 */
 	public function filter_allowed_gateways( $load_gateways ) {
 		$allowed_gateways = array(
 			'PayPal_Payments_SPB_Gateway',
+			'PayPal_Payments_Plus_Gateway',
 		);
 		foreach ( $load_gateways as $key => $gateway ) {
 			if ( ! in_array( $gateway, $allowed_gateways ) ) {
@@ -109,6 +120,7 @@ class PayPal_Payments {
 	 */
 	public function add_payment_methods( $methods ) {
 		$methods[] = 'PayPal_Payments_SPB_Gateway';
+		$methods[] = 'PayPal_Payments_Plus_Gateway';
 
 		return $methods;
 	}
@@ -118,8 +130,9 @@ class PayPal_Payments {
 	 */
 	public function include_gateways() {
 		if ( class_exists( 'WC_Payment_Gateway' ) ) {
-			include dirname( __FILE__ ) . '/includes/payment-methods/abstract-class-paypal-payments-gateway.php';
+			include_once dirname( __FILE__ ) . '/includes/payment-methods/abstract-class-paypal-payments-gateway.php';
 			include_once dirname( __FILE__ ) . '/includes/payment-methods/class-paypal-payments-spb-gateway.php';
+//			include_once dirname( __FILE__ ) . '/includes/payment-methods/class-paypal-payments-plus-gateway.php';
 			if ( ! in_array( get_woocommerce_currency(), self::get_allowed_currencies() ) ) {
 				add_action( 'admin_notices', array( $this, 'woocommerce_unavailable_currency' ) );
 			}
@@ -165,7 +178,7 @@ class PayPal_Payments {
 	 */
 	public function ecfb_missing_notice() {
 		// Check if Extra Checkout Fields for Brazil is installed, but check if it's BRL.
-		if ( ! class_exists( 'Extra_Checkout_Fields_For_Brazil' ) ) {
+		if ( paypal_payments_needs_cpf() && ! class_exists( 'Extra_Checkout_Fields_For_Brazil' ) ) {
 			include dirname( __FILE__ ) . '/includes/views/notices/html-notice-missing-ecfb.php';
 		}
 	}
@@ -198,7 +211,7 @@ class PayPal_Payments {
 	 * @return array
 	 */
 	public static function get_allowed_currencies() {
-		return array( 'BRL' );
+		return array( 'BRL', 'USD' );
 	}
 
 }

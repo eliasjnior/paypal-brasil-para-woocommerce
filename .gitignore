@@ -1,1 +1,8 @@
+# Dont store node_modules.
 node_modules/
+
+# This folder should be build everytime.
+assets/dist/
+
+# Others
+.DS_Store
