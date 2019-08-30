@@ -132,7 +132,7 @@ class PayPal_Payments {
 		if ( class_exists( 'WC_Payment_Gateway' ) ) {
 			include_once dirname( __FILE__ ) . '/includes/payment-methods/abstract-class-paypal-payments-gateway.php';
 			include_once dirname( __FILE__ ) . '/includes/payment-methods/class-paypal-payments-spb-gateway.php';
-//			include_once dirname( __FILE__ ) . '/includes/payment-methods/class-paypal-payments-plus-gateway.php';
+			include_once dirname( __FILE__ ) . '/includes/payment-methods/class-paypal-payments-plus-gateway.php';
 			if ( ! in_array( get_woocommerce_currency(), self::get_allowed_currencies() ) ) {
 				add_action( 'admin_notices', array( $this, 'woocommerce_unavailable_currency' ) );
 			}

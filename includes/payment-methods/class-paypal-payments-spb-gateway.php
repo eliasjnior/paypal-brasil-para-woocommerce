@@ -35,7 +35,7 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 		$this->has_fields         = true;
 		$this->method_title       = __( 'PayPal Brasil', 'paypal-payments' );
 		$this->icon               = plugins_url( 'assets/images/paypal-logo.png', PAYPAL_PAYMENTS_MAIN_FILE );
-		$this->method_description = __( 'Adicione as soluções de carteira digital do PayPal em sua loja do WooCommerce', 'paypal-payments' );
+		$this->method_description = __( 'Adicione as soluções de carteira digital do PayPal em sua loja do WooCommerce.', 'paypal-payments' );
 		$this->supports           = array(
 			'products',
 			'refunds',
@@ -1187,7 +1187,7 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 	 * Backend view for admin options.
 	 */
 	public function admin_options() {
-		include dirname( PAYPAL_PAYMENTS_MAIN_FILE ) . '/includes/views/admin-options/admin-options-spb.php';
+		include dirname( PAYPAL_PAYMENTS_MAIN_FILE ) . '/includes/views/admin-options/admin-options-spb/admin-options-spb.php';
 	}
 
 	private function get_fields_values() {
@@ -1267,7 +1267,7 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 	 */
 	private function get_admin_options_template() {
 		ob_start();
-		include dirname( PAYPAL_PAYMENTS_MAIN_FILE ) . '/includes/views/admin-options/admin-options-spb-template.php';
+		include dirname( PAYPAL_PAYMENTS_MAIN_FILE ) . '/includes/views/admin-options/admin-options-spb/admin-options-spb-template.php';
 
 		return ob_get_clean();
 	}

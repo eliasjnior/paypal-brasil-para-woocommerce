@@ -35,7 +35,7 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 		$this->id                 = 'paypal-payments-plus-gateway';
 		$this->has_fields         = true;
 		$this->method_title       = __( 'PayPal Brasil', 'paypal-payments' );
-		$this->method_description = __( 'Adicione o checkout transparente do PayPal em sua loja do WooCommerce', 'paypal-payments' );
+		$this->method_description = __( 'Adicione as soluções da carteira digital do PayPal em sua loja WooCommerce.', 'paypal-payments' );
 		$this->supports           = array(
 			'products',
 			'refunds',
@@ -555,14 +555,14 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 	 * Render the payment fields in checkout.
 	 */
 	public function payment_fields() {
-		include dirname( __FILE__ ) . '/views/html-payment-fields.php';
+		include dirname( PAYPAL_PAYMENTS_MAIN_FILE ) . '/includes/views/checkout/plus-html-fields.php';
 	}
 
 	/**
 	 * Render HTML in admin options.
 	 */
 	public function admin_options() {
-		include dirname( __FILE__ ) . '/views/html-admin-options.php';
+		include dirname( PAYPAL_PAYMENTS_MAIN_FILE ) . '/includes/views/admin-options/admin-options-plus/admin-options-plus.php';
 	}
 
 	/**
@@ -952,9 +952,9 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 		// Just load this script in checkout and if isn't in order-receive.
 		if ( is_checkout() && ! get_query_var( 'order-received' ) ) {
 			if ( 'yes' === $this->debug ) {
-				wp_enqueue_script( 'pretty-web-console', plugins_url( 'assets/js/pretty-web-console.lib.js', __DIR__ ), array(), '0.10.1', true );
+				wp_enqueue_script( 'pretty-web-console', plugins_url( 'assets/js/libs/pretty-web-console.lib.js', PAYPAL_PAYMENTS_MAIN_FILE ), array(), '0.10.1', true );
 			}
-			wp_enqueue_script( 'ppp-script', '//www.paypalobjects.com/webstatic/ppplusdcc/ppplusdcc.min.js', array(), WC_PPP_Brasil::$VERSION, true );
+			wp_enqueue_script( 'ppp-script', '//www.paypalobjects.com/webstatic/ppplusdcc/ppplusdcc.min.js', array(), PAYPAL_PAYMENTS_VERSION, true );
 			wp_localize_script( 'ppp-script', 'wc_ppp_brasil_data', array(
 				'id'                => $this->id,
 				'order_pay'         => ! ! get_query_var( 'order-pay' ),
@@ -968,8 +968,8 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 				),
 				'debug_mode'        => 'yes' === $this->debug,
 			) );
-			wp_enqueue_script( 'wc-ppp-brasil-script', plugins_url( 'assets/js/frontend.js', __DIR__ ), array( 'jquery' ), WC_PPP_Brasil::$VERSION, true );
-			wp_enqueue_style( 'wc-ppp-brasil-style', plugins_url( 'assets/css/frontend.css', __DIR__ ), array(), WC_PPP_Brasil::$VERSION, 'all' );
+			wp_enqueue_script( 'wc-ppp-brasil-script', plugins_url( 'assets/dist/js/admin-options-plus.js', PAYPAL_PAYMENTS_MAIN_FILE ), array( 'jquery' ), PAYPAL_PAYMENTS_VERSION, true );
+			wp_enqueue_style( 'wc-ppp-brasil-style', plugins_url( 'assets/dist/css/frontend-plus.css', PAYPAL_PAYMENTS_MAIN_FILE ), array(), PAYPAL_PAYMENTS_VERSION, 'all' );
 		}
 	}
 
@@ -1006,7 +1006,7 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 		$wc_screen_id   = sanitize_title( __( 'WooCommerce', 'paypal-payments' ) );
 		$wc_settings_id = $wc_screen_id . '_page_wc-settings';
 		if ( $wc_settings_id === $screen_id && isset( $_GET['section'] ) && $_GET['section'] === $this->id ) {
-			wp_enqueue_style( 'wc-ppp-brasil-admin-style', plugins_url( 'assets/css/backend.css', __DIR__ ), array(), WC_PPP_Brasil::$VERSION, 'all' );
+			wp_enqueue_style( 'wc-ppp-brasil-admin-style', plugins_url( 'assets/dist/css/admin-options-plus.css', PAYPAL_PAYMENTS_MAIN_FILE ), array(), PAYPAL_PAYMENTS_VERSION, 'all' );
 		}
 	}
 
@@ -1052,6 +1052,13 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 	 * @return string
 	 */
 	public function get_title() {
+		// A description only for admin section.
+		if ( is_admin() ) {
+			global $pagenow;
+
+			return $pagenow === 'post.php' ? __( 'PayPal - Checkout Transparente', 'paypal-payments' ) : __( 'Checkout Transparente', 'paypal-payments' );
+		}
+
 		$title = get_woocommerce_currency() === "BRL" ? __( 'Cartão de Crédito', 'paypal-payments' ) : __( 'Credit Card', 'paypal-payments' );
 		if ( ! empty( $this->title ) ) {
 			$title .= ' ' . $this->title;

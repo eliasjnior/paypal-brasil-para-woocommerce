@@ -432,7 +432,8 @@ class PayPal_Payments_API {
 		$url = $this->base_url . '/notifications/webhooks';
 
 		$data = array(
-			'url'         => $webhook_url,
+			// Remove any port in URL to use only port 80.
+			'url'         => preg_replace( '/(\:[\d]+)/', '', $webhook_url ),
 			'event_types' => array(),
 		);
 
