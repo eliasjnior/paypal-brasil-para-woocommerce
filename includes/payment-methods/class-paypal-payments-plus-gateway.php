@@ -968,7 +968,7 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 				),
 				'debug_mode'        => 'yes' === $this->debug,
 			) );
-			wp_enqueue_script( 'wc-ppp-brasil-script', plugins_url( 'assets/dist/js/admin-options-plus.js', PAYPAL_PAYMENTS_MAIN_FILE ), array( 'jquery' ), PAYPAL_PAYMENTS_VERSION, true );
+			wp_enqueue_script( 'wc-ppp-brasil-script', plugins_url( 'assets/dist/js/frontend-plus.js', PAYPAL_PAYMENTS_MAIN_FILE ), array( 'jquery' ), PAYPAL_PAYMENTS_VERSION, true );
 			wp_enqueue_style( 'wc-ppp-brasil-style', plugins_url( 'assets/dist/css/frontend-plus.css', PAYPAL_PAYMENTS_MAIN_FILE ), array(), PAYPAL_PAYMENTS_VERSION, 'all' );
 		}
 	}

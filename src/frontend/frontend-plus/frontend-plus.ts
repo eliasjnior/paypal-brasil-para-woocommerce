@@ -421,4 +421,4 @@ class WC_PPP_Brasil_Checkout {
 
 }
 
-window['paypalPlusBrasil'] = new WC_PPP_Brasil_Checkout();
+new WC_PPP_Brasil_Checkout();
