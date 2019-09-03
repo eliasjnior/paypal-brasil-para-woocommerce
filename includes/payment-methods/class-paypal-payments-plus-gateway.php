@@ -308,10 +308,10 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 				'description' => __( 'Utilize esta opção para definir uma altura máxima do formulário de cartão de crédito (será considerado um valor em pixels). Será aceito um valor em pixels entre 400 - 550.', 'paypal-payments' ),
 			),
 			'invoice_id_prefix' => array(
-				'title'       => __( 'Prefixo de Invoice ID', 'paypal-payments' ),
+				'title'       => __( 'Prefixo no número do pedido', 'paypal-plus-brasil' ),
 				'type'        => 'text',
 				'default'     => '',
-				'description' => __( 'Adicione um prefixo as transações feitas com PayPal Plus na sua loja. Isso pode auxiliar caso trabalhe com a mesma conta PayPal em mais de um site.', 'paypal-payments' ),
+				'description' => __( 'Adicione um prefixo no número do pedido, isto é útil para a sua identificação quando você possui mais de uma loja processando pelo PayPal.', 'paypal-plus-brasil' ),
 			),
 		);
 	}

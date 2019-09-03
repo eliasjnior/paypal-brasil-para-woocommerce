@@ -355,8 +355,7 @@
 
         <tr valign="top">
             <th scope="row" class="titledesc">
-                <label for="<?php echo esc_attr( $this->get_field_key( 'invoice_id_prefix' ) ); ?>">Prefixo de Invoice
-                    ID</label>
+                <label for="<?php echo esc_attr( $this->get_field_key( 'invoice_id_prefix' ) ); ?>">Prefixo no número do pedido</label>
             </th>
             <td class="forminp">
                 <fieldset>

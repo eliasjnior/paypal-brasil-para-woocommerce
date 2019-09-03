@@ -254,10 +254,10 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 				'default' => 'no',
 			),
 			'invoice_id_prefix' => array(
-				'title'       => __( 'Prefixo de Invoice ID', 'paypal-plus-brasil' ),
+				'title'       => __( 'Prefixo no número do pedido', 'paypal-plus-brasil' ),
 				'type'        => 'text',
 				'default'     => '',
-				'description' => __( 'Adicione um prefixo as transações feitas com PayPal Plus na sua loja. Isso pode auxiliar caso trabalhe com a mesma conta PayPal em mais de um site.', 'paypal-plus-brasil' ),
+				'description' => __( 'Adicione um prefixo no número do pedido, isto é útil para a sua identificação quando você possui mais de uma loja processando pelo PayPal.', 'paypal-plus-brasil' ),
 			),
 		);
 	}
