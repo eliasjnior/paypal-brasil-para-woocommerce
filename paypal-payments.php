@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Plugin Name: Portal de Pagamentos PayPal
+ * Plugin Name: PayPal Brasil para WooCommerce
  * Author: PayPal
  * Version: 1.0.0
- * Description: Portal com diversos produtos do PayPal para integração com WooCommerce.
+ * Description: Adicione facilmente opções de pagamento do PayPal ao seu site do WordPress/WooCommerce.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
