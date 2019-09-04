@@ -10,6 +10,7 @@ class PaypalPaymentsShortcut extends PaypalPayments {
         super();
         // Render cart button.
         jQuery('body')
+            .on('updated_shipping_method', this.renderCartButton)
             .on('updated_wc_div', this.renderCartButton)
             .on('updated_mini_cart', this.renderMiniCartButton);
         // Render cart for the first time.

@@ -817,8 +817,8 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 					'total'    => $order->get_total(),
 					'currency' => $order->get_currency(),
 					'details'  => array(
-						'subtotal' => $shipping,
-						'shipping' => $subtotal,
+						'subtotal' => $subtotal,
+						'shipping' => $shipping,
 					),
 				),
 			),

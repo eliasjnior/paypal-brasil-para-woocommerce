@@ -122,7 +122,6 @@ class PayPal_Payments_API_Shortcut_Mini_Cart_Handler extends PayPal_Payments_API
 			$subtotal       = number_format( $subtotal_cents / 100, 2, '.', '' );
 
 			$data['transactions'][0]['amount']['details'] = array(
-				'shipping' => number_format( 0, 2, '.', '' ),
 				'subtotal' => $subtotal,
 			);
 

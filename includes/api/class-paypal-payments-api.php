@@ -512,6 +512,7 @@ class PayPal_Payments_API {
 
 //		$this->gateway->log( "Request params:\n" . print_r( $params, true ) );
 
+		// Only log response when $log exists.
 		if ( $log ) {
 			if ( isset( $params['body'] ) ) {
 				$this->gateway->log( "Fazendo requisição ({$method}) para {$url}:\n" . $data . "\n" );
@@ -525,7 +526,10 @@ class PayPal_Payments_API {
 		if ( is_wp_error( $request ) ) {
 			$this->gateway->log( 'Erro HTTP ao fazer a requisição.' );
 		} else {
-			$this->gateway->log( "Resposta da requisição:\n" . wp_remote_retrieve_body( $request ) . "\n" );
+			// Only log response when $log exists.
+			if ( $log ) {
+				$this->gateway->log( "Resposta da requisição:\n" . wp_remote_retrieve_body( $request ) . "\n" );
+			}
 		}
 
 		return $request;

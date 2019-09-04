@@ -198,3 +198,29 @@ function paypal_payments_wc_settings_valid() {
 function paypal_payments_needs_cpf() {
 	return function_exists( 'get_woocommerce_currency' ) ? get_woocommerce_currency() === 'BRL' : false;
 }
+
+/**
+ * Protect some metadata.
+ */
+function paypal_payments_protect_metadata( $protected, $meta_key ) {
+	$keys = array(
+		'paypal_payments_id',
+		'paypal_payments_sale_id',
+		'wc_ppp_brasil_installments',
+		'wc_ppp_brasil_sale',
+		'wc_ppp_brasil_sale_id',
+		'wc_ppp_brasil_sandbox',
+	);
+
+	if ( 'shop_order' == get_post_type() ) {
+
+		if ( in_array( $meta_key, $keys ) ) {
+			return true;
+		}
+
+	}
+
+	return $protected;
+}
+
+add_filter( 'is_protected_meta', 'paypal_payments_protect_metadata', 10, 2 );
