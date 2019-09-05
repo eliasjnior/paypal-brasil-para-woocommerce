@@ -23,9 +23,10 @@
 <?php endif; ?>
 
 <img class="ppp-brasil-banner"
+     srcset="<?php echo esc_attr( plugins_url( 'assets/images/banner-plus-2x.png', PAYPAL_PAYMENTS_MAIN_FILE ) ); ?> 2x"
      src="<?php echo plugins_url( 'assets/images/banner-plus.png', PAYPAL_PAYMENTS_MAIN_FILE ); ?>"
-     title="<?php _e( 'PayPal Plus Brasil', 'paypal-payments' ); ?>"
-     alt="<?php _e( 'PayPal Plus Brasil', 'paypal-payments' ); ?>">
+     title="<?php _e( 'PayPal Brasil', 'paypal-payments' ); ?>"
+     alt="<?php _e( 'PayPal Brasil', 'paypal-payments' ); ?>">
 <?php echo wp_kses_post( wpautop( $this->get_method_description() ) ); ?>
 
 <table class="form-table">

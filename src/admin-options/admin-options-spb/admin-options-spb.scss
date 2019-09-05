@@ -42,6 +42,31 @@
     }
   }
 
+  .reference-options-label {
+    display: block;
+    margin-bottom: 10px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    &.reference-options-label-wrong {
+      border: 1px solid red;
+      padding: 10px;
+      border-radius: 3px;
+    }
+  }
+
+  .reference-options {
+    &.reference-options-true {
+      color: green;
+    }
+
+    &.reference-options-false {
+      color: red;
+    }
+  }
+
 }
 
 @-ms-keyframes spin {

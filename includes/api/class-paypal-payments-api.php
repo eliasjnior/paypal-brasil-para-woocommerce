@@ -464,6 +464,52 @@ class PayPal_Payments_API {
 	}
 
 	/**
+	 * Refund a payment.
+	 *
+	 * @param $payment_id
+	 * @param null $total
+	 * @param null $currency
+	 *
+	 * @return array|mixed|object
+	 * @throws Paypal_Payments_Api_Exception
+	 * @throws Paypal_Payments_Connection_Exception
+	 */
+	public function refund_payment( $payment_id, $total = null, $currency = null ) {
+		$url = $this->base_url . '/payments/sale/' . $payment_id . '/refund';
+
+		// Body is default empty for full refund.
+		$data = array();
+
+		// If is set total, it's a partial refund.
+		if ( $total !== null ) {
+			$data = array(
+				'amount' => array(
+					'total'    => $total,
+					'currency' => $currency ? $currency : get_woocommerce_currency(),
+				),
+			);
+		}
+
+		// Get response.
+		$response      = $this->do_request( $url, 'POST', $data, array( 'PayPal-Partner-Attribution-Id' => $this->bn_code['ec'] ) );
+		$response_body = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		// Check if is WP_Error
+		if ( is_wp_error( $response ) ) {
+			throw new Paypal_Payments_Connection_Exception( $response->get_error_code(), $response->errors );
+		}
+
+		$code = wp_remote_retrieve_response_code( $response );
+
+		// Check if response was created.
+		if ( $code === 201 ) {
+			return $response_body;
+		}
+
+		throw new Paypal_Payments_Api_Exception( $code, __( 'Não foi possível fazer o reembolso.', 'paypal-payments' ), $response_body );
+	}
+
+	/**
 	 * Do requests in the API.
 	 *
 	 * @param string $url URL.
@@ -513,12 +559,10 @@ class PayPal_Payments_API {
 //		$this->gateway->log( "Request params:\n" . print_r( $params, true ) );
 
 		// Only log response when $log exists.
-		if ( $log ) {
-			if ( isset( $params['body'] ) ) {
-				$this->gateway->log( "Fazendo requisição ({$method}) para {$url}:\n" . $data . "\n" );
-			} else {
-				$this->gateway->log( "Fazendo requisição ({$method}) para {$url}\n" );
-			}
+		if ( isset( $params['body'] ) ) {
+			$this->gateway->log( "Fazendo requisição ({$method}) para {$url}:\n" . $data . "\n" );
+		} else {
+			$this->gateway->log( "Fazendo requisição ({$method}) para {$url}\n" );
 		}
 
 		$request = wp_safe_remote_request( $url, $params );
@@ -527,9 +571,11 @@ class PayPal_Payments_API {
 			$this->gateway->log( 'Erro HTTP ao fazer a requisição.' );
 		} else {
 			// Only log response when $log exists.
-			if ( $log ) {
-				$this->gateway->log( "Resposta da requisição:\n" . wp_remote_retrieve_body( $request ) . "\n" );
+			$body = json_decode( wp_remote_retrieve_body( $request ), true );
+			if ( isset( $body['access_token'] ) ) {
+				$body['access_token'] = 'xxxxxxxxxxxxxxxxxxxxxxxx';
 			}
+			$this->gateway->log( "Resposta da requisição:\n" . json_encode( $body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . "\n" );
 		}
 
 		return $request;

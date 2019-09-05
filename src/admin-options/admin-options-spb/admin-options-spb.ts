@@ -26,8 +26,12 @@ declare const paypal_payments_admin_options_plus: {
     reference_enabled: string,
     invoice_id_prefix: string,
     debug: string,
-
     images_path: string;
+    woocommerce_settings: {
+        enable_checkout_login_reminder: string,
+        enable_signup_and_login_from_checkout: string,
+        enable_guest_checkout: string,
+    }
 };
 
 @Component({
@@ -47,6 +51,12 @@ export default class AdminOptionsSpb extends Vue {
     debugMode = '';
 
     imagesPath: string;
+
+    woocommerce_settings = {
+        enable_checkout_login_reminder: 'no',
+        enable_signup_and_login_from_checkout: 'no',
+        enable_guest_checkout: 'no',
+    };
 
     updateSettingsState = {
         executed: false,
@@ -68,6 +78,7 @@ export default class AdminOptionsSpb extends Vue {
     beforeMount() {
         // @ts-ignore
         const options: paypal_payments_admin_options_plus = JSON.parse(this.$el.getAttribute('data-options'));
+        console.log('options', options);
         this.enabled = options.enabled || '';
         this.title = options.title || '';
         this.mode = options.mode || 'live';
@@ -87,6 +98,11 @@ export default class AdminOptionsSpb extends Vue {
         this.referenceEnabled = options.reference_enabled || '';
         this.invoiceIdPrefix = options.invoice_id_prefix || '';
         this.debugMode = options.debug || '';
+        this.woocommerce_settings = {
+            enable_checkout_login_reminder: options.woocommerce_settings.enable_checkout_login_reminder,
+            enable_signup_and_login_from_checkout: options.woocommerce_settings.enable_signup_and_login_from_checkout,
+            enable_guest_checkout: options.woocommerce_settings.enable_guest_checkout,
+        }
     }
 
     isLive() {

@@ -517,6 +517,8 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 				$data = $ex->getData();
 
 				return new WP_Error( 'error', $data['message'] );
+			} catch ( Exception $ex ) {
+				return new WP_Error( 'error', __( 'Houve um erro ao tentar realizar o reembolso.', 'paypal-payments' ) );
 			}
 		} else { // If we don't have the PayPal sale ID.
 			return new WP_Error( 'error', sprintf( __( 'Parece que você não tem um pedido para realizar o reembolso.', 'paypal-payments' ) ) );

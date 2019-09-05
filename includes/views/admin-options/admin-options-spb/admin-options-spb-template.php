@@ -1,6 +1,6 @@
 <div class="admin-options-container">
 
-	<?php if ( ( ! isset( $_POST ) && $this->enabled === 'yes' ) || ( isset( $_POST ) && $this->get_updated_values()['enabled'] === 'yes' ) ): ?>
+	<?php if ( ( empty( $_POST ) && $this->enabled === 'yes' ) || ( isset( $_POST ) && $this->get_updated_values()['enabled'] === 'yes' ) ): ?>
 
         <!-- CREDENTIALS ERROR -->
 		<?php if ( get_option( $this->get_option_key() . '_validator' ) === 'no' ): ?>
@@ -9,28 +9,33 @@
                     <strong><?php _e( 'Suas credenciais não são válidas. Por favor, verifique os dados informados.', 'paypal-payments' ); ?></strong>
                 </p>
             </div>
-		<?php elseif ( ( isset( $_POST ) && $this->get_updated_values()['reference_enabled'] === 'yes' && get_option( $this->get_option_key() . '_reference_transaction_validator' ) === 'no' )
+		<?php elseif ( ( ! empty( $_POST ) && $this->get_updated_values()['reference_enabled'] === 'yes' && get_option( $this->get_option_key() . '_reference_transaction_validator' ) === 'no' )
 		               || ( empty( $_POST ) && $this->reference_enabled === 'yes' && get_option( $this->get_option_key() . '_reference_transaction_validator' ) === 'no' ) ): ?>
             <div id="message" class="error inline">
                 <p>
-                    <strong><?php _e( 'Você ativou a opção de Salvar Carteira Digital, porém sua conta não está autorizada a utilizar essa funcionalidade. Entre em contato com nosso suporte para a ativação.', 'paypal-payments' ); ?></strong>
+                    <strong><?php _e( 'Não foi possível ativar a funcionalidade "Salvar Carteira Digital" pois verificamos que a sua conta PayPal não tem permissão para utilizar este produto. Entre em contato pelo 0800-047-4482 do PayPal e solicite a sua liberação.', 'paypal-payments' ); ?></strong>
                 </p>
             </div>
 		<?php endif; ?>
 
         <!-- REFERENCE TRANSACTION SETTINGS -->
-		<?php if ( ! paypal_payments_wc_settings_valid() ): ?>
-            <div id="message-reference-transaction-settings" class="error inline">
-                <p>
-                    <strong><?php _e( 'Você ativou a opção de Salvar Carteira Digital, porém as configurações necessárias para a funcionalidade não estão ativadas.', 'paypal-payments' ); ?></strong>
-                </p>
-            </div>
+		<?php if ( ( isset( $_POST ) && $this->get_updated_values()['reference_enabled'] === 'yes' ) || ( empty( $_POST ) && $this->reference_enabled === 'yes' ) ): ?>
+			<?php if ( ! paypal_payments_wc_settings_valid() ): ?>
+                <div id="message-reference-transaction-settings" class="error inline">
+                    <p>
+                        <strong><?php _e( 'Não foi possível ativar a funcionalidade "Salvar Carteira Digital" pois as configurações obrigatórias não foram aplicadas.', 'paypal-payments' ); ?></strong>
+                    </p>
+                </div>
+			<?php endif; ?>
 		<?php endif; ?>
 
 	<?php endif; ?>
 
     <img class="banner"
-         src="<?php echo esc_attr( plugins_url( 'assets/images/banner-spb.png', PAYPAL_PAYMENTS_MAIN_FILE ) ); ?>">
+         srcset="<?php echo esc_attr( plugins_url( 'assets/images/banner-spb-2x.png', PAYPAL_PAYMENTS_MAIN_FILE ) ); ?> 2x"
+         src="<?php echo esc_attr( plugins_url( 'assets/images/banner-spb.png', PAYPAL_PAYMENTS_MAIN_FILE ) ); ?>"
+         title="<?php _e( 'PayPal Brasil', 'paypal-payments' ); ?>"
+         alt="<?php _e( 'PayPal Brasil', 'paypal-payments' ); ?>">
 
 	<?php echo wp_kses_post( wpautop( $this->get_method_description() ) ); ?>
 
@@ -42,11 +47,11 @@
 
         <tr valign="top">
             <th scope="row" class="titledesc">
-                <label for="<?php echo esc_attr( $this->get_field_key( 'enabled' ) ); ?>">Ativar/Desativar</label>
+                <label for="<?php echo esc_attr( $this->get_field_key( 'enabled' ) ); ?>">Habilitar/Desabilitar</label>
             </th>
             <td class="forminp">
                 <fieldset>
-                    <legend class="screen-reader-text"><span>Ativar</span></legend>
+                    <legend class="screen-reader-text"><span>Habilitar/Desabilitar</span></legend>
                     <label for="<?php echo esc_attr( $this->get_field_key( 'enabled' ) ); ?>">
                         <input type="checkbox"
                                class="test"
@@ -110,7 +115,8 @@
 
         <tr valign="top" :class="{hidden: !isLive()}">
             <th scope="row" class="titledesc">
-                <label for="<?php echo esc_attr( $this->get_field_key( 'client_live' ) ); ?>">Client ID (live)</label>
+                <label for="<?php echo esc_attr( $this->get_field_key( 'client_live' ) ); ?>">Client ID
+                    (produção)</label>
             </th>
             <td class="forminp">
                 <fieldset>
@@ -156,17 +162,17 @@
 
         <tr valign="top" :class="{hidden: !isLive()}">
             <th scope="row" class="titledesc">
-                <label for="<?php echo esc_attr( $this->get_field_key( 'secret_live' ) ); ?>">Secret (live)</label>
+                <label for="<?php echo esc_attr( $this->get_field_key( 'secret_live' ) ); ?>">Secret (produção)</label>
             </th>
             <td class="forminp">
                 <fieldset>
-                    <legend class="screen-reader-text"><span>Secret ID</span></legend>
+                    <legend class="screen-reader-text"><span>Secret</span></legend>
                     <input class="input-text regular-input"
                            type="text"
                            id="<?php echo esc_attr( $this->get_field_key( 'secret_live' ) ); ?>"
                            name="<?php echo esc_attr( $this->get_field_key( 'secret_live' ) ); ?>"
                            v-model="secret.live">
-                    <p class="description">Para gerar o Secret ID acesse <a
+                    <p class="description">Para gerar o Secret acesse <a
                                 href="https://developer.paypal.com/docs/classic/lifecycle/sb_credentials/"
                                 target="_blank">aqui</a>
                         e procure pela seção “REST API apps”.</p>
@@ -178,7 +184,7 @@
 
         <tr valign="top" :class="{hidden: isLive()}">
             <th scope="row" class="titledesc">
-                <label for="<?php echo esc_attr( $this->get_field_key( 'secret_sandbox' ) ); ?>">Secret ID
+                <label for="<?php echo esc_attr( $this->get_field_key( 'secret_sandbox' ) ); ?>">Secret
                     (sandbox)</label>
             </th>
             <td class="forminp">
@@ -190,7 +196,7 @@
                            name="<?php echo esc_attr( $this->get_field_key( 'secret_sandbox' ) ); ?>"
 
                            v-model="secret.sandbox">
-                    <p class="description">Para gerar o Secret ID acesse <a
+                    <p class="description">Para gerar o Secret acesse <a
                                 href="https://developer.paypal.com/docs/classic/lifecycle/sb_credentials/"
                                 target="_blank">aqui</a>
                         e procure pela seção “REST API apps”.</p>
@@ -306,24 +312,50 @@
                             e solicite a sua liberação.</b></p>
                 </fieldset>
                 <div class="reference-active-description" v-bind:class="{hidden: referenceEnabled != 'yes'}">
-                    <p class="description">Por padrão o WooCommerce mantém desativado algumas configurações que são
-                        necessárias para garantir a integridade da carteira digital do seu cliente. Por questões de
-                        segurança, é necessário que as seguintes opções sejam ativadas em <a target="_blank"
-                                                                                             href="<?php echo esc_url( admin_url( 'admin.php?page=wc-settings&tab=account' ) ); ?>">WooCommerce
+                    <p class="description">Para garantir a integridade da carteira digital do seu cliente é necessário
+                        que as seguintes opções sejam configuradas em <a target="_blank"
+                                                                         href="<?php echo esc_url( admin_url( 'admin.php?page=wc-settings&tab=account' ) ); ?>">WooCommerce
                             > Configurações > Contas e privacidade</a>.</p>
                     <br>
-                    <label>
-                        <input type="checkbox" checked disabled>
+                    <label class="reference-options-label"
+                           :class="{'reference-options-label-wrong': woocommerce_settings.enable_guest_checkout === 'yes' && !updateSettingsState.success}">
+                        <span v-if="woocommerce_settings.enable_guest_checkout === 'yes' && !updateSettingsState.success"
+                              class="reference-options reference-options-false dashicons dashicons-no-alt"></span>
+                        <span v-if="woocommerce_settings.enable_guest_checkout === 'no' || updateSettingsState.success"
+                              class="reference-options reference-options-true dashicons dashicons-yes"></span>
+                        <input type="checkbox"
+                               disabled
+                               true-value="yes"
+                               false-value="">
+                        Permitir que seus clientes efetuem pedidos sem uma conta
+                    </label>
+                    <label class="reference-options-label"
+                           :class="{'reference-options-label-wrong': woocommerce_settings.enable_checkout_login_reminder === 'no' && !updateSettingsState.success}">
+                        <span v-if="woocommerce_settings.enable_checkout_login_reminder === 'no' && !updateSettingsState.success"
+                              class="reference-options reference-options-false dashicons dashicons-no-alt"></span>
+                        <span v-if="woocommerce_settings.enable_checkout_login_reminder === 'yes' || updateSettingsState.success"
+                              class="reference-options reference-options-true dashicons dashicons-yes"></span>
+                        <input type="checkbox"
+                               checked
+                               disabled
+                               true-value="yes"
+                               false-value="">
                         Permitir que seus clientes façam login em uma conta existente durante a finalização da
                         compra
                     </label>
-                    <br> <br>
-                    <label>
-                        <input type="checkbox" checked disabled>
+                    <label class="reference-options-label"
+                           :class="{'reference-options-label-wrong': woocommerce_settings.enable_signup_and_login_from_checkout === 'no' && !updateSettingsState.success}">
+                        <span v-if="woocommerce_settings.enable_signup_and_login_from_checkout === 'no'  && !updateSettingsState.success"
+                              class="reference-options reference-options-false dashicons dashicons-no-alt"></span>
+                        <span v-if="woocommerce_settings.enable_signup_and_login_from_checkout === 'yes' || updateSettingsState.success"
+                              class="reference-options reference-options-true dashicons dashicons-yes"></span>
+                        <input type="checkbox"
+                               checked
+                               disabled
+                               true-value="yes"
+                               false-value="">
                         Permitir que seus clientes criem uma conta durante a finalização da compra
                     </label>
-                    <br>
-                    <br>
                     <button type="button"
                             :disabled="updateSettingsState.executed && updateSettingsState.loading"
                             v-on:click="updateSettings"
@@ -355,7 +387,8 @@
 
         <tr valign="top">
             <th scope="row" class="titledesc">
-                <label for="<?php echo esc_attr( $this->get_field_key( 'invoice_id_prefix' ) ); ?>">Prefixo no número do pedido</label>
+                <label for="<?php echo esc_attr( $this->get_field_key( 'invoice_id_prefix' ) ); ?>">Prefixo no número do
+                    pedido</label>
             </th>
             <td class="forminp">
                 <fieldset>

@@ -1157,17 +1157,33 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 		}
 	}
 
-	/**
-	 * Process gateway refund for a given order ID.
-	 *
-	 * @param $order_id
-	 * @param null $amount
-	 * @param string $reason
-	 *
-	 * @return bool
-	 */
 	public function process_refund( $order_id, $amount = null, $reason = '' ) {
-		return parent::process_refund( $order_id, $amount, $reason );
+		$amount  = floatval( $amount );
+		$sale_id = get_post_meta( $order_id, 'paypal_payments_sale_id', true );
+		// Check if the amount is bigger than zero
+		if ( $amount <= 0 ) {
+			return new WP_Error( 'error', sprintf( __( 'O reembolso não pode ser menor que %s.', 'paypal-payments' ), wc_price( 0 ) ) );
+		}
+		// Check if we got the sale ID
+		if ( $sale_id ) {
+			try {
+				$refund_sale = $this->api->refund_payment( $sale_id, $amount, get_woocommerce_currency() );
+				// Check the result success.
+				if ( $refund_sale['state'] === 'completed' ) {
+					return true;
+				} else {
+					return new WP_Error( 'error', $refund_sale->getReason() );
+				}
+			} catch ( Paypal_Payments_Api_Exception $ex ) { // Catch any PayPal error.
+				$data = $ex->getData();
+
+				return new WP_Error( 'error', $data['message'] );
+			} catch ( Exception $ex ) {
+				return new WP_Error( 'error', __( 'Houve um erro ao tentar realizar o reembolso.', 'paypal-payments' ) );
+			}
+		} else { // If we don't have the PayPal sale ID.
+			return new WP_Error( 'error', sprintf( __( 'Parece que você não tem um pedido para realizar o reembolso.', 'paypal-payments' ) ) );
+		}
 	}
 
 	/**
@@ -1192,25 +1208,30 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 
 	private function get_fields_values() {
 		return array(
-			'enabled'           => $this->enabled,
-			'shortcut_enabled'  => $this->shortcut_enabled,
-			'reference_enabled' => $this->reference_enabled,
-			'mode'              => $this->mode,
-			'client'            => array(
+			'enabled'              => $this->enabled,
+			'shortcut_enabled'     => $this->shortcut_enabled,
+			'reference_enabled'    => $this->reference_enabled,
+			'mode'                 => $this->mode,
+			'client'               => array(
 				'live'    => $this->client_live,
 				'sandbox' => $this->client_sandbox,
 			),
-			'secret'            => array(
+			'secret'               => array(
 				'live'    => $this->secret_live,
 				'sandbox' => $this->secret_sandbox,
 			),
-			'button'            => array(
+			'button'               => array(
 				'format' => $this->format,
 				'color'  => $this->color,
 			),
-			'title'             => $this->title,
-			'invoice_id_prefix' => $this->invoice_id_prefix,
-			'debug'             => $this->debug,
+			'title'                => $this->title,
+			'invoice_id_prefix'    => $this->invoice_id_prefix,
+			'debug'                => $this->debug,
+			'woocommerce_settings' => array(
+				'enable_checkout_login_reminder'        => get_option( 'woocommerce_enable_checkout_login_reminder' ),
+				'enable_signup_and_login_from_checkout' => get_option( 'woocommerce_enable_signup_and_login_from_checkout' ),
+				'enable_guest_checkout'                 => get_option( 'woocommerce_enable_guest_checkout' ),
+			),
 		);
 	}
 
@@ -1234,27 +1255,32 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 			// Enqueue admin options and localize settings.
 			wp_enqueue_script( $this->id . '_script', plugins_url( 'assets/dist/js/admin-options-spb.js', PAYPAL_PAYMENTS_MAIN_FILE ), array(), PAYPAL_PAYMENTS_VERSION, true );
 			wp_localize_script( $this->id . '_script', 'paypal_payments_admin_options_plus', array(
-				'template'          => $this->get_admin_options_template(),
-				'enabled'           => $this->enabled,
-				'shortcut_enabled'  => $this->shortcut_enabled,
-				'reference_enabled' => $this->reference_enabled,
-				'mode'              => $this->mode,
-				'client'            => array(
+				'template'             => $this->get_admin_options_template(),
+				'enabled'              => $this->enabled,
+				'shortcut_enabled'     => $this->shortcut_enabled,
+				'reference_enabled'    => $this->reference_enabled,
+				'mode'                 => $this->mode,
+				'client'               => array(
 					'live'    => $this->client_live,
 					'sandbox' => $this->client_sandbox,
 				),
-				'secret'            => array(
+				'secret'               => array(
 					'live'    => $this->secret_live,
 					'sandbox' => $this->secret_sandbox,
 				),
-				'button'            => array(
+				'button'               => array(
 					'format' => $this->format,
 					'color'  => $this->color,
 				),
-				'title'             => $this->title,
-				'invoice_id_prefix' => $this->invoice_id_prefix,
-				'debug'             => $this->debug,
-				'images_path'       => plugins_url( 'assets/images/buttons', PAYPAL_PAYMENTS_MAIN_FILE ),
+				'title'                => $this->title,
+				'invoice_id_prefix'    => $this->invoice_id_prefix,
+				'debug'                => $this->debug,
+				'images_path'          => plugins_url( 'assets/images/buttons', PAYPAL_PAYMENTS_MAIN_FILE ),
+				'woocommerce_settings' => array(
+					'enable_checkout_login_reminder'        => get_option( 'woocommerce_enable_checkout_login_reminder' ),
+					'enable_signup_and_login_from_checkout' => get_option( 'woocommerce_enable_signup_and_login_from_checkout' ),
+					'enable_guest_checkout'                 => get_option( 'woocommerce_enable_guest_checkout' ),
+				),
 			) );
 
 			wp_enqueue_style( $this->id . '_style', plugins_url( 'assets/dist/css/admin-options-spb.css', PAYPAL_PAYMENTS_MAIN_FILE ), array(), PAYPAL_PAYMENTS_VERSION, 'all' );
