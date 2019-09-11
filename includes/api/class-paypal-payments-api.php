@@ -44,9 +44,38 @@ class PayPal_Payments_API {
 		$this->mode      = $mode;
 		$this->client_id = $client_id;
 		$this->secret    = $secret;
+	}
 
-		// Define the API base URL for live or sandbox.
-		$this->base_url = ( $mode === 'live' ) ? 'https://api.paypal.com/v1' : 'https://api.sandbox.paypal.com/v1';
+	/**
+	 * Update plugin credentials.
+	 *
+	 * @param $client_id
+	 * @param $secret
+	 * @param $mode
+	 */
+	public function update_credentials( $client_id, $secret, $mode ) {
+		// Set the access token transient key to a MD5 hash of client id and secret. So transient will change if
+		// client id or secret changes also.
+		$this->access_token_transient_key = 'paypal_payments_access_token_' . md5( $client_id . ':' . $secret );
+		// Save the API data.
+		$this->mode      = $mode;
+		$this->client_id = $client_id;
+		$this->secret    = $secret;
+	}
+
+	/**
+	 * Get the base URL for API requests.
+	 *
+	 * @param null $mode
+	 *
+	 * @return string
+	 */
+	public function get_base_url( $mode = null ) {
+		if ( ! $mode ) {
+			$mode = $this->mode;
+		}
+
+		return ( $mode === 'live' ) ? 'https://api.paypal.com/v1' : 'https://api.sandbox.paypal.com/v1';
 	}
 
 	/**
@@ -60,8 +89,8 @@ class PayPal_Payments_API {
 	 * @todo: adicionar forçar um mode
 	 *
 	 */
-	public function get_access_token( $force = false, $client = null, $secret = null ) {
-		$url = $this->base_url . '/oauth2/token';
+	public function get_access_token( $force = false ) {
+		$url = $this->get_base_url() . '/oauth2/token';
 
 		// Try to get the transient for access token.
 		$access_token = get_transient( $this->access_token_transient_key );
@@ -71,11 +100,8 @@ class PayPal_Payments_API {
 			return $access_token;
 		}
 
-		$client = $client ? $client : $this->client_id;
-		$secret = $secret ? $secret : $this->secret;
-
 		$headers = array(
-			'Authorization'                 => 'Basic ' . base64_encode( $client . ':' . $secret ),
+			'Authorization'                 => 'Basic ' . base64_encode( $this->client_id . ':' . $this->secret ),
 			'Content-Type'                  => 'application/x-www-form-urlencoded',
 			'PayPal-Partner-Attribution-Id' => $this->bn_code['default'],
 		);
@@ -114,7 +140,7 @@ class PayPal_Payments_API {
 	 * @throws Paypal_Payments_Connection_Exception
 	 */
 	public function create_payment( $data, $headers = array(), $bn_code_key = null ) {
-		$url = $this->base_url . '/payments/payment';
+		$url = $this->get_base_url() . '/payments/payment';
 
 		// Add bn code if exits.
 		if ( $bn_code_key && array_key_exists( $bn_code_key, $this->bn_code ) ) {
@@ -150,7 +176,7 @@ class PayPal_Payments_API {
 	 * @throws Paypal_Payments_Connection_Exception
 	 */
 	public function get_payment( $payment_id, $headers = array(), $bn_code_key = null ) {
-		$url = $this->base_url . '/payments/payment/' . $payment_id;
+		$url = $this->get_base_url() . '/payments/payment/' . $payment_id;
 
 		// Add bn code if exits.
 		if ( $bn_code_key && array_key_exists( $bn_code_key, $this->bn_code ) ) {
@@ -187,7 +213,7 @@ class PayPal_Payments_API {
 	 * @throws Paypal_Payments_Connection_Exception
 	 */
 	public function execute_payment( $payment_id, $payer_id, $headers = array(), $bn_code_key = null ) {
-		$url = $this->base_url . '/payments/payment/' . $payment_id . '/execute';
+		$url = $this->get_base_url() . '/payments/payment/' . $payment_id . '/execute';
 
 		$data = array(
 			'payer_id' => $payer_id,
@@ -226,7 +252,7 @@ class PayPal_Payments_API {
 	 * @throws Paypal_Payments_Connection_Exception
 	 */
 	public function update_payment( $payment_id, $data, $headers = array(), $bn_code_key = null ) {
-		$url = $this->base_url . '/payments/payment/' . $payment_id;
+		$url = $this->get_base_url() . '/payments/payment/' . $payment_id;
 
 		// Add bn code if exits.
 		if ( $bn_code_key && array_key_exists( $bn_code_key, $this->bn_code ) ) {
@@ -260,7 +286,7 @@ class PayPal_Payments_API {
 	 * @throws Paypal_Payments_Connection_Exception
 	 */
 	public function create_billing_agreement_token() {
-		$url  = $this->base_url . '/billing-agreements/agreement-tokens';
+		$url  = $this->get_base_url() . '/billing-agreements/agreement-tokens';
 		$data = array(
 			'description' => sprintf( 'Billing Agreement', get_bloginfo( 'name' ) ),
 			'payer'       => array(
@@ -299,7 +325,7 @@ class PayPal_Payments_API {
 	}
 
 	public function create_billing_agreement( $token ) {
-		$url  = $this->base_url . '/billing-agreements/agreements';
+		$url  = $this->get_base_url() . '/billing-agreements/agreements';
 		$data = array(
 			'token_id' => $token,
 		);
@@ -324,7 +350,7 @@ class PayPal_Payments_API {
 	}
 
 	public function get_calculate_financing( $billing_agreement, $value ) {
-		$url  = $this->base_url . '/credit/calculated-financing-options';
+		$url  = $this->get_base_url() . '/credit/calculated-financing-options';
 		$data = array(
 			'financing_country_code' => 'BR',
 			'transaction_amount'     => array(
@@ -368,7 +394,7 @@ class PayPal_Payments_API {
 	 * @throws Paypal_Payments_Connection_Exception
 	 */
 	public function verify_signature( $data ) {
-		$url = $this->base_url . '/notifications/verify-webhook-signature';
+		$url = $this->get_base_url() . '/notifications/verify-webhook-signature';
 
 		// Get response.
 		$response      = $this->do_request( $url, 'POST', $data, array( 'PayPal-Partner-Attribution-Id' => $this->bn_code['ec'] ) );
@@ -397,7 +423,7 @@ class PayPal_Payments_API {
 	 * @throws Paypal_Payments_Connection_Exception
 	 */
 	public function get_webhooks() {
-		$url = $this->base_url . '/notifications/webhooks';
+		$url = $this->get_base_url() . '/notifications/webhooks';
 
 		// Get response.
 		$response      = $this->do_request( $url, 'GET', array(), array( 'PayPal-Partner-Attribution-Id' => $this->bn_code['ec'] ) );
@@ -429,7 +455,7 @@ class PayPal_Payments_API {
 	 * @throws Paypal_Payments_Connection_Exception
 	 */
 	public function create_webhook( $webhook_url, $events ) {
-		$url = $this->base_url . '/notifications/webhooks';
+		$url = $this->get_base_url() . '/notifications/webhooks';
 
 		$data = array(
 			// Remove any port in URL to use only port 80.
@@ -475,7 +501,7 @@ class PayPal_Payments_API {
 	 * @throws Paypal_Payments_Connection_Exception
 	 */
 	public function refund_payment( $payment_id, $total = null, $currency = null ) {
-		$url = $this->base_url . '/payments/sale/' . $payment_id . '/refund';
+		$url = $this->get_base_url() . '/payments/sale/' . $payment_id . '/refund';
 
 		// Body is default empty for full refund.
 		$data = array();

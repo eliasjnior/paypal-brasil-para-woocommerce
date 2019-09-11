@@ -36,7 +36,7 @@ if ( ! class_exists( 'PayPal_Payments_Webhooks_Handler' ) ) {
 				// If found the order ID with this sale ID.
 				if ( $order_id ) {
 					// Get the payment method to check if was processed by this gateway.
-					$payment_method = $wpdb->get_var( "SELECT meta_value FROM $wpdb->postmeta WEHERE meta_key = '_payment_method'" );
+					$payment_method = $wpdb->get_var( $wpdb->prepare( "SELECT meta_value FROM $wpdb->postmeta WHERE meta_key = '_payment_method' AND post_id = %s", $order_id ) );
 					// If is this gateway, process the order.
 					if ( $payment_method === $this->gateway_id ) {
 						$order = new WC_Order( $order_id );

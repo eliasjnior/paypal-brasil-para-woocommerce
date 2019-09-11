@@ -18,17 +18,6 @@
             </div>
 		<?php endif; ?>
 
-        <!-- REFERENCE TRANSACTION SETTINGS -->
-		<?php if ( ( isset( $_POST ) && $this->get_updated_values()['reference_enabled'] === 'yes' ) || ( empty( $_POST ) && $this->reference_enabled === 'yes' ) ): ?>
-			<?php if ( ! paypal_payments_wc_settings_valid() ): ?>
-                <div id="message-reference-transaction-settings" class="error inline">
-                    <p>
-                        <strong><?php _e( 'Não foi possível ativar a funcionalidade "Salvar Carteira Digital" pois as configurações obrigatórias não foram aplicadas.', 'paypal-payments' ); ?></strong>
-                    </p>
-                </div>
-			<?php endif; ?>
-		<?php endif; ?>
-
         <!-- WEBHOOK -->
 		<?php if ( ! $this->get_webhook_id() ): ?>
             <div id="paypal-payments-message-webhook" class="error inline">
@@ -41,8 +30,8 @@
 	<?php endif; ?>
 
     <img class="banner"
-         srcset="<?php echo esc_attr( plugins_url( 'assets/images/banner-spb-2x.png', PAYPAL_PAYMENTS_MAIN_FILE ) ); ?> 2x"
-         src="<?php echo esc_attr( plugins_url( 'assets/images/banner-spb.png', PAYPAL_PAYMENTS_MAIN_FILE ) ); ?>"
+         srcset="<?php echo esc_attr( plugins_url( 'assets/images/banner-plus-2x.png', PAYPAL_PAYMENTS_MAIN_FILE ) ); ?> 2x"
+         src="<?php echo esc_attr( plugins_url( 'assets/images/banner-plus.png', PAYPAL_PAYMENTS_MAIN_FILE ) ); ?>"
          title="<?php _e( 'PayPal Brasil', 'paypal-payments' ); ?>"
          alt="<?php _e( 'PayPal Brasil', 'paypal-payments' ); ?>">
 
@@ -79,19 +68,20 @@
 
         <tr valign="top">
             <th scope="row" class="titledesc">
-                <label for="<?php echo esc_attr( $this->get_field_key( 'title' ) ); ?>">Nome de exibição
-                    (complemento)</label>
+                <label for="<?php echo esc_attr( $this->get_field_key( 'title' ) ); ?>"><?php echo esc_html( $this->get_form_fields()['title']['title'] ); ?></label>
             </th>
             <td class="forminp">
                 <fieldset>
-                    <legend class="screen-reader-text"><span>Nome de exibição</span></legend>
+                    <legend class="screen-reader-text">
+                        <span><?php echo esc_html( $this->get_form_fields()['title']['title'] ); ?></span>
+                    </legend>
                     <input class="input-text regular-input"
                            type="text"
                            name="<?php echo esc_attr( $this->get_field_key( 'title' ) ); ?>"
                            id="<?php echo esc_attr( $this->get_field_key( 'title' ) ); ?>"
                            v-model="title"
-                           placeholder="Exemplo: (Parcelado em até 12x)">
-                    <p class="description">Será exibido no checkout: PayPal {{title ? '(' + title + ')':
+                           placeholder="Exemplo: Parcelado em até 12x">
+                    <p class="description">Será exibido no checkout: Cartão de Crédito {{title ? '(' + title + ')':
                         ''}}</p>
                 </fieldset>
             </td>
@@ -101,15 +91,16 @@
 
         <tr valign="top">
             <th scope="row" class="titledesc">
-                <label for="<?php echo esc_attr( $this->get_field_key( 'mode' ) ); ?>">Modo</label>
+                <label for="<?php echo esc_attr( $this->get_field_key( 'mode' ) ); ?>"><?php echo esc_html( $this->get_form_fields()['mode']['title'] ); ?></label>
             </th>
             <td class="forminp">
                 <fieldset>
-                    <legend class="screen-reader-text"><span>Modo</span></legend>
+                    <legend class="screen-reader-text">
+                        <span><?php echo esc_html( $this->get_form_fields()['mode']['title'] ); ?></span>
+                    </legend>
                     <select class="select"
                             id="<?php echo esc_attr( $this->get_field_key( 'mode' ) ); ?>"
                             name="<?php echo esc_attr( $this->get_field_key( 'mode' ) ); ?>"
-
                             v-model="mode">
                         <option value="live">Produção</option>
                         <option value="sandbox" selected="selected">Sandbox</option>
@@ -213,184 +204,30 @@
             </td>
         </tr>
 
-        <!-- HEADER -->
-        <h2>Configurações do Botão</h2>
-
-        <!-- FOMARTO -->
-
-        <tr valign="top">
-            <th scope="row" class="titledesc">
-                <label for="<?php echo esc_attr( $this->get_field_key( 'format' ) ); ?>">Formato</label>
-            </th>
-            <td class="forminp">
-                <fieldset>
-                    <legend class="screen-reader-text"><span>Formato</span></legend>
-                    <select class="select"
-                            id="<?php echo esc_attr( $this->get_field_key( 'format' ) ); ?>"
-                            name="<?php echo esc_attr( $this->get_field_key( 'format' ) ); ?>"
-
-                            v-model="button.format">
-                        <option value="rect">Retangular</option>
-                        <option value="pill">Arredondado</option>
-                    </select>
-                </fieldset>
-            </td>
-        </tr>
-
-        <!-- COR -->
-
-        <tr valign="top">
-            <th scope="row" class="titledesc">
-                <label for="<?php echo esc_attr( $this->get_field_key( 'color' ) ); ?>">Cor</label>
-            </th>
-            <td class="forminp">
-                <fieldset>
-                    <legend class="screen-reader-text"><span>Cor</span></legend>
-                    <select class="select"
-                            id="<?php echo esc_attr( $this->get_field_key( 'color' ) ); ?>"
-                            name="<?php echo esc_attr( $this->get_field_key( 'color' ) ); ?>"
-
-                            v-model="button.color">
-                        <option value="blue">Azul</option>
-                        <option value="gold">Dourado</option>
-                        <option value="silver">Prateado</option>
-                    </select>
-                </fieldset>
-            </td>
-        </tr>
-
-        <!-- PRÉ-VIUALIZAÇÃO -->
-
-        <tr valign="top">
-            <th scope="row" class="titledesc">
-                <label>Pré visualização do botão</label>
-            </th>
-            <td class="forminp">
-                <div class="preview-container">
-                    <img class="preview" :src="imagesPath + '/' + button.format + '-' + button.color + '.png'">
-                </div>
-            </td>
-        </tr>
-
-        <!-- PAYPAL NO CARRINHO -->
-
-        <tr valign="top">
-            <th scope="row" class="titledesc">
-                <label for="<?php echo esc_attr( $this->get_field_key( 'shortcut_enabled' ) ); ?>">PayPal no
-                    Carrinho</label>
-            </th>
-            <td class="forminp">
-                <fieldset>
-                    <legend class="screen-reader-text"><span>Habilitar</span></legend>
-                    <label for="<?php echo esc_attr( $this->get_field_key( 'shortcut_enabled' ) ); ?>">
-                        <input type="checkbox"
-                               id="<?php echo esc_attr( $this->get_field_key( 'shortcut_enabled' ) ); ?>"
-                               name="<?php echo esc_attr( $this->get_field_key( 'shortcut_enabled' ) ); ?>"
-                               v-model="shortcutEnabled"
-                               true-value="yes"
-                               false-value="">
-                        Habilitar</label><br>
-                    <p class="description">A carteira digital do PayPal será oferecida também no carrinho de
-                        compras.</p>
-                </fieldset>
-            </td>
-        </tr>
-
-        <!-- SALVAR CARTEIRA DIGITAL -->
-
-        <tr valign="top">
-            <th scope="row" class="titledesc">
-                <label for="<?php echo esc_attr( $this->get_field_key( 'reference_enabled' ) ); ?>">Salvar Carteira
-                    Digital</label>
-            </th>
-            <td class="forminp">
-                <fieldset>
-                    <legend class="screen-reader-text"><span>Habilitar/Desabilitar</span></legend>
-                    <label for="<?php echo esc_attr( $this->get_field_key( 'reference_enabled' ) ); ?>">
-                        <input type="checkbox"
-                               id="<?php echo esc_attr( $this->get_field_key( 'reference_enabled' ) ); ?>"
-                               name="<?php echo esc_attr( $this->get_field_key( 'reference_enabled' ) ); ?>"
-                               v-model="referenceEnabled"
-                               true-value="yes"
-                               false-value="">
-                        Habilitar</label><br>
-                    <p class="description">A conveniência de salvar a carteira digital PayPal de seu cliente em sua
-                        loja. Assim ele não precisa mais se autenticar em sua conta PayPal, garantindo uma compra mais
-                        rápida e segura. <b>Esta funcionalidade requer aprovação PayPal. Entre em contato pelo
-                            0800-047-4482
-                            e solicite a sua liberação.</b></p>
-                </fieldset>
-                <div class="reference-active-description" v-bind:class="{hidden: referenceEnabled != 'yes'}">
-                    <p class="description">Para garantir a integridade da carteira digital do seu cliente é necessário
-                        que as seguintes opções sejam configuradas em <a target="_blank"
-                                                                         href="<?php echo esc_url( admin_url( 'admin.php?page=wc-settings&tab=account' ) ); ?>">WooCommerce
-                            > Configurações > Contas e privacidade</a>.</p>
-                    <br>
-                    <label class="reference-options-label"
-                           :class="{'reference-options-label-wrong': woocommerce_settings.enable_guest_checkout === 'yes' && !updateSettingsState.success}">
-                        <span v-if="woocommerce_settings.enable_guest_checkout === 'yes' && !updateSettingsState.success"
-                              class="reference-options reference-options-false dashicons dashicons-no-alt"></span>
-                        <span v-if="woocommerce_settings.enable_guest_checkout === 'no' || updateSettingsState.success"
-                              class="reference-options reference-options-true dashicons dashicons-yes"></span>
-                        <input type="checkbox"
-                               disabled
-                               true-value="yes"
-                               false-value="">
-                        Permitir que seus clientes efetuem pedidos sem uma conta
-                    </label>
-                    <label class="reference-options-label"
-                           :class="{'reference-options-label-wrong': woocommerce_settings.enable_checkout_login_reminder === 'no' && !updateSettingsState.success}">
-                        <span v-if="woocommerce_settings.enable_checkout_login_reminder === 'no' && !updateSettingsState.success"
-                              class="reference-options reference-options-false dashicons dashicons-no-alt"></span>
-                        <span v-if="woocommerce_settings.enable_checkout_login_reminder === 'yes' || updateSettingsState.success"
-                              class="reference-options reference-options-true dashicons dashicons-yes"></span>
-                        <input type="checkbox"
-                               checked
-                               disabled
-                               true-value="yes"
-                               false-value="">
-                        Permitir que seus clientes façam login em uma conta existente durante a finalização da
-                        compra
-                    </label>
-                    <label class="reference-options-label"
-                           :class="{'reference-options-label-wrong': woocommerce_settings.enable_signup_and_login_from_checkout === 'no' && !updateSettingsState.success}">
-                        <span v-if="woocommerce_settings.enable_signup_and_login_from_checkout === 'no'  && !updateSettingsState.success"
-                              class="reference-options reference-options-false dashicons dashicons-no-alt"></span>
-                        <span v-if="woocommerce_settings.enable_signup_and_login_from_checkout === 'yes' || updateSettingsState.success"
-                              class="reference-options reference-options-true dashicons dashicons-yes"></span>
-                        <input type="checkbox"
-                               checked
-                               disabled
-                               true-value="yes"
-                               false-value="">
-                        Permitir que seus clientes criem uma conta durante a finalização da compra
-                    </label>
-                    <button type="button"
-                            :disabled="updateSettingsState.executed && updateSettingsState.loading"
-                            v-on:click="updateSettings"
-                            class="button-primary">
-						<?php _e( 'Ative as configurações para mim', 'paypal-payments' ); ?></button>
-					<?php echo wc_help_tip( 'Para facilitar, você poderá clicar neste botão que ativaremos as configurações necessárias para você' ); ?>
-                    <span class="state-loading" v-if="updateSettingsState.executed && updateSettingsState.loading">
-                        <span class="dashicons dashicons-update"></span>
-                    </span>
-                    <span class="state-success"
-                          v-if="updateSettingsState.executed && !updateSettingsState.loading && updateSettingsState.success">
-                        <span class="dashicons dashicons-yes"></span>
-                    </span>
-                    <span class="state-error"
-                          v-if="updateSettingsState.executed && !updateSettingsState.loading && !updateSettingsState.success">
-                        <span class="dashicons dashicons-no-alt"></span>
-                    </span>
-                    <br>
-                    <br>
-                    <p class="description"><b>Só habilite esta funcionalidade se você possui aprovação do PayPal e se as
-                            configurações acima foram aplicadas.</b></p>
-                </div>
-            </td>
-        </tr>
-
         <h2>Configurações Avançadas</h2>
+
+        <!-- FORM HEIGHT -->
+
+        <tr valign="top">
+            <th scope="row" class="titledesc">
+                <label for="<?php echo esc_attr( $this->get_field_key( 'invoice_id_prefix' ) ); ?>">Altura do
+                    formulário</label>
+            </th>
+            <td class="forminp">
+                <fieldset>
+                    <legend class="screen-reader-text"><span>Altura do formulário</span></legend>
+                    <input class="input-text regular-input"
+                           type="text"
+                           id="<?php echo esc_attr( $this->get_field_key( 'form_height' ) ); ?>"
+                           name="<?php echo esc_attr( $this->get_field_key( 'form_height' ) ); ?>"
+                           placeholder="px"
+                           v-model="formHeight">
+                    <p class="description">Utilize esta opção para definir uma altura máxima do formulário de cartão de
+                        crédito (será considerado um valor em pixels). Será aceito um valor em pixels entre 400 -
+                        550.</p>
+                </fieldset>
+            </td>
+        </tr>
 
         <!-- PREFIXO -->
 

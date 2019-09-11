@@ -1,0 +1,75 @@
+import Vue from 'vue'
+import Component from "vue-class-component";
+
+declare const jQuery: any;
+declare const ajaxurl: string;
+
+// This is the WordPress localized settings.
+declare const paypal_payments_admin_options_plus: {
+    template: string,
+    enabled: string,
+    title: string,
+    mode: string,
+    client: {
+        live: string,
+        sandbox: string,
+    },
+    secret: {
+        live: string,
+        sandbox: string,
+    },
+    form_height: string,
+    invoice_id_prefix: string,
+    debug: string,
+};
+
+@Component({
+    template: paypal_payments_admin_options_plus.template,
+})
+export default class AdminOptionsPlus extends Vue {
+
+    enabled = '';
+    title = '';
+    mode = '';
+    client = {live: '', sandbox: ''};
+    secret = {live: '', sandbox: ''};
+    formHeight = '';
+    invoiceIdPrefix = '';
+    debugMode = '';
+
+    constructor() {
+        super();
+        this.$options.el = '#admin-options-plus';
+    }
+
+    beforeMount() {
+        // @ts-ignore
+        const options: paypal_payments_admin_options_plus = JSON.parse(this.$el.getAttribute('data-options'));
+        console.log('options', options);
+        this.enabled = options.enabled || '';
+        this.title = options.title || '';
+        this.mode = options.mode || 'live';
+        this.client = {
+            live: options.client.live || '',
+            sandbox: options.client.sandbox || '',
+        };
+        this.secret = {
+            live: options.secret.live || '',
+            sandbox: options.secret.sandbox || '',
+        };
+        this.formHeight = options.form_height || '';
+        this.invoiceIdPrefix = options.invoice_id_prefix || '';
+        this.debugMode = options.debug || '';
+    }
+
+    isLive() {
+        return this.mode === 'live';
+    }
+
+    isEnabled() {
+        return this.enabled === '1';
+    }
+
+}
+
+new AdminOptionsPlus();

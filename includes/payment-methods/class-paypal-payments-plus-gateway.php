@@ -18,9 +18,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @property string reference_enabled
  * @property string debug
  * @property string invoice_id_prefix
- * @property string client_id
- * @property string client_secret
- * @property string wrong_credentials
  * @property string form_height
  */
 class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
@@ -35,6 +32,7 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 		$this->id                 = 'paypal-payments-plus-gateway';
 		$this->has_fields         = true;
 		$this->method_title       = __( 'PayPal Brasil', 'paypal-payments' );
+		$this->icon               = plugins_url( 'assets/images/paypal-logo.png', PAYPAL_PAYMENTS_MAIN_FILE );
 		$this->method_description = __( 'Adicione o checkout transparente do PayPal em sua loja do WooCommerce.', 'paypal-payments' );
 		$this->supports           = array(
 			'products',
@@ -46,15 +44,18 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 		$this->init_settings();
 
 		// Get options in variable.
-		$this->title             = $this->get_option( 'title' );
-		$this->client_id         = $this->get_option( 'client_id' );
-		$this->client_secret     = $this->get_option( 'client_secret' );
-		$this->webhook_id        = $this->get_option( 'webhook_id' );
-		$this->mode              = $this->get_option( 'mode' );
-		$this->debug             = $this->get_option( 'debug' );
-		$this->wrong_credentials = $this->get_option( 'wrong_credentials' );
+		$this->enabled        = $this->get_option( 'enabled' );
+		$this->title          = $this->get_option( 'title' );
+		$this->mode           = $this->get_option( 'mode' );
+		$this->client_live    = $this->get_option( 'client_live' );
+		$this->client_sandbox = $this->get_option( 'client_sandbox' );
+		$this->secret_live    = $this->get_option( 'secret_live' );
+		$this->secret_sandbox = $this->get_option( 'secret_sandbox' );
+
 		$this->form_height       = $this->get_option( 'form_height' );
-		$this->invoice_id_prefix = $this->get_option( 'invoice_id_prefix', '' );
+		$this->invoice_id_prefix = $this->get_option( 'invoice_id_prefix' );
+		$this->debug             = $this->get_option( 'debug' );
+
 
 		// Instance the API.
 		$this->api = new PayPal_Payments_API( $this->get_client_id(), $this->get_secret(), $this->mode, $this );
@@ -62,40 +63,38 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 		// Handler for IPN.
 		add_action( 'woocommerce_api_' . $this->id, array( $this, 'webhook_handler' ) );
 
-		// Update web experience profile id before actually saving.
-		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array(
-			$this,
-			'before_process_admin_options'
-		), 1 );
-
 		// Now save with the save hook.
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array(
 			$this,
 			'process_admin_options'
 		), 10 );
 
-		// Filter the save data to add a custom experience profile id.
-		add_filter( 'woocommerce_settings_api_sanitized_fields_' . $this->id, array( $this, 'filter_save_data' ) );
+		// Update web experience profile id before actually saving.
+		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array(
+			$this,
+			'before_process_admin_options'
+		), 20 );
 
 		// Enqueue scripts.
 		add_action( 'wp_enqueue_scripts', array( $this, 'checkout_scripts' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_scripts' ) );
 	}
 
-	/**
-	 * Replace method to get client id due different implementation.
-	 * @return mixed
-	 */
-	public function get_client_id() {
-		return $this->client_id;
-	}
+	public function before_process_admin_options() {
+		// Check first if is enabled
+		$enabled = $this->get_field_value( 'enabled', $this->form_fields['enabled'] );
+		if ( $enabled !== 'yes' ) {
+			return;
+		}
 
-	/**
-	 * Replace method to get secret due different implementation.
-	 * @return mixed
-	 */
-	public function get_secret() {
-		return $this->client_secret;
+		// update credentials
+		$this->update_credentials();
+
+		// validate credentials
+		$this->validate_credentials();
+
+		// create webhooks
+		$this->create_webhooks();
 	}
 
 	/**
@@ -110,142 +109,15 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 			$is_available = false;
 		}
 
-		if ( ! $this->client_id || ! $this->client_secret || ! $this->webhook_id || $this->wrong_credentials === 'yes' ) {
+		if ( ! $this->is_credentials_validated() ) {
 			$is_available = false;
 		}
 
 		return $is_available;
 	}
 
-	/**
-	 * Set some settings before save the options.
-	 */
-	public function before_process_admin_options() {
-		$client_id_key     = $this->get_field_key( 'client_id' );
-		$client_secret_key = $this->get_field_key( 'client_secret' );
-		$mode_key          = $this->get_field_key( 'mode' );
-		// Update the client_id and client_secret with the posted data.
-		$this->client_id     = isset( $_POST[ $client_id_key ] ) ? sanitize_text_field( trim( $_POST[ $client_id_key ] ) ) : '';
-		$this->client_secret = isset( $_POST[ $client_secret_key ] ) ? sanitize_text_field( trim( $_POST[ $client_secret_key ] ) ) : '';
-		$this->mode          = isset( $_POST[ $mode_key ] ) ? sanitize_text_field( $_POST[ $mode_key ] ) : '';
-		// Validate credentials.
-		$this->validate_credentials();
-		// Update things.
-		$this->update_webhooks();
-	}
-
-	/**
-	 * Validate credentials when saving options page.s
-	 */
-	public function validate_credentials() {
-		// Check first if is enabled
-		$enabled = $this->get_field_value( 'enabled', $this->form_fields['enabled'] );
-		if ( $enabled !== 'yes' ) {
-			return;
-		}
-
-		try {
-			$client = $this->get_field_value( 'client_id', $this->form_fields['client_id'] );
-			$secret = $this->get_field_value( 'client_secret', $this->form_fields['client_secret'] );
-
-			$this->api->get_access_token( true, $client, $secret );
-			$this->add_notice( __( 'Suas credenciais estão corretas, um novo token foi gerado.', 'paypal-payments' ), 'updated' );
-		} catch ( Exception $ex ) {
-			$this->wrong_credentials = 'yes';
-			$this->add_notice( __( 'Suas credenciais estão inválidas. Verifique os dados informados e salve as configurações novamente.', 'paypal-payments' ) );
-		}
-	}
-
-	/**
-	 * Update the webhooks.
-	 */
-	public function update_webhooks() {
-		// Set by default as not found.
-		$webhook = null;
-		try {
-			$webhook_url = $this->get_webhook_url();
-			// Get a list of webhooks
-			$registered_webhooks = $this->api->get_webhooks();
-
-			// Search for registered webhook.
-			foreach ( $registered_webhooks['webhooks'] as $registered_webhook ) {
-				if ( $registered_webhook['url'] === $webhook_url ) {
-					$webhook = $registered_webhook;
-					break;
-				}
-			}
-
-			// If no webhook matched, create a new one.
-			if ( ! $webhook ) {
-				$webhook_url  = $this->get_webhook_url();
-				$events_types = array(
-					'PAYMENT.SALE.COMPLETED',
-					'PAYMENT.SALE.DENIED',
-					'PAYMENT.SALE.PENDING',
-					'PAYMENT.SALE.REFUNDED',
-					'PAYMENT.SALE.REVERSED',
-				);
-
-				// Create webhook.
-				$webhook_result = $this->api->create_webhook( $webhook_url, $events_types );
-
-				// Set the webhook ID
-				$this->webhook_id        = $webhook_result['id'];
-				$this->wrong_credentials = 'no';
-
-				return;
-			}
-
-			// Set the webhook ID
-			$this->webhook_id        = $webhook['id'];
-			$this->wrong_credentials = 'no';
-		} catch ( Exception $ex ) {
-			$this->add_notice( __( 'Houve um erro ao definir o webhook.', 'paypal-payments' ) );
-		}
-
-		// If we don't have a webhook, set as empty.ˆ
-		if ( ! $webhook ) {
-			$this->webhook_id = '';
-		} else {
-			$this->add_notice( __( 'O webhook foi definido com sucesso.', 'paypal-payments' ), 'updated' );
-		}
-	}
-
-	/**
-	 * Add the experience profile ID to save data.
-	 *
-	 * @param $settings
-	 *
-	 * @return mixed
-	 */
-	public function filter_save_data( $settings ) {
-		if ( $this->wrong_credentials === 'yes' ) {
-			$this->client_id           = '';
-			$settings['client_id']     = $this->client_id;
-			$this->client_secret       = '';
-			$settings['client_secret'] = $this->client_secret;
-			$this->webhook_id          = '';
-			$settings['webhook_id']    = $this->webhook_id;
-		}
-		$settings['webhook_id']        = $this->webhook_id ? $this->webhook_id : '';
-		$settings['wrong_credentials'] = $this->wrong_credentials ? $this->wrong_credentials : 'no';
-
-		return $settings;
-	}
-
-	/**
-	 * Get the store URL for gateway.
-	 * @return string
-	 */
-	private function get_webhook_url() {
-		$base_url = site_url();
-		if ( defined( 'WC_PPP_BRASIL_WEBHOOK_URL' ) && WC_PPP_BRASIL_WEBHOOK_URL ) {
-			$base_url = WC_PPP_BRASIL_WEBHOOK_URL;
-		} else if ( $_SERVER['HTTP_HOST'] === 'localhost' ) {
-			$base_url = 'https://example.com/';
-		}
-
-		return str_replace( 'http:', 'https:', add_query_arg( 'wc-api', $this->id, $base_url ) );
+	public function is_credentials_validated() {
+		return get_option( $this->get_option_key() . '_validator' ) === 'yes';
 	}
 
 	/**
@@ -260,10 +132,10 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 				'default' => 'no',
 			),
 			'title'             => array(
-				'title'       => __( 'Nome de exibição', 'paypal-payments' ),
+				'title'       => __( 'Nome de exibição (complemento)', 'paypal-payments' ),
 				'type'        => 'text',
 				'default'     => '',
-				'placeholder' => __( 'Exemplo: (Parcelado em até 12x)', 'paypal-payments' ),
+				'placeholder' => __( 'Exemplo: Parcelado em até 12x', 'paypal-payments' ),
 				'description' => __( 'Será exibido no checkout: Cartão de Crédito (Parcelado em até 12x)', 'paypal-payments' ),
 				'desc_tip'    => __( 'Por padrão a solução do PayPal Plus é exibida como “Cartão de Crédito”, utilize esta opção para definir um texto adicional como parcelamento ou descontos.', 'paypal-payments' ),
 			),
@@ -276,17 +148,29 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 				),
 				'description' => __( 'Utilize esta opção para alternar entre os modos Sandbox e Produção. Sandbox é utilizado para testes e Produção para compras reais.', 'paypal-payments' ),
 			),
-			'client_id'         => array(
-				'title'       => __( 'Client ID', 'paypal-payments' ),
+			'client_live'       => array(
+				'title'       => '',
 				'type'        => 'text',
 				'default'     => '',
-				'description' => sprintf( __( 'Para gerar o Client ID acesse <a href="%s" target="_blank">aqui</a> e procure pela seção “REST API apps”.', 'paypal-payments' ), 'https://developer.paypal.com/docs/classic/lifecycle/sb_credentials/' ),
+				'description' => '',
 			),
-			'client_secret'     => array(
-				'title'       => __( 'Secret ID', 'paypal-payments' ),
+			'secret_live'       => array(
+				'title'       => '',
 				'type'        => 'text',
 				'default'     => '',
-				'description' => sprintf( __( 'Para gerar o Secret ID acesse <a href="%s" target="_blank">aqui</a> e procure pela seção “REST API apps”.', 'paypal-payments' ), 'https://developer.paypal.com/docs/classic/lifecycle/sb_credentials/' ),
+				'description' => '',
+			),
+			'client_sandbox'    => array(
+				'title'       => '',
+				'type'        => 'text',
+				'default'     => '',
+				'description' => '',
+			),
+			'secret_sandbox'    => array(
+				'title'       => '',
+				'type'        => 'text',
+				'default'     => '',
+				'description' => '',
 			),
 			'debug'             => array(
 				'title'       => __( 'Modo depuração', 'paypal-payments' ),
@@ -294,11 +178,6 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 				'label'       => __( 'Habilitar', 'paypal-payments' ),
 				'desc_tip'    => __( 'Habilite este modo para depurar a aplicação em caso de homologação ou erros.', 'paypal-payments' ),
 				'description' => sprintf( __( 'Os logs serão salvos no caminho: %s.', 'paypal-payments' ), $this->get_log_view() ),
-			),
-			'advanced_settings' => array(
-				'title'       => __( 'Configurações avançadas', 'paypal-payments' ),
-				'type'        => 'title',
-				'description' => __( 'Utilize estas opções para customizar a experiência da solução.', 'paypal-payments' ),
 			),
 			'form_height'       => array(
 				'title'       => __( 'Altura do formulário', 'paypal-payments' ),
@@ -333,6 +212,7 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 	 * @param bool $force
 	 *
 	 * @return null|array
+	 * @throws Paypal_Payments_Connection_Exception
 	 */
 	public function process_payment( $order_id, $force = false ) {
 		$order      = wc_get_order( $order_id );
@@ -361,7 +241,7 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 					wc_add_notice( __( 'Não foi possível processar o seu pagamento, tente novamente ou entre em contato contato com o PayPal (0800-047-4482).', 'paypal-payments' ), 'error' );
 					break;
 				case 'INVALID_OR_EXPIRED_TOKEN':
-					wc_add_notice( __( 'Ocorreu um erro temporário. Por favor, preencha os dados novamente. Se o erro persistir, entre em contato.', 'paypal-payments' ), 'error' );
+					wc_add_notice( __( 'A sua sessão expirou, por favor tente efetuar o pagamento novamente. Se o erro persistir, entre em contato.', 'paypal-payments' ), 'error' );
 					break;
 				default:
 					wc_add_notice( __( 'Por favor revise as informações inseridas do cartão de crédito.', 'paypal-payments' ), 'error' );
@@ -527,7 +407,14 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 
 	/**
 	 * Execute a payment.
-	 * @throws WC_PPP_Brasil_API_Exception
+	 *
+	 * @param $order WC_Order
+	 * @param $payment_id
+	 * @param $payer_id
+	 *
+	 * @return array|mixed|object
+	 * @throws Paypal_Payments_Api_Exception
+	 * @throws Paypal_Payments_Connection_Exception
 	 */
 	public function execute_payment( $order, $payment_id, $payer_id ) {
 		$patch_data = array(
@@ -1009,7 +896,42 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 		$wc_settings_id = $wc_screen_id . '_page_wc-settings';
 		if ( $wc_settings_id === $screen_id && isset( $_GET['section'] ) && $_GET['section'] === $this->id ) {
 			wp_enqueue_style( 'wc-ppp-brasil-admin-style', plugins_url( 'assets/dist/css/admin-options-plus.css', PAYPAL_PAYMENTS_MAIN_FILE ), array(), PAYPAL_PAYMENTS_VERSION, 'all' );
+
+			// Add shared file if exists.
+			if ( file_exists( dirname( PAYPAL_PAYMENTS_MAIN_FILE ) . '/assets/dist/js/shared.js' ) ) {
+				wp_enqueue_script( 'paypal_payments_admin_options_shared', plugins_url( 'assets/dist/js/shared.js', PAYPAL_PAYMENTS_MAIN_FILE ), array(), PAYPAL_PAYMENTS_VERSION, true );
+			}
+
+			wp_enqueue_script( $this->id . '_script', plugins_url( 'assets/dist/js/admin-options-plus.js', PAYPAL_PAYMENTS_MAIN_FILE ), array(), PAYPAL_PAYMENTS_VERSION, true );
+			wp_localize_script( $this->id . '_script', 'paypal_payments_admin_options_plus', array(
+				'template'          => $this->get_admin_options_template(),
+				'enabled'           => $this->enabled,
+				'form_height'       => $this->shortcut_enabled,
+				'mode'              => $this->mode,
+				'client'            => array(
+					'live'    => $this->client_live,
+					'sandbox' => $this->client_sandbox,
+				),
+				'secret'            => array(
+					'live'    => $this->secret_live,
+					'sandbox' => $this->secret_sandbox,
+				),
+				'title'             => $this->title,
+				'invoice_id_prefix' => $this->invoice_id_prefix,
+				'debug'             => $this->debug,
+			) );
+
 		}
+	}
+
+	/**
+	 * Get the admin options template to render by Vue.
+	 */
+	private function get_admin_options_template() {
+		ob_start();
+		include dirname( PAYPAL_PAYMENTS_MAIN_FILE ) . '/includes/views/admin-options/admin-options-plus/admin-options-plus-template.php';
+
+		return ob_get_clean();
 	}
 
 	/**
@@ -1069,22 +991,23 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 		return apply_filters( 'woocommerce_gateway_title', $title, $this->id );
 	}
 
-	public function add_notice( $text, $type = 'error' ) {
-		$notices   = get_option( 'wc-ppp-brasil-notices', array() );
-		$notices[] = array(
-			'text' => $text,
-			'type' => $type,
+	private function get_fields_values() {
+		return array(
+			'enabled'           => $this->enabled,
+			'form_height'       => $this->form_height,
+			'mode'              => $this->mode,
+			'client'            => array(
+				'live'    => $this->client_live,
+				'sandbox' => $this->client_sandbox,
+			),
+			'secret'            => array(
+				'live'    => $this->secret_live,
+				'sandbox' => $this->secret_sandbox,
+			),
+			'title'             => $this->title,
+			'invoice_id_prefix' => $this->invoice_id_prefix,
+			'debug'             => $this->debug,
 		);
-		update_option( 'wc-ppp-brasil-notices', $notices );
-	}
-
-	public function get_notices( $clear = true ) {
-		$notices = get_option( 'wc-ppp-brasil-notices', array() );
-		if ( $clear ) {
-			update_option( 'wc-ppp-brasil-notices', array() );
-		}
-
-		return $notices;
 	}
 
 }

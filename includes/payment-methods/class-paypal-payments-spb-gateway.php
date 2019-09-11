@@ -46,17 +46,19 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 		$this->init_settings();
 
 		// Get available options.
-		$this->enabled           = $this->get_option( 'enabled' );
-		$this->title             = $this->get_option( 'title' );
-		$this->mode              = $this->get_option( 'mode' );
-		$this->client_live       = $this->get_option( 'client_live' );
-		$this->client_sandbox    = $this->get_option( 'client_sandbox' );
-		$this->secret_live       = $this->get_option( 'secret_live' );
-		$this->secret_sandbox    = $this->get_option( 'secret_sandbox' );
+		$this->enabled        = $this->get_option( 'enabled' );
+		$this->title          = $this->get_option( 'title' );
+		$this->mode           = $this->get_option( 'mode' );
+		$this->client_live    = $this->get_option( 'client_live' );
+		$this->client_sandbox = $this->get_option( 'client_sandbox' );
+		$this->secret_live    = $this->get_option( 'secret_live' );
+		$this->secret_sandbox = $this->get_option( 'secret_sandbox' );
+
 		$this->format            = $this->get_option( 'format' );
 		$this->color             = $this->get_option( 'color' );
 		$this->shortcut_enabled  = $this->get_option( 'shortcut_enabled' );
 		$this->reference_enabled = $this->get_option( 'reference_enabled' );
+
 		$this->invoice_id_prefix = $this->get_option( 'invoice_id_prefix' );
 		$this->debug             = $this->get_option( 'debug' );
 
@@ -361,21 +363,23 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 			return;
 		}
 
-		// CREDENTIALS
-		try {
-			$mode        = $this->get_field_value( 'mode', $this->form_fields['mode'] );
-			$client_type = $mode === 'sandbox' ? 'client_sandbox' : 'client_live';
-			$secret_type = $mode === 'sandbox' ? 'secret_sandbox' : 'secret_live';
-			$client      = $this->get_field_value( $client_type, $this->form_fields[ $client_type ] );
-			$secret      = $this->get_field_value( $secret_type, $this->form_fields[ $secret_type ] );
+		// update credentials
+		$this->update_credentials();
 
-			$this->api->get_access_token( true, $client, $secret );
-			update_option( $this->get_option_key() . '_validator', 'yes' );
-		} catch ( Exception $ex ) {
-			update_option( $this->get_option_key() . '_validator', 'no' );
-		}
+		// validate credentials
+		$this->validate_credentials();
 
-		// BILLING AGREEMENT
+		// validate billing agreement.
+		$this->validate_billing_agreement();
+
+		// create webhooks
+		$this->create_webhooks();
+	}
+
+	/**
+	 * Validate the billing agreement.
+	 */
+	private function validate_billing_agreement() {
 		try {
 			$this->api->create_billing_agreement_token();
 			update_option( $this->get_option_key() . '_reference_transaction_validator', 'yes' );
@@ -388,15 +392,6 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 		} catch ( Exception $ex ) {
 			update_option( $this->get_option_key() . '_reference_transaction_validator', 'no' );
 		}
-	}
-
-	public function get_updated_values() {
-		$fields = array();
-		foreach ( $this->get_form_fields() as $key => $field ) {
-			$fields[ $key ] = $this->get_field_value( $key, $this->form_fields[ $key ] );
-		}
-
-		return $fields;
 	}
 
 	/**
@@ -579,8 +574,8 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 							update_user_meta( get_current_user_id(), 'paypal_payments_billing_agreement_id', $billing_agreement['id'] );
 							update_user_meta( get_current_user_id(), 'paypal_payments_billing_agreement_payer_info', $billing_agreement['payer']['payer_info'] );
 						} else {
-							wC()->session->set( 'paypal_payments_billing_agreement_id', $billing_agreement['id'] );
-							wC()->session->set( 'paypal_payments_billing_agreement_payer_info', $billing_agreement['payer']['payer_info'] );
+							WC()->session->set( 'paypal_payments_billing_agreement_id', $billing_agreement['id'] );
+							WC()->session->set( 'paypal_payments_billing_agreement_payer_info', $billing_agreement['payer']['payer_info'] );
 						}
 					} catch ( Paypal_Payments_Api_Exception $ex ) {
 						// Some problem happened creating billing agreement.
@@ -1254,7 +1249,7 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 
 			// Enqueue admin options and localize settings.
 			wp_enqueue_script( $this->id . '_script', plugins_url( 'assets/dist/js/admin-options-spb.js', PAYPAL_PAYMENTS_MAIN_FILE ), array(), PAYPAL_PAYMENTS_VERSION, true );
-			wp_localize_script( $this->id . '_script', 'paypal_payments_admin_options_plus', array(
+			wp_localize_script( $this->id . '_script', 'paypal_payments_admin_options_spb', array(
 				'template'             => $this->get_admin_options_template(),
 				'enabled'              => $this->enabled,
 				'shortcut_enabled'     => $this->shortcut_enabled,

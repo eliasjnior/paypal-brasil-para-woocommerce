@@ -5,7 +5,7 @@ declare const jQuery: any;
 declare const ajaxurl: string;
 
 // This is the WordPress localized settings.
-declare const paypal_payments_admin_options_plus: {
+declare const paypal_payments_admin_options_spb: {
     template: string,
     enabled: string,
     title: string,
@@ -35,7 +35,7 @@ declare const paypal_payments_admin_options_plus: {
 };
 
 @Component({
-    template: paypal_payments_admin_options_plus.template,
+    template: paypal_payments_admin_options_spb.template,
 })
 export default class AdminOptionsSpb extends Vue {
 
@@ -69,7 +69,7 @@ export default class AdminOptionsSpb extends Vue {
 
         this.$options.el = '#admin-options-spb';
 
-        this.imagesPath = paypal_payments_admin_options_plus.images_path;
+        this.imagesPath = paypal_payments_admin_options_spb.images_path;
 
         // Remove default message.
         // jQuery('#message.updated.inline').remove();
@@ -77,7 +77,7 @@ export default class AdminOptionsSpb extends Vue {
 
     beforeMount() {
         // @ts-ignore
-        const options: paypal_payments_admin_options_plus = JSON.parse(this.$el.getAttribute('data-options'));
+        const options: paypal_payments_admin_options_spb = JSON.parse(this.$el.getAttribute('data-options'));
         console.log('options', options);
         this.enabled = options.enabled || '';
         this.title = options.title || '';

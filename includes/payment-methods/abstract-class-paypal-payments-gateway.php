@@ -89,7 +89,7 @@ abstract class PayPal_Payments_Gateway extends WC_Payment_Gateway {
 				'transmission_id'   => $headers['PAYPAL-TRANSMISSION-ID'],
 				'transmission_sig'  => $headers['PAYPAL-TRANSMISSION-SIG'],
 				'transmission_time' => $headers['PAYPAL-TRANSMISSION-TIME'],
-				'webhook_id'        => $this->webhook_id,
+				'webhook_id'        => $this->get_webhook_id(),
 			);
 
 			$payload = "{";
@@ -106,6 +106,15 @@ abstract class PayPal_Payments_Gateway extends WC_Payment_Gateway {
 			}
 		} catch ( Exception $ex ) {
 		}
+	}
+
+	/**
+	 * Get the webhook ID.
+	 *
+	 * @return string|null
+	 */
+	public function get_webhook_id() {
+		return get_option( 'paypal_payments_webhook_url-' . $this->id, null );
 	}
 
 	/**
@@ -155,6 +164,105 @@ abstract class PayPal_Payments_Gateway extends WC_Payment_Gateway {
 		}
 
 		return intval( $digit[9] ) === intval( $cpf[9] ) && intval( $digit[10] ) === intval( $cpf[10] );
+	}
+
+	/**
+	 * Get endpoint for webhook.
+	 * @return mixed
+	 */
+	public function get_webhook_url() {
+		$base_url = site_url();
+
+		// Use example.com when it's localhost.
+		if ( $_SERVER['HTTP_HOST'] === 'localhost' ) {
+			$base_url = 'https://example.com/';
+		}
+
+		// Return URL always with https.
+		$ensure_https = str_replace( 'http:', 'https:', add_query_arg( 'wc-api', $this->id, $base_url ) );
+
+		return preg_replace( '/(\:[\d]+)/', '', $ensure_https );
+	}
+
+	public function update_credentials() {
+		$mode        = $this->get_field_value( 'mode', $this->form_fields['mode'] );
+		$client_type = $mode === 'sandbox' ? 'client_sandbox' : 'client_live';
+		$secret_type = $mode === 'sandbox' ? 'secret_sandbox' : 'secret_live';
+		$client      = $this->get_field_value( $client_type, $this->form_fields[ $client_type ] );
+		$secret      = $this->get_field_value( $secret_type, $this->form_fields[ $secret_type ] );
+
+		$this->api->update_credentials( $client, $secret, $mode );
+	}
+
+	/**
+	 * Validate the credentials.
+	 */
+	public function validate_credentials() {
+		try {
+			$this->api->get_access_token( true );
+			update_option( $this->get_option_key() . '_validator', 'yes' );
+		} catch ( Exception $ex ) {
+			update_option( $this->get_option_key() . '_validator', 'no' );
+		}
+	}
+
+	/**
+	 * Create the webhook or use a existent webhook.
+	 */
+	public function create_webhooks() {
+		// Set by default as not found.
+		$webhook     = null;
+		$webhook_url = $this->get_webhook_url();
+
+		try {
+
+			// Get a list of webhooks
+			$registered_webhooks = $this->api->get_webhooks();
+
+			// Search for registered webhook.
+			foreach ( $registered_webhooks['webhooks'] as $registered_webhook ) {
+				if ( $registered_webhook['url'] === $webhook_url ) {
+					$webhook = $registered_webhook;
+					break;
+				}
+			}
+
+			// If no webhook matched, create a new one.
+			if ( ! $webhook ) {
+				$events_types = array(
+					'PAYMENT.SALE.COMPLETED',
+					'PAYMENT.SALE.DENIED',
+					'PAYMENT.SALE.PENDING',
+					'PAYMENT.SALE.REFUNDED',
+					'PAYMENT.SALE.REVERSED',
+				);
+
+				// Create webhook.
+				$webhook_result = $this->api->create_webhook( $webhook_url, $events_types );
+
+				update_option( 'paypal_payments_webhook_url-' . $this->id, $webhook_result['id'] );
+
+				return;
+			}
+
+			// Set the webhook ID
+			update_option( 'paypal_payments_webhook_url-' . $this->id, $webhook['id'] );
+		} catch ( Exception $ex ) {
+			update_option( 'paypal_payments_webhook_url-' . $this->id, null );
+		}
+	}
+
+	/**
+	 * Get values from settings after POST.
+	 * @return array
+	 */
+	public function get_updated_values() {
+		$fields = array();
+		foreach ( $this->get_form_fields() as $key => $field ) {
+			$fields[ $key ] = $this->get_field_value( $key, $this->form_fields[ $key ] );
+		}
+
+		return $fields;
 	}
 
 }
