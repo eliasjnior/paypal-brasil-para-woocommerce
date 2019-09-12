@@ -33,10 +33,6 @@ class PayPal_Payments_API {
 	 * @param $gateway PayPal_Payments_Gateway
 	 */
 	public function __construct( $client_id, $secret, $mode, $gateway ) {
-		// Set the access token transient key to a MD5 hash of client id and secret. So transient will change if
-		// client id or secret changes also.
-		$this->access_token_transient_key = 'paypal_payments_access_token_' . md5( $client_id . ':' . $secret );
-
 		// Gateway
 		$this->gateway = $gateway;
 
@@ -44,6 +40,19 @@ class PayPal_Payments_API {
 		$this->mode      = $mode;
 		$this->client_id = $client_id;
 		$this->secret    = $secret;
+
+		// Set the access token transient key to a MD5 hash of client id and secret. So transient will change if
+		// client id or secret changes also.
+		$this->access_token_transient_key = 'paypal_payments_access_token_' . $this->get_credentials_hash();
+	}
+
+	/**
+	 * Get a hash for mode, client id and secret.
+	 *
+	 * @return string
+	 */
+	public function get_credentials_hash() {
+		return md5( $this->mode . ':' . $this->client_id . ':' . $this->secret );
 	}
 
 	/**
@@ -54,13 +63,14 @@ class PayPal_Payments_API {
 	 * @param $mode
 	 */
 	public function update_credentials( $client_id, $secret, $mode ) {
-		// Set the access token transient key to a MD5 hash of client id and secret. So transient will change if
-		// client id or secret changes also.
-		$this->access_token_transient_key = 'paypal_payments_access_token_' . md5( $client_id . ':' . $secret );
 		// Save the API data.
 		$this->mode      = $mode;
 		$this->client_id = $client_id;
 		$this->secret    = $secret;
+
+		// Set the access token transient key to a MD5 hash of client id and secret. So transient will change if
+		// client id or secret changes also.
+		$this->access_token_transient_key = 'paypal_payments_access_token_' . $this->get_credentials_hash();
 	}
 
 	/**

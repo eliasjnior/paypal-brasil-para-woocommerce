@@ -572,9 +572,11 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 						// Save the billing agreement to the user.
 						if ( is_user_logged_in() ) {
 							update_user_meta( get_current_user_id(), 'paypal_payments_billing_agreement_id', $billing_agreement['id'] );
+							update_user_meta( get_current_user_id(), 'paypal_payments_billing_agreement_credentials_hash', $this->api->get_credentials_hash() );
 							update_user_meta( get_current_user_id(), 'paypal_payments_billing_agreement_payer_info', $billing_agreement['payer']['payer_info'] );
 						} else {
 							WC()->session->set( 'paypal_payments_billing_agreement_id', $billing_agreement['id'] );
+							WC()->session->set( 'paypal_payments_billing_agreement_credentials_hash', $this->api->get_credentials_hash() );
 							WC()->session->set( 'paypal_payments_billing_agreement_payer_info', $billing_agreement['payer']['payer_info'] );
 						}
 					} catch ( Paypal_Payments_Api_Exception $ex ) {
@@ -1060,9 +1062,11 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 				$order->save();
 
 				update_user_meta( get_current_user_id(), 'paypal_payments_billing_agreement_id', WC()->session->get( 'paypal_payments_billing_agreement_id' ) );
+				update_user_meta( get_current_user_id(), 'paypal_payments_billing_agreement_credentials_hash', WC()->session->get( 'paypal_payments_billing_agreement_credentials_hash' ) );
 				update_user_meta( get_current_user_id(), 'paypal_payments_billing_agreement_payer_info', WC()->session->get( 'paypal_payments_billing_agreement_payer_info' ) );
 
 				unset( WC()->session->paypal_payments_billing_agreement_id );
+				unset( WC()->session->paypal_payments_billing_agreement_credentials_hash );
 				unset( WC()->session->paypal_payments_billing_agreement_payer_info );
 
 			} catch ( Exception $ex ) {
