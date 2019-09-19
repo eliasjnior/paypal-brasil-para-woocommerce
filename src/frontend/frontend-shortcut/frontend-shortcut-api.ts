@@ -1,7 +1,7 @@
 import {PaypalPayments} from "../frontend-shared";
 
 declare const paypal_payments_settings: any;
-declare const paypal_payments_spb_settings: any;
+declare const paypal_payments_shortcut_settings: any;
 
 export const paymentShortcut = {
 
@@ -40,7 +40,7 @@ export const paymentShortcut = {
 
         cancel: () => {
             // Add notices.
-            PaypalPayments.setNotices(paypal_payments_spb_settings.cancel_message);
+            PaypalPayments.setNotices(paypal_payments_shortcut_settings.cancel_message);
             // Scroll screen to top.
             PaypalPayments.scrollTop();
         }
@@ -83,7 +83,7 @@ export const paymentShortcut = {
             // Update the cart to render button again.
             PaypalPayments.triggerUpdateCart();
             // Add notices.
-            PaypalPayments.setNotices(paypal_payments_spb_settings.cancel_message);
+            PaypalPayments.setNotices(paypal_payments_shortcut_settings.cancel_message);
             // Scroll screen to top.
             PaypalPayments.scrollTop();
         }

@@ -32,7 +32,6 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 		$this->id                 = 'paypal-payments-plus-gateway';
 		$this->has_fields         = true;
 		$this->method_title       = __( 'PayPal Brasil', 'paypal-payments' );
-		$this->icon               = plugins_url( 'assets/images/paypal-logo.png', PAYPAL_PAYMENTS_MAIN_FILE );
 		$this->method_description = __( 'Adicione o checkout transparente do PayPal em sua loja do WooCommerce.', 'paypal-payments' );
 		$this->supports           = array(
 			'products',

@@ -27,7 +27,10 @@ try {
 	$payer = WC()->session->get( 'paypal_payments_shortcut_payer_info' );
 
 	if ( ! $payer || $payer['pay-id'] !== $pay_id ) {
-		$payment = $this->api->get_payment( $pay_id );
+		$payment = $this->api->get_payment( $pay_id, array(), 'shortcut' );
+
+		$cpf_cases  = array( 'BR_CPF', 'TAX_ID' );
+		$cnpj_cases = array( 'BR_CNPJ', 'BUSINESS_TAX_ID' );
 
 		$payer = array(
 			'payer-id'       => $payer_id,
@@ -35,10 +38,10 @@ try {
 			'pay-id'         => $pay_id,
 			'first_name'     => $payment['payer']['payer_info']['first_name'],
 			'last_name'      => $payment['payer']['payer_info']['last_name'],
-			'persontype'     => $payment['payer']['payer_info']['tax_id_type'] === 'BR_CPF' ? '1' : '2',
-			'cpf'            => $payment['payer']['payer_info']['tax_id_type'] === 'BR_CPF' ? $payment['payer']['payer_info']['tax_id'] : '',
-			'cnpj'           => $payment['payer']['payer_info']['tax_id_type'] === 'BR_CNPJ' ? $payment['payer']['payer_info']['tax_id'] : '',
-			'company'        => $payment['payer']['payer_info']['tax_id_type'] === 'BR_CNPJ' ? $payment['payer']['payer_info']['business_name'] : '',
+			'persontype'     => in_array( $payment['payer']['payer_info']['tax_id_type'], $cpf_cases ) ? '1' : '2',
+			'cpf'            => in_array( $payment['payer']['payer_info']['tax_id_type'], $cpf_cases ) ? $payment['payer']['payer_info']['tax_id'] : '',
+			'cnpj'           => in_array( $payment['payer']['payer_info']['tax_id_type'], $cnpj_cases ) ? $payment['payer']['payer_info']['tax_id'] : '',
+			'company'        => in_array( $payment['payer']['payer_info']['tax_id_type'], $cnpj_cases ) ? $payment['payer']['payer_info']['business_name'] : '',
 			'shipping_name'  => $payment['payer']['payer_info']['shipping_address']['recipient_name'],
 			'address_line_1' => $payment['payer']['payer_info']['shipping_address']['line1'],
 			'city'           => $payment['payer']['payer_info']['shipping_address']['city'],

@@ -135,7 +135,7 @@ class PayPal_Payments_API {
 			return $response_body['access_token'];
 		}
 
-		throw new Paypal_Payments_Api_Exception( $code, __( 'Não foi possível obter o access token', 'paypal-payments' ), $response_body );
+		throw new Paypal_Payments_Api_Exception( $code, __( 'Não foi possível obter o access token.', 'paypal-payments' ), $response_body );
 	}
 
 	/**
@@ -209,7 +209,7 @@ class PayPal_Payments_API {
 			return $response_body;
 		}
 
-		throw new Paypal_Payments_Api_Exception( $code, __( 'Não foi possível obter o pagamento', 'paypal-payments' ), $response_body );
+		throw new Paypal_Payments_Api_Exception( $code, __( 'Não foi possível obter o detalhamento do pagamento.', 'paypal-payments' ), $response_body );
 	}
 
 	/**

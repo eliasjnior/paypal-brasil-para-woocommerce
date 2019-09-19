@@ -27,9 +27,9 @@ class PayPal_Payments_API_Checkout_Handler extends PayPal_Payments_API_Handler {
 	public function get_fields() {
 		return array(
 			array(
-				'name'       => __( 'nonce', 'paypal-payments' ),
-				'key'        => 'nonce',
-				'sanitize'   => 'sanitize_text_field',
+				'name'     => __( 'nonce', 'paypal-payments' ),
+				'key'      => 'nonce',
+				'sanitize' => 'sanitize_text_field',
 //				'validation' => array( $this, 'required_nonce' ),
 			),
 			array(
@@ -86,10 +86,9 @@ class PayPal_Payments_API_Checkout_Handler extends PayPal_Payments_API_Handler {
 				'sanitize' => 'sanitize_text_field',
 			),
 			array(
-				'name'       => __( 'bairro', 'paypal-payments' ),
-				'key'        => 'neighborhood',
-				'sanitize'   => 'sanitize_text_field',
-//				'validation' => array( $this, 'required_text' ),
+				'name'     => __( 'bairro', 'paypal-payments' ),
+				'key'      => 'neighborhood',
+				'sanitize' => 'sanitize_text_field',
 			),
 			array(
 				'name'       => __( 'telefone', 'paypal-payments' ),
@@ -154,7 +153,8 @@ class PayPal_Payments_API_Checkout_Handler extends PayPal_Payments_API_Handler {
 				),
 			);
 
-			$items = array();
+			$items              = array();
+			$only_digital_items = true;
 
 			// Add all items.
 			foreach ( WC()->cart->get_cart() as $key => $item ) {
@@ -172,6 +172,11 @@ class PayPal_Payments_API_Checkout_Handler extends PayPal_Payments_API_Handler {
 					'sku'      => $product->get_sku() ? $product->get_sku() : $product->get_id(),
 					'url'      => $product->get_permalink(),
 				);
+
+				// Check if product is not digital.
+				if ( ! ( $product->is_downloadable() || $product->is_virtual() ) ) {
+					$only_digital_items = false;
+				}
 			}
 
 			// Add all discounts.
@@ -255,12 +260,15 @@ class PayPal_Payments_API_Checkout_Handler extends PayPal_Payments_API_Handler {
 				$shipping_address['line2'] = mb_substr( implode( ', ', $address_line_2 ), 0, 100 );
 			}
 
-			$data['transactions'][0]['item_list']['shipping_address'] = $shipping_address;
+			// Add shipping address for non digital goods
+			if ( ! $only_digital_items ) {
+				$data['transactions'][0]['item_list']['shipping_address'] = $shipping_address;
+			}
 
 			// Set the application context
 			$data['application_context'] = array(
 				'brand_name'          => get_bloginfo( 'name' ),
-				'shipping_preference' => 'SET_PROVIDED_ADDRESS',
+				'shipping_preference' => $only_digital_items ? 'NO_SHIPPING' : 'SET_PROVIDED_ADDRESS',
 			);
 
 			// Create the payment in API.

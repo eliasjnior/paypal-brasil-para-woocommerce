@@ -256,10 +256,10 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 				'default' => 'no',
 			),
 			'invoice_id_prefix' => array(
-				'title'       => __( 'Prefixo no número do pedido', 'paypal-plus-brasil' ),
+				'title'       => __( 'Prefixo no número do pedido', 'paypal-payments' ),
 				'type'        => 'text',
 				'default'     => '',
-				'description' => __( 'Adicione um prefixo no número do pedido, isto é útil para a sua identificação quando você possui mais de uma loja processando pelo PayPal.', 'paypal-plus-brasil' ),
+				'description' => __( 'Adicione um prefixo no número do pedido, isto é útil para a sua identificação quando você possui mais de uma loja processando pelo PayPal.', 'paypal-payments' ),
 			),
 		);
 	}
@@ -572,11 +572,9 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 						// Save the billing agreement to the user.
 						if ( is_user_logged_in() ) {
 							update_user_meta( get_current_user_id(), 'paypal_payments_billing_agreement_id', $billing_agreement['id'] );
-							update_user_meta( get_current_user_id(), 'paypal_payments_billing_agreement_credentials_hash', $this->api->get_credentials_hash() );
 							update_user_meta( get_current_user_id(), 'paypal_payments_billing_agreement_payer_info', $billing_agreement['payer']['payer_info'] );
 						} else {
 							WC()->session->set( 'paypal_payments_billing_agreement_id', $billing_agreement['id'] );
-							WC()->session->set( 'paypal_payments_billing_agreement_credentials_hash', $this->api->get_credentials_hash() );
 							WC()->session->set( 'paypal_payments_billing_agreement_payer_info', $billing_agreement['payer']['payer_info'] );
 						}
 					} catch ( Paypal_Payments_Api_Exception $ex ) {
@@ -917,7 +915,8 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 			return;
 		}
 
-		$items = array();
+		$items              = array();
+		$only_digital_items = true;
 
 		// Add all items.
 		/** @var WC_Order_Item_Product $item */
@@ -935,6 +934,11 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 				'sku'      => $product->get_sku() ? $product->get_sku() : $product->get_id(),
 				'url'      => $product->get_permalink(),
 			);
+
+			// Check if product is not digital.
+			if ( ! ( $product->is_downloadable() || $product->is_virtual() ) ) {
+				$only_digital_items = false;
+			}
 		}
 
 		// Add discounts.
@@ -976,8 +980,8 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 		}
 
 		$data = array(
-			'intent'        => 'sale',
-			'payer'         => array(
+			'intent'              => 'sale',
+			'payer'               => array(
 				'payment_method'      => 'paypal',
 				'funding_instruments' => array(
 					array(
@@ -988,7 +992,11 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 					),
 				),
 			),
-			'transactions'  => array(
+			'application_context' => array(
+				'brand_name'          => get_bloginfo( 'name' ),
+				'shipping_preference' => $only_digital_items ? 'NO_SHIPPING' : 'SET_PROVIDED_ADDRESS',
+			),
+			'transactions'        => array(
 				array(
 					'amount'         => array(
 						'currency' => $order->get_currency(),
@@ -1001,17 +1009,21 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 					'description'    => sprintf( __( 'Pagamento do pedido #%s na loja %s', 'paypal-payments' ), $order->get_id(), get_bloginfo( 'name' ) ),
 					'invoice_number' => sprintf( '%s%s-%s', $this->invoice_id_prefix, $order->get_id(), uniqid() ),
 					'item_list'      => array(
-						'shipping_address' => paypal_payments_get_shipping_address( $order ),
-						'items'            => $items,
+						'items' => $items,
 					),
 
 				),
 			),
-			'redirect_urls' => array(
+			'redirect_urls'       => array(
 				'return_url' => home_url(),
 				'cancel_url' => home_url(),
 			),
 		);
+
+		// Add shipping address for non digital goods
+		if ( ! $only_digital_items ) {
+			$data['transactions'][0]['item_list']['shipping_address'] = paypal_payments_get_shipping_address( $order );
+		}
 
 		// Make API request.
 		$response = $this->api->create_payment( $data, array( 'PAYPAL-CLIENT-METADATA-ID' => $uuid ), 'reference' );
@@ -1062,11 +1074,9 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 				$order->save();
 
 				update_user_meta( get_current_user_id(), 'paypal_payments_billing_agreement_id', WC()->session->get( 'paypal_payments_billing_agreement_id' ) );
-				update_user_meta( get_current_user_id(), 'paypal_payments_billing_agreement_credentials_hash', WC()->session->get( 'paypal_payments_billing_agreement_credentials_hash' ) );
 				update_user_meta( get_current_user_id(), 'paypal_payments_billing_agreement_payer_info', WC()->session->get( 'paypal_payments_billing_agreement_payer_info' ) );
 
 				unset( WC()->session->paypal_payments_billing_agreement_id );
-				unset( WC()->session->paypal_payments_billing_agreement_credentials_hash );
 				unset( WC()->session->paypal_payments_billing_agreement_payer_info );
 
 			} catch ( Exception $ex ) {
@@ -1145,14 +1155,34 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 	public function process_payment( $order_id ) {
 		$order = wc_get_order( $order_id );
 
-		if ( $this->is_processing_shortcut() ) {
-			return $this->process_payment_shortcut( $order );
-		} else if ( $this->is_processing_reference_transaction() ) {
-			return $this->process_payment_reference_transaction( $order );
-		} else if ( $this->is_processing_spb() ) {
-			return $this->process_payment_spb( $order );
-		} else {
-			wc_add_notice( __( 'O método de pagamento não foi detectado corretamente. Por favor, tente novamente.', 'paypal-payments' ), 'error' );
+		try {
+			if ( $this->is_processing_shortcut() ) {
+				return $this->process_payment_shortcut( $order );
+			} else if ( $this->is_processing_reference_transaction() ) {
+				return $this->process_payment_reference_transaction( $order );
+			} else if ( $this->is_processing_spb() ) {
+				return $this->process_payment_spb( $order );
+			} else {
+				wc_add_notice( __( 'O método de pagamento não foi detectado corretamente. Por favor, tente novamente.', 'paypal-payments' ), 'error' );
+			}
+		} catch ( Paypal_Payments_Api_Exception $ex ) {
+			$data = $ex->getData();
+			switch ( $data['name'] ) {
+				// Repeat the execution
+				case 'INTERNAL_SERVICE_ERROR':
+					wc_add_notice( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir entre em contato.', 'paypal-payments' ), 'error' );
+					break;
+				case 'VALIDATION_ERROR':
+					wc_add_notice( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir entre em contato.', 'paypal-payments' ), 'error' );
+					break;
+				case 'PAYMENT_ALREADY_DONE':
+					wc_add_notice( __( 'Já existe um pagamento para este pedido.', 'paypal-payments' ), 'error' );
+					break;
+				default:
+					wc_add_notice( __( 'O seu pagamento não foi aprovado, por favor tente novamente.', 'paypal-payments' ), 'error' );
+					break;
+			}
+			WC()->session->set( 'refresh_totals', true );
 		}
 	}
 
@@ -1384,7 +1414,7 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 				true
 			);
 			ob_start();
-			wc_print_notice( __( 'Você cancelou a criação do token. Reinicie o processo de checkout.', 'paypal-payments' ), 'error' );
+			wc_print_notice( __( 'Você cancelou a criação do termo de pagamento.', 'paypal-payments' ), 'error' );
 			$cancel_message = ob_get_clean();
 
 			$localizes[] = array(
@@ -1428,6 +1458,18 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 				true
 			);
 			wp_enqueue_style( 'paypal-payments-shortcut', plugins_url( 'assets/dist/css/frontend-shortcut.css', PAYPAL_PAYMENTS_MAIN_FILE ), array(), PAYPAL_PAYMENTS_VERSION, 'all' );
+
+			ob_start();
+			wc_print_notice( __( 'Você cancelou o pagamento.', 'paypal-payments' ), 'error' );
+			$cancel_message = ob_get_clean();
+
+			$localizes[] = array(
+				'paypal-payments-shortcut',
+				'paypal_payments_shortcut_settings',
+				array(
+					'cancel_message' => $cancel_message,
+				)
+			);
 		}
 
 		wp_enqueue_script( 'paypal-payments-scripts', add_query_arg( $paypal_args, 'https://www.paypal.com/sdk/js' ), array(), null, true );
