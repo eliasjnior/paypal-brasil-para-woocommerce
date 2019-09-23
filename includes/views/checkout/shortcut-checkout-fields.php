@@ -55,6 +55,21 @@ try {
 		}
 
 		WC()->session->set( 'paypal_payments_shortcut_payer_info', $payer );
+
+		// Set customer properties to ensure shipping calculation.
+		WC()->customer->set_props(
+			array(
+				'shipping_country'   => $payer['country'],
+				'shipping_state'     => $payer['state'],
+				'shipping_postcode'  => $payer['postcode'],
+				'shipping_city'      => $payer['city'],
+				'shipping_address_1' => $payer['address_line_1'],
+				'shipping_address_2' => '',
+			)
+		);
+
+		// Save customer data.
+		WC()->customer->save();
 	}
 	$states = WC()->countries->get_states( $payer['country'] );
 	?>

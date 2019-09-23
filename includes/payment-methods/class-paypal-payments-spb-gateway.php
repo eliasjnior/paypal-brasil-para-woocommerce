@@ -825,7 +825,7 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 			array(
 				'op'    => 'add',
 				'path'  => '/transactions/0/invoice_number',
-				'value' => sprintf( '%s%s-%s', $this->invoice_id_prefix, $order->get_id(), uniqid() ),
+				'value' => sprintf( '%s%s', $this->invoice_id_prefix, $order->get_id() ),
 			),
 		);
 
@@ -1007,7 +1007,7 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 						),
 					),
 					'description'    => sprintf( __( 'Pagamento do pedido #%s na loja %s', 'paypal-payments' ), $order->get_id(), get_bloginfo( 'name' ) ),
-					'invoice_number' => sprintf( '%s%s-%s', $this->invoice_id_prefix, $order->get_id(), uniqid() ),
+					'invoice_number' => sprintf( '%s%s', $this->invoice_id_prefix, $order->get_id() ),
 					'item_list'      => array(
 						'items' => $items,
 					),
@@ -1112,7 +1112,7 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 			array(
 				'op'    => 'add',
 				'path'  => '/transactions/0/invoice_number',
-				'value' => sprintf( '%s%s-%s', $this->invoice_id_prefix, $order->get_id(), uniqid() ),
+				'value' => sprintf( '%s%s', $this->invoice_id_prefix, $order->get_id() ),
 			),
 		);
 
