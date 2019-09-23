@@ -55,7 +55,11 @@ try {
 		}
 
 		WC()->session->set( 'paypal_payments_shortcut_payer_info', $payer );
-
+	}
+	$states = WC()->countries->get_states( $payer['country'] );
+	?>
+	<?php if ( ! $this->is_shortcut_override_address() ): ?>
+		<?php
 		// Set customer properties to ensure shipping calculation.
 		WC()->customer->set_props(
 			array(
@@ -70,10 +74,7 @@ try {
 
 		// Save customer data.
 		WC()->customer->save();
-	}
-	$states = WC()->countries->get_states( $payer['country'] );
-	?>
-	<?php if ( ! $this->is_shortcut_override_address() ): ?>
+		?>
         <div class="woocommerce-info">
 			<?php _e( 'Por favor, verifique os dados obtidos através do seu pagamento pelo PayPal antes de finalizar a compra.', 'paypal-payments' ); ?>
             <a href="<?php echo esc_url( add_query_arg( 'override-address', true ) ); ?>"><?php _e( 'Este não é meu endereço.', 'paypal-payments' ); ?></a>
