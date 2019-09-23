@@ -16,6 +16,7 @@ if ( is_user_logged_in() ) {
 $has_billing_agreement   = false;
 $billing_agreement_error = false;
 ?>
+<?php var_dump($user_billing_agreement_id); ?>
 <ul class="paypal-payments-billing-agreement-options">
     <!-- USER DEFAULT BILLING AGREEMENT -->
 	<?php

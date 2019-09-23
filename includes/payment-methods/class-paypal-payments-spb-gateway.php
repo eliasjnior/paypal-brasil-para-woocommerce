@@ -973,10 +973,12 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 		$subtotal       = number_format( ( $subtotal_cents - $discount_cents + $tax_cents ) / 100, 2, '.', '' );
 		$shipping       = number_format( $shipping_cents / 100, 2, '.', '' );
 
-		if ( is_user_logged_in() ) {
+		// Try to get billing agreement from session.
+		$billing_agreement_id = WC()->session->get( 'paypal_payments_billing_agreement_id' );
+
+		// If it's not in session, try to get from user meta.
+		if ( ! $billing_agreement_id ) {
 			$billing_agreement_id = get_user_meta( get_current_user_id(), 'paypal_payments_billing_agreement_id', true );
-		} else {
-			$billing_agreement_id = WC()->session->get( 'paypal_payments_billing_agreement_id' );
 		}
 
 		$data = array(
@@ -1052,36 +1054,19 @@ class PayPal_Payments_SPB_Gateway extends PayPal_Payments_Gateway {
 				break;
 		}
 
-		// Check if user isn't logged in.
-		if ( ! is_user_logged_in() ) {
-			try {
-				// We should create or associate the user.
-				$user_email = $order->get_billing_email();
-				$user       = get_user_by( 'email', $user_email );
+		try {
+			$billing_agreement_id_session = WC()->session->get( 'paypal_payments_billing_agreement_id' );
 
-				// Create new user if doesn't exists.
-				if ( ! $user ) {
-					$user_password = wp_generate_password();
-					$user_username = wc_create_new_customer_username( $user_email, array(
-						'first_name' => $order->get_billing_first_name(),
-						'last_name'  => $order->get_billing_last_name(),
-					) );
-					$user_id       = wc_create_new_customer( $user_email, $user_username, $user_password );
-					$user          = get_user_by( 'id', $user_id );
-				}
-
-				$order->set_customer_id( $user->ID );
-				$order->save();
-
-				update_user_meta( get_current_user_id(), 'paypal_payments_billing_agreement_id', WC()->session->get( 'paypal_payments_billing_agreement_id' ) );
+			// Only do that if billing agreement is from session.
+			if ( $billing_agreement_id_session ) {
+				update_user_meta( get_current_user_id(), 'paypal_payments_billing_agreement_id', $billing_agreement_id_session );
 				update_user_meta( get_current_user_id(), 'paypal_payments_billing_agreement_payer_info', WC()->session->get( 'paypal_payments_billing_agreement_payer_info' ) );
 
 				unset( WC()->session->paypal_payments_billing_agreement_id );
 				unset( WC()->session->paypal_payments_billing_agreement_payer_info );
-
-			} catch ( Exception $ex ) {
-				// do nothing
 			}
+		} catch ( Exception $ex ) {
+			// do nothing
 		}
 
 		update_post_meta( $order->get_id(), 'paypal_payments_execute_data', $response );
