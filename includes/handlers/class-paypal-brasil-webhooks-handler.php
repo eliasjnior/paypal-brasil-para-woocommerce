@@ -6,12 +6,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Check if class already exists before create.
-if ( ! class_exists( 'PayPal_Payments_Webhooks_Handler' ) ) {
+if ( ! class_exists( 'PayPal_Brasil_Webhooks_Handler' ) ) {
 
 	/**
 	 * Class WC_PPP_Brasil_Webhooks_Handler.
 	 */
-	class PayPal_Payments_Webhooks_Handler {
+	class PayPal_Brasil_Webhooks_Handler {
 
 		private $gateway_id;
 
@@ -32,7 +32,7 @@ if ( ! class_exists( 'PayPal_Payments_Webhooks_Handler' ) ) {
 			$method_name = 'handle_process_' . str_replace( '.', '_', strtolower( $event['event_type'] ) );
 			if ( method_exists( $this, $method_name ) ) {
 				$resource_id = isset( $event['resource']['sale_id'] ) ? $event['resource']['sale_id'] : $event['resource']['id'];
-				$order_id    = $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = 'paypal_payments_sale_id' AND meta_value = %s", $resource_id ) );
+				$order_id    = $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = 'paypal_brasil_sale_id' AND meta_value = %s", $resource_id ) );
 				// If found the order ID with this sale ID.
 				if ( $order_id ) {
 					// Get the payment method to check if was processed by this gateway.

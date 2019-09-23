@@ -2,8 +2,8 @@ import {PaypalPayments} from "../frontend-shared";
 import {paymentSpb} from "./frontend-spb-api";
 
 declare const paypal: any;
-declare const paypal_payments_settings: any;
-declare const paypal_payments_spb_settings: any;
+declare const paypal_brasil_settings: any;
+declare const paypal_brasil_spb_settings: any;
 
 class PaypalPaymentsSpb extends PaypalPayments {
 
@@ -40,8 +40,8 @@ class PaypalPaymentsSpb extends PaypalPayments {
             locale: 'pt_BR',
             style: {
                 size: 'responsive',
-                color: paypal_payments_settings.style.color,
-                shape: paypal_payments_settings.style.format,
+                color: paypal_brasil_settings.style.color,
+                shape: paypal_brasil_settings.style.format,
                 label: 'pay',
             },
             createOrder: paymentSpb.create,

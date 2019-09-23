@@ -8,11 +8,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Force init gateways on load.
  */
-function paypal_payments_init_gateways_on_load() {
-	new PayPal_Payments_SPB_Gateway();
+function paypal_brasil_init_gateways_on_load() {
+	new PayPal_Brasil_SPB_Gateway();
 }
 
-add_action( 'wp', 'paypal_payments_init_gateways_on_load' );
+add_action( 'wp', 'paypal_brasil_init_gateways_on_load' );
 
 /**
  * Get order items prepared to API.
@@ -21,7 +21,7 @@ add_action( 'wp', 'paypal_payments_init_gateways_on_load' );
  *
  * @return array
  */
-function paypal_payments_get_order_items( $order ) {
+function paypal_brasil_get_order_items( $order ) {
 
 	$items = array();
 
@@ -47,7 +47,7 @@ function paypal_payments_get_order_items( $order ) {
 	if ( $order->get_discount_total() ) {
 		$discount_cents = intval( $order->get_discount_total() * 100 );
 		$items[]        = array(
-			'name'     => __( 'Desconto', 'paypal-payments' ),
+			'name'     => __( 'Desconto', 'paypal-brasil-para-woocommerce' ),
 			'currency' => get_woocommerce_currency(),
 			'quantity' => 1,
 			'price'    => number_format( ( - $discount_cents ) / 100, 2, '.', '' ),
@@ -59,7 +59,7 @@ function paypal_payments_get_order_items( $order ) {
 	if ( $order->get_total_tax() ) {
 		$tax_cents = intval( $order->get_total_tax() * 100 );
 		$items[]   = array(
-			'name'     => __( 'Taxas', 'paypal-payments' ),
+			'name'     => __( 'Taxas', 'paypal-brasil-para-woocommerce' ),
 			'currency' => get_woocommerce_currency(),
 			'quantity' => 1,
 			'price'    => number_format( $tax_cents / 100, 2, '.', '' ),
@@ -77,7 +77,7 @@ function paypal_payments_get_order_items( $order ) {
  *
  * @return array
  */
-function paypal_payments_get_shipping_address( $order ) {
+function paypal_brasil_get_shipping_address( $order ) {
 	$line1 = array();
 	$line2 = array();
 
@@ -118,7 +118,7 @@ function paypal_payments_get_shipping_address( $order ) {
  *
  * @return array
  */
-function paypal_payments_prepare_installment_option( $data ) {
+function paypal_brasil_prepare_installment_option( $data ) {
 	$value = array(
 		'term'            => $data['credit_financing']['term'],
 		'monthly_payment' => array(
@@ -145,7 +145,7 @@ function paypal_payments_prepare_installment_option( $data ) {
  *
  * @return array
  */
-function paypal_payments_explode_name( $full_name ) {
+function paypal_brasil_explode_name( $full_name ) {
 	$full_name  = explode( ' ', $full_name );
 	$first_name = $full_name ? $full_name[0] : '';
 	unset( $full_name[0] );
@@ -160,7 +160,7 @@ function paypal_payments_explode_name( $full_name ) {
 /**
  * Update WooCommerce settings.
  */
-function paypal_payments_wc_settings_ajax() {
+function paypal_brasil_wc_settings_ajax() {
 	header( 'Content-type: application/json' );
 
 	$choice = isset( $_REQUEST['enable'] ) && $_REQUEST['enable'] === 'yes' ? 'yes' : 'no';
@@ -174,18 +174,18 @@ function paypal_payments_wc_settings_ajax() {
 	echo json_encode( array(
 		'success' => true,
 		'choice'  => $choice,
-		'message' => $choice === 'yes' ? __( 'As configurações do WooCommerce foram alteradas com sucesso.', 'paypal-payments' ) : __( 'As configurações do WooCommerce não foram alteradas.', 'paypal-payments' ),
+		'message' => $choice === 'yes' ? __( 'As configurações do WooCommerce foram alteradas com sucesso.', 'paypal-brasil-para-woocommerce' ) : __( 'As configurações do WooCommerce não foram alteradas.', 'paypal-brasil-para-woocommerce' ),
 	) );
 
 	wp_die();
 }
 
-add_action( 'wp_ajax_paypal_payments_wc_settings', 'paypal_payments_wc_settings_ajax' );
+add_action( 'wp_ajax_paypal_brasil_wc_settings', 'paypal_brasil_wc_settings_ajax' );
 
 /**
  * Check if WooCommerce settings is activated.
  */
-function paypal_payments_wc_settings_valid() {
+function paypal_brasil_wc_settings_valid() {
 	return get_option( 'woocommerce_enable_checkout_login_reminder' ) === 'yes' &&
 	       get_option( 'woocommerce_enable_signup_and_login_from_checkout' ) === 'yes' &&
 	       get_option( 'woocommerce_enable_guest_checkout' ) === 'no';
@@ -195,17 +195,17 @@ function paypal_payments_wc_settings_valid() {
  * Return if needs CPF.
  * @return bool
  */
-function paypal_payments_needs_cpf() {
+function paypal_brasil_needs_cpf() {
 	return function_exists( 'get_woocommerce_currency' ) ? get_woocommerce_currency() === 'BRL' : false;
 }
 
 /**
  * Protect some metadata.
  */
-function paypal_payments_protect_metadata( $protected, $meta_key ) {
+function paypal_brasil_protect_metadata( $protected, $meta_key ) {
 	$keys = array(
-		'paypal_payments_id',
-		'paypal_payments_sale_id',
+		'paypal_brasil_id',
+		'paypal_brasil_sale_id',
 		'wc_ppp_brasil_installments',
 		'wc_ppp_brasil_sale',
 		'wc_ppp_brasil_sale_id',
@@ -223,4 +223,4 @@ function paypal_payments_protect_metadata( $protected, $meta_key ) {
 	return $protected;
 }
 
-add_filter( 'is_protected_meta', 'paypal_payments_protect_metadata', 10, 2 );
+add_filter( 'is_protected_meta', 'paypal_brasil_protect_metadata', 10, 2 );

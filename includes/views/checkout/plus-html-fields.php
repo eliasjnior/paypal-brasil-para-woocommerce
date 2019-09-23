@@ -1,5 +1,5 @@
 <?php
-/** @var PayPal_Payments_Plus_Gateway $this */
+/** @var PayPal_Brasil_Plus_Gateway $this */
 
 // Exit if not in WordPress.
 if ( ! defined( 'ABSPATH' ) ) {

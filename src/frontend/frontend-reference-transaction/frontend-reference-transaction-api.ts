@@ -1,15 +1,15 @@
 import {PaypalPayments} from "../frontend-shared";
 
-declare const paypal_payments_settings: any;
-declare const paypal_payments_reference_transaction_settings: any;
+declare const paypal_brasil_settings: any;
+declare const paypal_brasil_reference_transaction_settings: any;
 
 export const paymentReferenceTransaction = {
 
     create: () => {
         return new Promise((resolve, reject) => {
             PaypalPayments.makeRequest('billing-agreement-token', {
-                nonce: paypal_payments_settings.nonce,
-                user_id: paypal_payments_settings.current_user_id,
+                nonce: paypal_brasil_settings.nonce,
+                user_id: paypal_brasil_settings.current_user_id,
             }).done(function (response) {
                 resolve(response.data.token_id);
             }).fail(function (jqXHR) {
@@ -20,7 +20,7 @@ export const paymentReferenceTransaction = {
 
     approve: (data) => {
         // Fill the input data with the billing agreement token.
-        jQuery('[name=paypal_payments_billing_agreement_token]').val(data.billingToken);
+        jQuery('[name=paypal_brasil_billing_agreement_token]').val(data.billingToken);
         // Forte update checkout to create billing agreement.
         PaypalPayments.triggerUpdateCheckout();
     },
@@ -41,7 +41,7 @@ export const paymentReferenceTransaction = {
         // Update the checkout to render button again.
         PaypalPayments.triggerUpdateCheckout();
         // Add notices.
-        PaypalPayments.setNotices(paypal_payments_reference_transaction_settings.cancel_message);
+        PaypalPayments.setNotices(paypal_brasil_reference_transaction_settings.cancel_message);
         // Scroll screen to top.
         PaypalPayments.scrollTop();
     }

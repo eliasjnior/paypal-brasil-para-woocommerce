@@ -2,7 +2,7 @@ import {PaypalPayments} from "../frontend-shared";
 import {paymentShortcut} from "./frontend-shortcut-api";
 
 declare const paypal: any;
-declare const paypal_payments_settings: any;
+declare const paypal_brasil_settings: any;
 
 class PaypalPaymentsShortcut extends PaypalPayments {
 
@@ -25,8 +25,8 @@ class PaypalPaymentsShortcut extends PaypalPayments {
                 locale: 'pt_BR',
                 style: {
                     size: 'responsive',
-                    color: paypal_payments_settings.style.color,
-                    shape: paypal_payments_settings.style.format,
+                    color: paypal_brasil_settings.style.color,
+                    shape: paypal_brasil_settings.style.format,
                     label: 'buynow',
                 },
                 createOrder: paymentShortcut.miniCart.create,
@@ -44,8 +44,8 @@ class PaypalPaymentsShortcut extends PaypalPayments {
                 locale: 'pt_BR',
                 style: {
                     size: 'responsive',
-                    color: paypal_payments_settings.style.color,
-                    shape: paypal_payments_settings.style.format,
+                    color: paypal_brasil_settings.style.color,
+                    shape: paypal_brasil_settings.style.format,
                     label: 'buynow',
                 },
                 createOrder: paymentShortcut.cart.create,

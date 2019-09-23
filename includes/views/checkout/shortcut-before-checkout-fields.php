@@ -11,7 +11,7 @@ $fields = array(
 	'override-address',
 );
 
-$prefix = 'paypal-payments-shortcut-';
+$prefix = 'paypal-brasil-shortcut-';
 
 foreach ( $fields as $field ) {
 	$value = isset( $_GET[ $field ] ) ? sanitize_text_field( $_GET[ $field ] ) : '';

@@ -6,23 +6,23 @@
 		<?php if ( get_option( $this->get_option_key() . '_validator' ) === 'no' ): ?>
             <div id="message" class="error inline">
                 <p>
-                    <strong><?php _e( 'Suas credenciais não são válidas. Por favor, verifique os dados informados.', 'paypal-payments' ); ?></strong>
+                    <strong><?php _e( 'Suas credenciais não são válidas. Por favor, verifique os dados informados.', 'paypal-brasil-para-woocommerce' ); ?></strong>
                 </p>
             </div>
 		<?php elseif ( ( ! empty( $_POST ) && $this->get_updated_values()['reference_enabled'] === 'yes' && get_option( $this->get_option_key() . '_reference_transaction_validator' ) === 'no' )
 		               || ( empty( $_POST ) && $this->reference_enabled === 'yes' && get_option( $this->get_option_key() . '_reference_transaction_validator' ) === 'no' ) ): ?>
             <div id="message" class="error inline">
                 <p>
-                    <strong><?php _e( 'Não foi possível ativar a funcionalidade "Salvar Carteira Digital" pois verificamos que a sua conta PayPal não tem permissão para utilizar este produto. Entre em contato pelo 0800-047-4482 do PayPal e solicite a sua liberação.', 'paypal-payments' ); ?></strong>
+                    <strong><?php _e( 'Não foi possível ativar a funcionalidade "Salvar Carteira Digital" pois verificamos que a sua conta PayPal não tem permissão para utilizar este produto. Entre em contato pelo 0800-047-4482 do PayPal e solicite a sua liberação.', 'paypal-brasil-para-woocommerce' ); ?></strong>
                 </p>
             </div>
 		<?php endif; ?>
 
         <!-- WEBHOOK -->
 		<?php if ( ! $this->get_webhook_id() ): ?>
-            <div id="paypal-payments-message-webhook" class="error inline">
+            <div id="paypal-brasil-message-webhook" class="error inline">
                 <p>
-                    <strong><?php _e( 'Não foi possível criar as configurações de webhook. Tente salvar novamente.', 'paypal-payments' ); ?></strong>
+                    <strong><?php _e( 'Não foi possível criar as configurações de webhook. Tente salvar novamente.', 'paypal-brasil-para-woocommerce' ); ?></strong>
                 </p>
             </div>
 		<?php endif; ?>
@@ -32,8 +32,8 @@
     <img class="banner"
          srcset="<?php echo esc_attr( plugins_url( 'assets/images/banner-plus-2x.png', PAYPAL_PAYMENTS_MAIN_FILE ) ); ?> 2x"
          src="<?php echo esc_attr( plugins_url( 'assets/images/banner-plus.png', PAYPAL_PAYMENTS_MAIN_FILE ) ); ?>"
-         title="<?php _e( 'PayPal Brasil', 'paypal-payments' ); ?>"
-         alt="<?php _e( 'PayPal Brasil', 'paypal-payments' ); ?>">
+         title="<?php _e( 'PayPal Brasil', 'paypal-brasil-para-woocommerce' ); ?>"
+         alt="<?php _e( 'PayPal Brasil', 'paypal-brasil-para-woocommerce' ); ?>">
 
 	<?php echo wp_kses_post( wpautop( $this->get_method_description() ) ); ?>
 

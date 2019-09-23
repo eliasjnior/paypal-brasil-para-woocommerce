@@ -1,7 +1,7 @@
 import {PaypalPayments} from "../frontend-shared";
 
-declare const paypal_payments_settings: any;
-declare const paypal_payments_shortcut_settings: any;
+declare const paypal_brasil_settings: any;
+declare const paypal_brasil_shortcut_settings: any;
 
 export const paymentShortcut = {
 
@@ -11,7 +11,7 @@ export const paymentShortcut = {
             console.log('create');
             return new Promise((resolve, reject) => {
                 PaypalPayments.makeRequest('shortcut', {
-                    nonce: paypal_payments_settings.nonce,
+                    nonce: paypal_brasil_settings.nonce,
                 }).done(function (response) {
                     resolve(response.data.ec);
                 }).fail(function (jqXHR) {
@@ -22,7 +22,7 @@ export const paymentShortcut = {
 
         approve: (data) => {
             // Redirect to page review.
-            window.location = PaypalPayments.replaceVars(paypal_payments_settings.checkout_review_page_url, {
+            window.location = PaypalPayments.replaceVars(paypal_brasil_settings.checkout_review_page_url, {
                 PAY_ID: data.paymentID,
                 PAYER_ID: data.payerID,
             });
@@ -40,7 +40,7 @@ export const paymentShortcut = {
 
         cancel: () => {
             // Add notices.
-            PaypalPayments.setNotices(paypal_payments_shortcut_settings.cancel_message);
+            PaypalPayments.setNotices(paypal_brasil_shortcut_settings.cancel_message);
             // Scroll screen to top.
             PaypalPayments.scrollTop();
         }
@@ -52,7 +52,7 @@ export const paymentShortcut = {
         create: () => {
             return new Promise((resolve, reject) => {
                 PaypalPayments.makeRequest('shortcut-cart', {
-                    nonce: paypal_payments_settings.nonce,
+                    nonce: paypal_brasil_settings.nonce,
                 }).done(function (response) {
                     resolve(response.data.ec);
                 }).fail(function (jqXHR) {
@@ -63,7 +63,7 @@ export const paymentShortcut = {
 
         approve: (data) => {
             // Redirect to page review.
-            window.location = PaypalPayments.replaceVars(paypal_payments_settings.checkout_review_page_url, {
+            window.location = PaypalPayments.replaceVars(paypal_brasil_settings.checkout_review_page_url, {
                 PAY_ID: data.paymentID,
                 PAYER_ID: data.payerID,
             });
@@ -83,7 +83,7 @@ export const paymentShortcut = {
             // Update the cart to render button again.
             PaypalPayments.triggerUpdateCart();
             // Add notices.
-            PaypalPayments.setNotices(paypal_payments_shortcut_settings.cancel_message);
+            PaypalPayments.setNotices(paypal_brasil_shortcut_settings.cancel_message);
             // Scroll screen to top.
             PaypalPayments.scrollTop();
         }

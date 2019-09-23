@@ -10,21 +10,21 @@ $pay_id         = isset( $_GET['pay-id'] ) ? sanitize_text_field( $_GET['pay-id'
 ?>
 
     <!-- INPUT TO SEND POST REQUEST AND KNOW WE ARE ON SHORTCUT -->
-    <input type="hidden" name="paypal-payments-shortcut-review-payment"
+    <input type="hidden" name="paypal-brasil-shortcut-review-payment"
            value="<?php echo esc_attr( $review_payment ); ?>">
-    <input type="hidden" name="paypal-payments-shortcut-payer-id" value="<?php echo esc_attr( $payer_id ); ?>">
-    <input type="hidden" name="paypal-payments-shortcut-pay-id" value="<?php echo esc_attr( $pay_id ); ?>">
+    <input type="hidden" name="paypal-brasil-shortcut-payer-id" value="<?php echo esc_attr( $payer_id ); ?>">
+    <input type="hidden" name="paypal-brasil-shortcut-pay-id" value="<?php echo esc_attr( $pay_id ); ?>">
 
     <!-- RELOAD REQUEST FOR JS -->
     <!-- THIS IS DUE WOOCOMMERCE BUG: https://github.com/woocommerce/woocommerce/issues/23888 -->
-    <div class="paypal-payments-reload-request"></div>
+    <div class="paypal-brasil-reload-request"></div>
 
 <?php
 try {
 	$pay_id   = isset( $_GET['pay-id'] ) ? sanitize_text_field( $_GET['pay-id'] ) : '';
 	$payer_id = isset( $_GET['payer-id'] ) ? sanitize_text_field( $_GET['payer-id'] ) : '';
 
-	$payer = WC()->session->get( 'paypal_payments_shortcut_payer_info' );
+	$payer = WC()->session->get( 'paypal_brasil_shortcut_payer_info' );
 
 	if ( ! $payer || $payer['pay-id'] !== $pay_id ) {
 		$payment = $this->api->get_payment( $pay_id, array(), 'shortcut' );
@@ -54,7 +54,7 @@ try {
 			$payer['address_line_2'] = $payment['payer']['payer_info']['shipping_address']['line2'];
 		}
 
-		WC()->session->set( 'paypal_payments_shortcut_payer_info', $payer );
+		WC()->session->set( 'paypal_brasil_shortcut_payer_info', $payer );
 	}
 	$states = WC()->countries->get_states( $payer['country'] );
 	?>
@@ -76,32 +76,32 @@ try {
 		WC()->customer->save();
 		?>
         <div class="woocommerce-info">
-			<?php _e( 'Por favor, verifique os dados obtidos através do seu pagamento pelo PayPal antes de finalizar a compra.', 'paypal-payments' ); ?>
-            <a href="<?php echo esc_url( add_query_arg( 'override-address', true ) ); ?>"><?php _e( 'Este não é meu endereço.', 'paypal-payments' ); ?></a>
+			<?php _e( 'Por favor, verifique os dados obtidos através do seu pagamento pelo PayPal antes de finalizar a compra.', 'paypal-brasil-para-woocommerce' ); ?>
+            <a href="<?php echo esc_url( add_query_arg( 'override-address', true ) ); ?>"><?php _e( 'Este não é meu endereço.', 'paypal-brasil-para-woocommerce' ); ?></a>
         </div>
         <table class="shop_table">
             <tr>
-                <th><?php _e( 'Nome', 'paypal-payments' ); ?></th>
+                <th><?php _e( 'Nome', 'paypal-brasil-para-woocommerce' ); ?></th>
                 <td><?php echo sprintf( '%s', $payer['shipping_name'] ); ?></td>
             </tr>
             <tr>
-                <th><?php _e( 'Endereço', 'paypal-payments' ); ?></th>
+                <th><?php _e( 'Endereço', 'paypal-brasil-para-woocommerce' ); ?></th>
                 <td><?php echo $payer['address_line_1'] . ( isset( $payer['address_line_2'] ) ? ', ' . $payer['address_line_2'] : '' ); ?></td>
             </tr>
             <tr>
-                <th><?php _e( 'Cidade', 'paypal-payments' ); ?></th>
+                <th><?php _e( 'Cidade', 'paypal-brasil-para-woocommerce' ); ?></th>
                 <td><?php echo esc_html( $payer['city'] ); ?></td>
             </tr>
             <tr>
-                <th><?php _e( 'Estado', 'paypal-payments' ); ?></th>
+                <th><?php _e( 'Estado', 'paypal-brasil-para-woocommerce' ); ?></th>
                 <td><?php echo esc_html( $states[ $payer['state'] ] ); ?></td>
             </tr>
             <tr>
-                <th><?php _e( 'País', 'paypal-payments' ); ?></th>
+                <th><?php _e( 'País', 'paypal-brasil-para-woocommerce' ); ?></th>
                 <td><?php echo esc_html( WC()->countries->get_countries()[ $payer['country'] ] ); ?></td>
             </tr>
             <tr>
-                <th><?php _e( 'CEP', 'paypal-payments' ); ?></th>
+                <th><?php _e( 'CEP', 'paypal-brasil-para-woocommerce' ); ?></th>
                 <td><?php echo esc_html( $payer['postcode'] ); ?></td>
             </tr>
         </table>
@@ -109,7 +109,7 @@ try {
 	<?php
 } catch ( Exception $ex ) {
 	if ( isset( $_GET['retrying-attempt'] ) && $_GET['retrying-attempt'] === '1' ) {
-		wc_add_notice( __( 'Houve um erro inesperado ao obter os dados do pagamento. Tente novamente.', 'paypal-payments' ), 'error' );
+		wc_add_notice( __( 'Houve um erro inesperado ao obter os dados do pagamento. Tente novamente.', 'paypal-brasil-para-woocommerce' ), 'error' );
 		wp_redirect( wc_get_cart_url() );
 		exit;
 	} else {

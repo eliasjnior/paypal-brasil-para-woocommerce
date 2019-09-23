@@ -1,14 +1,14 @@
 import {PaypalPayments} from "../frontend-shared";
 
-declare const paypal_payments_settings: any;
-declare const paypal_payments_spb_settings: any;
+declare const paypal_brasil_settings: any;
+declare const paypal_brasil_spb_settings: any;
 
 export const paymentSpb = {
 
     create: () => {
         return new Promise((resolve, reject) => {
             PaypalPayments.makeRequest('checkout', {
-                nonce: paypal_payments_settings.nonce,
+                nonce: paypal_brasil_settings.nonce,
                 first_name: jQuery('form.woocommerce-checkout [name=billing_first_name]').val(),
                 last_name: jQuery('form.woocommerce-checkout [name=billing_last_name]').val(),
                 country: jQuery('form.woocommerce-checkout [name=billing_country]').val(),
@@ -29,9 +29,9 @@ export const paymentSpb = {
     },
 
     approve: (data) => {
-        jQuery('#paypal-spb-fields [name=paypal-payments-spb-order-id]').val(data.orderID);
-        jQuery('#paypal-spb-fields [name=paypal-payments-spb-payer-id]').val(data.payerID);
-        jQuery('#paypal-spb-fields [name=paypal-payments-spb-pay-id]').val(data.paymentID);
+        jQuery('#paypal-spb-fields [name=paypal-brasil-spb-order-id]').val(data.orderID);
+        jQuery('#paypal-spb-fields [name=paypal-brasil-spb-payer-id]').val(data.payerID);
+        jQuery('#paypal-spb-fields [name=paypal-brasil-spb-pay-id]').val(data.paymentID);
         PaypalPayments.submitForm();
     },
 
@@ -51,7 +51,7 @@ export const paymentSpb = {
         // Update the checkout to render button again.
         PaypalPayments.triggerUpdateCheckout();
         // Add notices.
-        PaypalPayments.setNotices(paypal_payments_spb_settings.cancel_message);
+        PaypalPayments.setNotices(paypal_brasil_spb_settings.cancel_message);
         // Scroll screen to top.
         PaypalPayments.scrollTop();
     }

@@ -2,8 +2,8 @@ import {PaypalPayments} from "../frontend-shared";
 import {paymentReferenceTransaction} from "./frontend-reference-transaction-api";
 
 declare const paypal: any;
-declare const paypal_payments_settings: any;
-declare const paypal_payments_reference_transaction_settings: any;
+declare const paypal_brasil_settings: any;
+declare const paypal_brasil_reference_transaction_settings: any;
 
 class PaypalPaymentsReferenceTransaction extends PaypalPayments {
 
@@ -16,7 +16,7 @@ class PaypalPaymentsReferenceTransaction extends PaypalPayments {
         // Update checkout button when payment method is changed.
         $form.on('change', '[name=payment_method]', this.updateCheckoutButton);
         // Update checkout button when billing agreement action is changed.
-        $form.on('change', '.paypal-payments-billing-agreement-option-radio', this.updateCheckoutButton);
+        $form.on('change', '.paypal-brasil-billing-agreement-option-radio', this.updateCheckoutButton);
         // Render button when WooCommerce checkout is updated.
         $body.on('updated_checkout', this.renderPayPalButton);
         // Insert uuid
@@ -28,8 +28,8 @@ class PaypalPaymentsReferenceTransaction extends PaypalPayments {
      * Insert UUID when checkout is updated.
      */
     insertUuid() {
-        const uuid = paypal_payments_reference_transaction_settings.uuid;
-        const $container = jQuery('#paypal-payments-uuid');
+        const uuid = paypal_brasil_reference_transaction_settings.uuid;
+        const $container = jQuery('#paypal-brasil-uuid');
 
         $container.val(uuid);
     }
@@ -50,7 +50,7 @@ class PaypalPaymentsReferenceTransaction extends PaypalPayments {
      * Get if create billing agreement radio is selected.
      */
     static isCreateBillingAgreementSelected() {
-        return !jQuery('.paypal-payments-billing-agreement-option-radio:checked').val();
+        return !jQuery('.paypal-brasil-billing-agreement-option-radio:checked').val();
     }
 
     /**
@@ -61,8 +61,8 @@ class PaypalPaymentsReferenceTransaction extends PaypalPayments {
             locale: 'pt_BR',
             style: {
                 size: 'responsive',
-                color: paypal_payments_settings.style.color,
-                shape: paypal_payments_settings.style.format,
+                color: paypal_brasil_settings.style.color,
+                shape: paypal_brasil_settings.style.format,
                 label: 'pay',
             },
             createBillingAgreement: paymentReferenceTransaction.create,

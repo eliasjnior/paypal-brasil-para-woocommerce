@@ -1,4 +1,4 @@
-declare const paypal_payments_settings: any;
+declare const paypal_brasil_settings: any;
 
 export class PaypalPayments {
 
@@ -26,7 +26,7 @@ export class PaypalPayments {
         const settings = {
             async: true,
             crossDomain: true,
-            url: PaypalPayments.replaceVars(paypal_payments_settings.paypal_payments_handler_url, {ACTION: action}),
+            url: PaypalPayments.replaceVars(paypal_brasil_settings.paypal_brasil_handler_url, {ACTION: action}),
             method: "POST",
             dataType: 'json',
             contentType: 'application/json; charset=utf-8',
@@ -40,16 +40,16 @@ export class PaypalPayments {
      * Show default submit button.
      */
     static showDefaultButton() {
-        jQuery('#paypal-payments-button-container .default-submit-button').show();
-        jQuery('#paypal-payments-button-container .paypal-submit-button').hide();
+        jQuery('#paypal-brasil-button-container .default-submit-button').show();
+        jQuery('#paypal-brasil-button-container .paypal-submit-button').hide();
     }
 
     /**
      * Show PayPal submit button.
      */
     static showPaypalButton() {
-        jQuery('#paypal-payments-button-container .default-submit-button').hide();
-        jQuery('#paypal-payments-button-container .paypal-submit-button').show();
+        jQuery('#paypal-brasil-button-container .default-submit-button').hide();
+        jQuery('#paypal-brasil-button-container .paypal-submit-button').show();
     }
 
     /**
@@ -57,7 +57,7 @@ export class PaypalPayments {
      * @returns {boolean}
      */
     static isPaypalPaymentsSelected() {
-        return !!jQuery('#payment_method_paypal-payments-spb-gateway:checked').length;
+        return !!jQuery('#payment_method_paypal-brasil-spb-gateway:checked').length;
     }
 
     /**

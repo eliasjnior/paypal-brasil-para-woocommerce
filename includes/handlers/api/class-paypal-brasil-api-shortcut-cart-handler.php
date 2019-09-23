@@ -4,10 +4,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class PayPal_Payments_API_Shortcut_Cart_Handler extends PayPal_Payments_API_Handler {
+class PayPal_Brasil_API_Shortcut_Cart_Handler extends PayPal_Brasil_API_Handler {
 
 	public function __construct() {
-		add_filter( 'paypal_payments_handlers', array( $this, 'add_handlers' ) );
+		add_filter( 'paypal_brasil_handlers', array( $this, 'add_handlers' ) );
 	}
 
 	public function add_handlers( $handlers ) {
@@ -27,7 +27,7 @@ class PayPal_Payments_API_Shortcut_Cart_Handler extends PayPal_Payments_API_Hand
 	public function get_fields() {
 		return array(
 			array(
-				'name'     => __( 'nonce', 'paypal-payments' ),
+				'name'     => __( 'nonce', 'paypal-brasil-para-woocommerce' ),
 				'key'      => 'nonce',
 				'sanitize' => 'sanitize_text_field',
 //				'validation' => array( $this, 'required_nonce' ),
@@ -45,7 +45,7 @@ class PayPal_Payments_API_Shortcut_Cart_Handler extends PayPal_Payments_API_Hand
 
 			if ( ! $validation['success'] ) {
 				$this->send_error_response(
-					__( 'Alguns campos estão faltando para iniciar o pagamento.', 'paypay-payments' ),
+					__( 'Alguns campos estão faltando para iniciar o pagamento.', 'paypal-brasil' ),
 					array(
 						'errors' => $validation['errors']
 					)
@@ -55,14 +55,14 @@ class PayPal_Payments_API_Shortcut_Cart_Handler extends PayPal_Payments_API_Hand
 			$posted_data = $validation['data'];
 
 			// Get the wanted gateway.
-			$gateway = $this->get_paypal_gateway( 'paypal-payments-spb-gateway' );
+			$gateway = $this->get_paypal_gateway( 'paypal-brasil-spb-gateway' );
 
 			// Store cart.
 			$cart = WC()->cart;
 
 			// Check if there is anything on cart.
 			if ( ! $cart->get_totals()['total'] ) {
-				$this->send_error_response( __( 'Você não pode fazer o pagamento de um pedido vazio.', 'paypal-payments' ) );
+				$this->send_error_response( __( 'Você não pode fazer o pagamento de um pedido vazio.', 'paypal-brasil-para-woocommerce' ) );
 			}
 
 			$data = array(
@@ -115,7 +115,7 @@ class PayPal_Payments_API_Shortcut_Cart_Handler extends PayPal_Payments_API_Hand
 			// Add discounts.
 			if ( $cart_totals['discount_total'] ) {
 				$items[] = array(
-					'name'     => __( 'Desconto', 'paypal-payments' ),
+					'name'     => __( 'Desconto', 'paypal-brasil-para-woocommerce' ),
 					'currency' => get_woocommerce_currency(),
 					'quantity' => 1,
 					'price'    => number_format( - $cart_totals['discount_total'], 2, '.', '' ),
@@ -126,7 +126,7 @@ class PayPal_Payments_API_Shortcut_Cart_Handler extends PayPal_Payments_API_Hand
 			// Add fees.
 			if ( $cart_totals['total_tax'] ) {
 				$items[] = array(
-					'name'     => __( 'Taxas', 'paypal-payments' ),
+					'name'     => __( 'Taxas', 'paypal-brasil-para-woocommerce' ),
 					'currency' => get_woocommerce_currency(),
 					'quantity' => 1,
 					'price'    => number_format( $cart_totals['total_tax'], 2, '.', '' ),
@@ -178,10 +178,10 @@ class PayPal_Payments_API_Shortcut_Cart_Handler extends PayPal_Payments_API_Hand
 			);
 
 			// Store the requested data in session.
-			WC()->session->set( 'paypal_payments_spb_shortcut_data', $data );
+			WC()->session->set( 'paypal_brasil_spb_shortcut_data', $data );
 
 			// Send success response with data.
-			$this->send_success_response( __( 'Pagamento criado com sucesso.', 'paypal-payments' ), $data );
+			$this->send_success_response( __( 'Pagamento criado com sucesso.', 'paypal-brasil-para-woocommerce' ), $data );
 		} catch ( Exception $ex ) {
 			$this->send_error_response( $ex->getMessage() );
 		}
@@ -190,11 +190,11 @@ class PayPal_Payments_API_Shortcut_Cart_Handler extends PayPal_Payments_API_Hand
 	// CUSTOM VALIDATORS
 
 	public function required_nonce( $data, $key, $name ) {
-		if ( wp_verify_nonce( $data, 'paypal-payments-checkout' ) ) {
+		if ( wp_verify_nonce( $data, 'paypal-brasil-checkout' ) ) {
 			return true;
 		}
 
-		return sprintf( __( 'O %s é inválido.', 'paypal-payments' ), $name );
+		return sprintf( __( 'O %s é inválido.', 'paypal-brasil-para-woocommerce' ), $name );
 	}
 
 	// CUSTOM SANITIZER
@@ -205,4 +205,4 @@ class PayPal_Payments_API_Shortcut_Cart_Handler extends PayPal_Payments_API_Hand
 
 }
 
-new PayPal_Payments_API_Shortcut_Cart_Handler();
+new PayPal_Brasil_API_Shortcut_Cart_Handler();

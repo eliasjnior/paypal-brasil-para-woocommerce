@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Class PayPal_Payments_Plus_Gateway.
+ * Class PayPal_Brasil_Plus_Gateway.
  *
  * @property string client_live
  * @property string client_sandbox
@@ -20,19 +20,19 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @property string invoice_id_prefix
  * @property string form_height
  */
-class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
+class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 
 	/**
-	 * PayPal_Payments_Plus_Gateway constructor.
+	 * PayPal_Brasil_Plus_Gateway constructor.
 	 */
 	public function __construct() {
 		parent::__construct();
 
 		// Set default settings.
-		$this->id                 = 'paypal-payments-plus-gateway';
+		$this->id                 = 'paypal-brasil-plus-gateway';
 		$this->has_fields         = true;
-		$this->method_title       = __( 'PayPal Brasil', 'paypal-payments' );
-		$this->method_description = __( 'Adicione o checkout transparente do PayPal em sua loja do WooCommerce.', 'paypal-payments' );
+		$this->method_title       = __( 'PayPal Brasil', 'paypal-brasil-para-woocommerce' );
+		$this->method_description = __( 'Adicione o checkout transparente do PayPal em sua loja do WooCommerce.', 'paypal-brasil-para-woocommerce' );
 		$this->supports           = array(
 			'products',
 			'refunds',
@@ -57,7 +57,7 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 
 
 		// Instance the API.
-		$this->api = new PayPal_Payments_API( $this->get_client_id(), $this->get_secret(), $this->mode, $this );
+		$this->api = new PayPal_Brasil_API( $this->get_client_id(), $this->get_secret(), $this->mode, $this );
 
 		// Handler for IPN.
 		add_action( 'woocommerce_api_' . $this->id, array( $this, 'webhook_handler' ) );
@@ -125,27 +125,27 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 	public function init_form_fields() {
 		$this->form_fields = array(
 			'enabled'           => array(
-				'title'   => __( 'Habilitar/Desabilitar', 'paypal-payments' ),
+				'title'   => __( 'Habilitar/Desabilitar', 'paypal-brasil-para-woocommerce' ),
 				'type'    => 'checkbox',
-				'label'   => __( 'Habilitar', 'paypal-payments' ),
+				'label'   => __( 'Habilitar', 'paypal-brasil-para-woocommerce' ),
 				'default' => 'no',
 			),
 			'title'             => array(
-				'title'       => __( 'Nome de exibição (complemento)', 'paypal-payments' ),
+				'title'       => __( 'Nome de exibição (complemento)', 'paypal-brasil-para-woocommerce' ),
 				'type'        => 'text',
 				'default'     => '',
-				'placeholder' => __( 'Exemplo: Parcelado em até 12x', 'paypal-payments' ),
-				'description' => __( 'Será exibido no checkout: Cartão de Crédito (Parcelado em até 12x)', 'paypal-payments' ),
-				'desc_tip'    => __( 'Por padrão a solução do PayPal Plus é exibida como “Cartão de Crédito”, utilize esta opção para definir um texto adicional como parcelamento ou descontos.', 'paypal-payments' ),
+				'placeholder' => __( 'Exemplo: Parcelado em até 12x', 'paypal-brasil-para-woocommerce' ),
+				'description' => __( 'Será exibido no checkout: Cartão de Crédito (Parcelado em até 12x)', 'paypal-brasil-para-woocommerce' ),
+				'desc_tip'    => __( 'Por padrão a solução do PayPal Plus é exibida como “Cartão de Crédito”, utilize esta opção para definir um texto adicional como parcelamento ou descontos.', 'paypal-brasil-para-woocommerce' ),
 			),
 			'mode'              => array(
-				'title'       => __( 'Modo', 'paypal-payments' ),
+				'title'       => __( 'Modo', 'paypal-brasil-para-woocommerce' ),
 				'type'        => 'select',
 				'options'     => array(
-					'live'    => __( 'Produção', 'paypal-payments' ),
-					'sandbox' => __( 'Sandbox', 'paypal-payments' ),
+					'live'    => __( 'Produção', 'paypal-brasil-para-woocommerce' ),
+					'sandbox' => __( 'Sandbox', 'paypal-brasil-para-woocommerce' ),
 				),
-				'description' => __( 'Utilize esta opção para alternar entre os modos Sandbox e Produção. Sandbox é utilizado para testes e Produção para compras reais.', 'paypal-payments' ),
+				'description' => __( 'Utilize esta opção para alternar entre os modos Sandbox e Produção. Sandbox é utilizado para testes e Produção para compras reais.', 'paypal-brasil-para-woocommerce' ),
 			),
 			'client_live'       => array(
 				'title'       => '',
@@ -172,18 +172,18 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 				'description' => '',
 			),
 			'debug'             => array(
-				'title'       => __( 'Modo depuração', 'paypal-payments' ),
+				'title'       => __( 'Modo depuração', 'paypal-brasil-para-woocommerce' ),
 				'type'        => 'checkbox',
-				'label'       => __( 'Habilitar', 'paypal-payments' ),
-				'desc_tip'    => __( 'Habilite este modo para depurar a aplicação em caso de homologação ou erros.', 'paypal-payments' ),
-				'description' => sprintf( __( 'Os logs serão salvos no caminho: %s.', 'paypal-payments' ), $this->get_log_view() ),
+				'label'       => __( 'Habilitar', 'paypal-brasil-para-woocommerce' ),
+				'desc_tip'    => __( 'Habilite este modo para depurar a aplicação em caso de homologação ou erros.', 'paypal-brasil-para-woocommerce' ),
+				'description' => sprintf( __( 'Os logs serão salvos no caminho: %s.', 'paypal-brasil-para-woocommerce' ), $this->get_log_view() ),
 			),
 			'form_height'       => array(
-				'title'       => __( 'Altura do formulário', 'paypal-payments' ),
+				'title'       => __( 'Altura do formulário', 'paypal-brasil-para-woocommerce' ),
 				'type'        => 'text',
 				'default'     => '',
-				'placeholder' => __( 'px', 'paypal-payments' ),
-				'description' => __( 'Utilize esta opção para definir uma altura máxima do formulário de cartão de crédito (será considerado um valor em pixels). Será aceito um valor em pixels entre 400 - 550.', 'paypal-payments' ),
+				'placeholder' => __( 'px', 'paypal-brasil-para-woocommerce' ),
+				'description' => __( 'Utilize esta opção para definir uma altura máxima do formulário de cartão de crédito (será considerado um valor em pixels). Será aceito um valor em pixels entre 400 - 550.', 'paypal-brasil-para-woocommerce' ),
 			),
 			'invoice_id_prefix' => array(
 				'title'       => __( 'Prefixo no número do pedido', 'paypal-plus-brasil' ),
@@ -200,7 +200,7 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 	 * @return string
 	 */
 	protected function get_log_view() {
-		return '<a target="_blank" href="' . esc_url( admin_url( 'admin.php?page=wc-status&tab=logs&log_file=' . esc_attr( $this->id ) . '-' . sanitize_file_name( wp_hash( $this->id ) ) . '.log' ) ) . '">' . __( 'Status do Sistema &gt; Logs', 'paypal-payments' ) . '</a>';
+		return '<a target="_blank" href="' . esc_url( admin_url( 'admin.php?page=wc-status&tab=logs&log_file=' . esc_attr( $this->id ) . '-' . sanitize_file_name( wp_hash( $this->id ) ) . '.log' ) ) . '">' . __( 'Status do Sistema &gt; Logs', 'paypal-brasil-para-woocommerce' ) . '</a>';
 	}
 
 	/**
@@ -211,7 +211,7 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 	 * @param bool $force
 	 *
 	 * @return null|array
-	 * @throws Paypal_Payments_Connection_Exception
+	 * @throws paypal_brasil_Connection_Exception
 	 */
 	public function process_payment( $order_id, $force = false ) {
 		$order      = wc_get_order( $order_id );
@@ -221,7 +221,7 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 		if ( isset( $_POST['wc-ppp-brasil-error'] ) && ! empty( $_POST['wc-ppp-brasil-error'] ) ) {
 			switch ( $_POST['wc-ppp-brasil-error'] ) {
 				case 'CARD_ATTEMPT_INVALID':
-					wc_add_notice( __( 'Número de tentativas excedidas, por favor tente novamente. Se o erro persistir entre em contato.', 'paypal-payments' ), 'error' );
+					wc_add_notice( __( 'Número de tentativas excedidas, por favor tente novamente. Se o erro persistir entre em contato.', 'paypal-brasil-para-woocommerce' ), 'error' );
 					break;
 				case 'INTERNAL_SERVICE_ERROR':
 				case 'SOCKET_HANG_UP':
@@ -231,19 +231,19 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 				case 'UNKNOWN_INTERNAL_ERROR':
 				case 'fiWalletLifecycle_unknown_error':
 				case 'Failed to decrypt term info':
-					wc_add_notice( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir entre em contato.', 'paypal-payments' ), 'error' );
+					wc_add_notice( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir entre em contato.', 'paypal-brasil-para-woocommerce' ), 'error' );
 					break;
 				case 'RISK_N_DECLINE':
 				case 'NO_VALID_FUNDING_SOURCE_OR_RISK_REFUSED':
 				case 'TRY_ANOTHER_CARD':
 				case 'NO_VALID_FUNDING_INSTRUMENT':
-					wc_add_notice( __( 'Não foi possível processar o seu pagamento, tente novamente ou entre em contato contato com o PayPal (0800-047-4482).', 'paypal-payments' ), 'error' );
+					wc_add_notice( __( 'Não foi possível processar o seu pagamento, tente novamente ou entre em contato contato com o PayPal (0800-047-4482).', 'paypal-brasil-para-woocommerce' ), 'error' );
 					break;
 				case 'INVALID_OR_EXPIRED_TOKEN':
-					wc_add_notice( __( 'A sua sessão expirou, por favor tente efetuar o pagamento novamente. Se o erro persistir, entre em contato.', 'paypal-payments' ), 'error' );
+					wc_add_notice( __( 'A sua sessão expirou, por favor tente efetuar o pagamento novamente. Se o erro persistir, entre em contato.', 'paypal-brasil-para-woocommerce' ), 'error' );
 					break;
 				default:
-					wc_add_notice( __( 'Por favor revise as informações inseridas do cartão de crédito.', 'paypal-payments' ), 'error' );
+					wc_add_notice( __( 'Por favor revise as informações inseridas do cartão de crédito.', 'paypal-brasil-para-woocommerce' ), 'error' );
 					break;
 			}
 			// Set refresh totals to trigger update_checkout on frontend.
@@ -254,7 +254,7 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 		}
 		// Prevent submit any dummy data.
 		if ( WC()->session->get( 'wc-ppp-brasil-dummy-data' ) === true ) {
-			wc_add_notice( __( 'You are not allowed to do that.', 'paypal-payments' ), 'error' );
+			wc_add_notice( __( 'You are not allowed to do that.', 'paypal-brasil-para-woocommerce' ), 'error' );
 			// Set refresh totals to trigger update_checkout on frontend.
 			WC()->session->set( 'refresh_totals', true );
 
@@ -265,7 +265,7 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 		 * This error is caused by multiple requests that
 		 */
 		if ( ! $payment_id ) {
-			wc_add_notice( __( 'Houve um erro interno ao processar o pagamento. Por favor, tente novamente. Se o erro persistir, entre em contato.', 'paypal-payments' ), 'error' );
+			wc_add_notice( __( 'Houve um erro interno ao processar o pagamento. Por favor, tente novamente. Se o erro persistir, entre em contato.', 'paypal-brasil-para-woocommerce' ), 'error' );
 			// Set refresh totals to trigger update_checkout on frontend.
 			WC()->session->set( 'refresh_totals', true );
 			do_action( 'wc_ppp_brasil_process_payment_error', 'SESSION_ERROR', $order_id, null );
@@ -279,7 +279,7 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 			$remember_cards = $response_data['remembered_cards_token'];
 			// Check if the payment id
 			if ( empty( $payer_id ) ) {
-				wc_add_notice( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir, entre em contato.', 'paypal-payments' ), 'error' );
+				wc_add_notice( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir, entre em contato.', 'paypal-brasil-para-woocommerce' ), 'error' );
 				// Set refresh totals to trigger update_checkout on frontend.
 				WC()->session->set( 'refresh_totals', true );
 				do_action( 'wc_ppp_brasil_process_payment_error', 'PAYER_ID', $order_id, null );
@@ -288,7 +288,7 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 			}
 			// Check if the payment id equal to stored
 			if ( $payment_id !== $iframe_data['payment_id'] ) {
-				wc_add_notice( __( 'Houve um erro com a sessão do usuário. Por favor, tente novamente. Se o erro persistir, entre em contato.', 'paypal-payments' ), 'error' );
+				wc_add_notice( __( 'Houve um erro com a sessão do usuário. Por favor, tente novamente. Se o erro persistir, entre em contato.', 'paypal-brasil-para-woocommerce' ), 'error' );
 				// Set refresh totals to trigger update_checkout on frontend.
 				WC()->session->set( 'refresh_totals', true );
 				do_action( 'wc_ppp_brasil_process_payment_error', 'PAYMENT_ID', $order_id, array(
@@ -318,7 +318,7 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 					break;
 				case 'pending':
 					wc_reduce_stock_levels( $order_id );
-					$order->update_status( 'on-hold', __( 'O pagamento está em revisão pelo PayPal.', 'paypal-payments' ) );
+					$order->update_status( 'on-hold', __( 'O pagamento está em revisão pelo PayPal.', 'paypal-brasil-para-woocommerce' ) );
 					$result_success = true;
 					break;
 			}
@@ -335,25 +335,25 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 					'redirect' => $this->get_return_url( $order ),
 				);
 			}
-		} catch ( Paypal_Payments_Api_Exception $ex ) {
+		} catch ( paypal_brasil_Api_Exception $ex ) {
 			$data = $ex->getData();
 			switch ( $data['name'] ) {
 				// Repeat the execution
 				case 'INTERNAL_SERVICE_ERROR':
 					if ( $force ) {
-						wc_add_notice( sprintf( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir entre em contato.', 'paypal-payments' ) ), 'error' );
+						wc_add_notice( sprintf( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir entre em contato.', 'paypal-brasil-para-woocommerce' ) ), 'error' );
 					} else {
 						$this->process_payment( $order_id, true );
 					}
 					break;
 				case 'VALIDATION_ERROR':
-					wc_add_notice( sprintf( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir entre em contato.', 'paypal-payments' ) ), 'error' );
+					wc_add_notice( sprintf( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir entre em contato.', 'paypal-brasil-para-woocommerce' ) ), 'error' );
 					break;
 				case 'PAYMENT_ALREADY_DONE':
-					wc_add_notice( __( 'Já existe um pagamento para este pedido.', 'paypal-payments' ), 'error' );
+					wc_add_notice( __( 'Já existe um pagamento para este pedido.', 'paypal-brasil-para-woocommerce' ), 'error' );
 					break;
 				default:
-					wc_add_notice( __( 'O seu pagamento não foi aprovado, por favor tente novamente.', 'paypal-payments' ), 'error' );
+					wc_add_notice( __( 'O seu pagamento não foi aprovado, por favor tente novamente.', 'paypal-brasil-para-woocommerce' ), 'error' );
 					break;
 			}
 			// Set refresh totals to trigger update_checkout on frontend.
@@ -380,7 +380,7 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 		$sale_id = get_post_meta( $order_id, 'wc_ppp_brasil_sale_id', true );
 		// Check if the amount is bigger than zero
 		if ( $amount <= 0 ) {
-			return new WP_Error( 'error', sprintf( __( 'O reembolso não pode ser menor que %s.', 'paypal-payments' ), wc_price( 0 ) ) );
+			return new WP_Error( 'error', sprintf( __( 'O reembolso não pode ser menor que %s.', 'paypal-brasil-para-woocommerce' ), wc_price( 0 ) ) );
 		}
 		// Check if we got the sale ID
 		if ( $sale_id ) {
@@ -392,15 +392,15 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 				} else {
 					return new WP_Error( 'error', $refund_sale->getReason() );
 				}
-			} catch ( Paypal_Payments_Api_Exception $ex ) { // Catch any PayPal error.
+			} catch ( paypal_brasil_Api_Exception $ex ) { // Catch any PayPal error.
 				$data = $ex->getData();
 
 				return new WP_Error( 'error', $data['message'] );
 			} catch ( Exception $ex ) {
-				return new WP_Error( 'error', __( 'Houve um erro ao tentar realizar o reembolso.', 'paypal-payments' ) );
+				return new WP_Error( 'error', __( 'Houve um erro ao tentar realizar o reembolso.', 'paypal-brasil-para-woocommerce' ) );
 			}
 		} else { // If we don't have the PayPal sale ID.
-			return new WP_Error( 'error', sprintf( __( 'Parece que você não tem um pedido para realizar o reembolso.', 'paypal-payments' ) ) );
+			return new WP_Error( 'error', sprintf( __( 'Parece que você não tem um pedido para realizar o reembolso.', 'paypal-brasil-para-woocommerce' ) ) );
 		}
 	}
 
@@ -412,8 +412,8 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 	 * @param $payer_id
 	 *
 	 * @return array|mixed|object
-	 * @throws Paypal_Payments_Api_Exception
-	 * @throws Paypal_Payments_Connection_Exception
+	 * @throws paypal_brasil_Api_Exception
+	 * @throws paypal_brasil_Connection_Exception
 	 */
 	public function execute_payment( $order, $payment_id, $payer_id ) {
 		$patch_data = array(
@@ -425,12 +425,12 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 			array(
 				'op'    => 'add',
 				'path'  => '/transactions/0/description',
-				'value' => sprintf( __( 'Pedido #%s realizado na loja %s', 'paypal-payments' ), $order->get_id(), get_bloginfo( 'name' ) ),
+				'value' => sprintf( __( 'Pedido #%s realizado na loja %s', 'paypal-brasil-para-woocommerce' ), $order->get_id(), get_bloginfo( 'name' ) ),
 			),
 			array(
 				'op'    => 'add',
 				'path'  => '/transactions/0/custom',
-				'value' => sprintf( __( 'Pedido #%s realizado na loja %s', 'paypal-payments' ), $order->get_id(), get_bloginfo( 'name' ) ),
+				'value' => sprintf( __( 'Pedido #%s realizado na loja %s', 'paypal-brasil-para-woocommerce' ), $order->get_id(), get_bloginfo( 'name' ) ),
 			),
 		);
 		$this->api->update_payment( $payment_id, $patch_data );
@@ -526,7 +526,7 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 			$data['phone']        = $billing_cellphone ? $billing_cellphone : ( isset( $post_data['billing_phone'] ) ? sanitize_text_field( $post_data['billing_phone'] ) : '' );
 			$data['email']        = isset( $post_data['billing_email'] ) ? sanitize_text_field( $post_data['billing_email'] ) : '';
 		}
-		if ( paypal_payments_needs_cpf() ) {
+		if ( paypal_brasil_needs_cpf() ) {
 			// Get wcbcf settings
 			$wcbcf_settings = get_option( 'wcbcf_settings' );
 			// Set the person type default if we don't have any person type defined
@@ -663,7 +663,7 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 		// Add discounts.
 		if ( $cart_totals['discount_total'] ) {
 			$items[] = array(
-				'name'     => __( 'Desconto', 'paypal-payments' ),
+				'name'     => __( 'Desconto', 'paypal-brasil-para-woocommerce' ),
 				'currency' => get_woocommerce_currency(),
 				'quantity' => 1,
 				'price'    => number_format( - $cart_totals['discount_total'], 2, '.', '' ),
@@ -674,7 +674,7 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 		// Add fees.
 		if ( $cart_totals['total_tax'] ) {
 			$items[] = array(
-				'name'     => __( 'Taxas', 'paypal-payments' ),
+				'name'     => __( 'Taxas', 'paypal-brasil-para-woocommerce' ),
 				'currency' => get_woocommerce_currency(),
 				'quantity' => 1,
 				'price'    => number_format( $cart_totals['total_tax'], 2, '.', '' ),
@@ -757,14 +757,14 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 			$result = $this->api->create_payment( $payment_data );
 
 			return $result;
-		} catch ( Paypal_Payments_Api_Exception $ex ) { // Catch any PayPal error.
+		} catch ( paypal_brasil_Api_Exception $ex ) { // Catch any PayPal error.
 			$error_data = $ex->getData();
 			if ( $error_data['name'] === 'VALIDATION_ERROR' ) {
 				$exception_data = $error_data['details'];
 			}
 		}
 
-		$exception       = new Exception( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir entre em contato.', 'paypal-payments' ) );
+		$exception       = new Exception( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir entre em contato.', 'paypal-brasil-para-woocommerce' ) );
 		$exception->data = $exception_data;
 
 		throw $exception;
@@ -781,52 +781,52 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 		$errors = array();
 		// Check first name.
 		if ( empty( $data['first_name'] ) ) {
-			$errors['first_name'] = __( 'Nome inválido', 'paypal-payments' );
+			$errors['first_name'] = __( 'Nome inválido', 'paypal-brasil-para-woocommerce' );
 		}
 		// Check last name.
 		if ( empty( $data['last_name'] ) ) {
-			$errors['last_name'] = __( 'Sobrenome inválido', 'paypal-payments' );
+			$errors['last_name'] = __( 'Sobrenome inválido', 'paypal-brasil-para-woocommerce' );
 		}
 		// Check phone.
 		if ( empty( $data['phone'] ) ) {
-			$errors['phone'] = __( 'Telefone inválido', 'paypal-payments' );
+			$errors['phone'] = __( 'Telefone inválido', 'paypal-brasil-para-woocommerce' );
 		}
 		if ( empty( $data['address'] ) ) {
-			$errors['address'] = __( 'Endereço inválido', 'paypal-payments' );
+			$errors['address'] = __( 'Endereço inválido', 'paypal-brasil-para-woocommerce' );
 		}
 		if ( empty( $data['city'] ) ) {
-			$errors['city'] = __( 'Cidade inválida', 'paypal-payments' );
+			$errors['city'] = __( 'Cidade inválida', 'paypal-brasil-para-woocommerce' );
 		}
 		if ( empty( $data['state'] ) ) {
-			$errors['state'] = __( 'Estado inválido', 'paypal-payments' );
+			$errors['state'] = __( 'Estado inválido', 'paypal-brasil-para-woocommerce' );
 		}
 		if ( empty( $data['country'] ) ) {
-			$errors['country'] = __( 'País inválido', 'paypal-payments' );
+			$errors['country'] = __( 'País inválido', 'paypal-brasil-para-woocommerce' );
 		}
 		if ( empty( $data['postcode'] ) ) {
-			$errors['postcode'] = __( 'CEP inválido', 'paypal-payments' );
+			$errors['postcode'] = __( 'CEP inválido', 'paypal-brasil-para-woocommerce' );
 		}
 		// Check email.
 		if ( ! is_email( $data['email'] ) ) {
-			$errors['email'] = __( 'Email inválido', 'paypal-payments' );
+			$errors['email'] = __( 'Email inválido', 'paypal-brasil-para-woocommerce' );
 		}
 		// Only if require CPF/CNPJ
-		if ( paypal_payments_needs_cpf() ) {
+		if ( paypal_brasil_needs_cpf() ) {
 			// Check address number (only with CPF/CPNJ)
 			if ( empty( $data['number'] ) ) {
-				$errors['number'] = __( 'Número inválido', 'paypal-payments' );
+				$errors['number'] = __( 'Número inválido', 'paypal-brasil-para-woocommerce' );
 			}
 			// Check person type.
 			if ( $data['person_type'] !== '1' && $data['person_type'] !== '2' ) {
-				$errors['person_type'] = __( 'Tipo de pessoa inválido', 'paypal-payments' );
+				$errors['person_type'] = __( 'Tipo de pessoa inválido', 'paypal-brasil-para-woocommerce' );
 			}
 			// Check the CPF
 			if ( $data['person_type'] == '1' && ! $this->is_cpf( $data['cpf'] ) ) {
-				$errors['cpf'] = __( 'CPF inválido', 'paypal-payments' );
+				$errors['cpf'] = __( 'CPF inválido', 'paypal-brasil-para-woocommerce' );
 			}
 			// Check the CNPJ
 			if ( $data['person_type'] == '2' && ! $this->is_cnpj( $data['cnpj'] ) ) {
-				$errors['cnpj'] = __( 'CNPJ inválido', 'paypal-payments' );
+				$errors['cnpj'] = __( 'CNPJ inválido', 'paypal-brasil-para-woocommerce' );
 			}
 		}
 
@@ -848,11 +848,11 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 				'order_pay'         => ! ! get_query_var( 'order-pay' ),
 				'mode'              => $this->mode === 'sandbox' ? 'sandbox' : 'live',
 				'form_height'       => $this->get_form_height(),
-				'show_payer_tax_id' => paypal_payments_needs_cpf(),
+				'show_payer_tax_id' => paypal_brasil_needs_cpf(),
 				'language'          => get_woocommerce_currency() === 'BRL' ? 'pt_BR' : 'en_US',
 				'country'           => $this->get_woocommerce_country(),
 				'messages'          => array(
-					'check_entry' => __( 'Verifique os dados informados e tente novamente.', 'paypal-payments' ),
+					'check_entry' => __( 'Verifique os dados informados e tente novamente.', 'paypal-brasil-para-woocommerce' ),
 				),
 				'debug_mode'        => 'yes' === $this->debug,
 			) );
@@ -891,18 +891,18 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 	public function admin_scripts() {
 		$screen         = get_current_screen();
 		$screen_id      = $screen ? $screen->id : '';
-		$wc_screen_id   = sanitize_title( __( 'WooCommerce', 'paypal-payments' ) );
+		$wc_screen_id   = sanitize_title( __( 'WooCommerce', 'paypal-brasil-para-woocommerce' ) );
 		$wc_settings_id = $wc_screen_id . '_page_wc-settings';
 		if ( $wc_settings_id === $screen_id && isset( $_GET['section'] ) && $_GET['section'] === $this->id ) {
 			wp_enqueue_style( 'wc-ppp-brasil-admin-style', plugins_url( 'assets/dist/css/admin-options-plus.css', PAYPAL_PAYMENTS_MAIN_FILE ), array(), PAYPAL_PAYMENTS_VERSION, 'all' );
 
 			// Add shared file if exists.
 			if ( file_exists( dirname( PAYPAL_PAYMENTS_MAIN_FILE ) . '/assets/dist/js/shared.js' ) ) {
-				wp_enqueue_script( 'paypal_payments_admin_options_shared', plugins_url( 'assets/dist/js/shared.js', PAYPAL_PAYMENTS_MAIN_FILE ), array(), PAYPAL_PAYMENTS_VERSION, true );
+				wp_enqueue_script( 'paypal_brasil_admin_options_shared', plugins_url( 'assets/dist/js/shared.js', PAYPAL_PAYMENTS_MAIN_FILE ), array(), PAYPAL_PAYMENTS_VERSION, true );
 			}
 
 			wp_enqueue_script( $this->id . '_script', plugins_url( 'assets/dist/js/admin-options-plus.js', PAYPAL_PAYMENTS_MAIN_FILE ), array(), PAYPAL_PAYMENTS_VERSION, true );
-			wp_localize_script( $this->id . '_script', 'paypal_payments_admin_options_plus', array(
+			wp_localize_script( $this->id . '_script', 'paypal_brasil_admin_options_plus', array(
 				'template'          => $this->get_admin_options_template(),
 				'enabled'           => $this->enabled,
 				'form_height'       => $this->shortcut_enabled,
@@ -938,10 +938,10 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 	 */
 	public function webhook_handler() {
 		// Include the handler.
-		include_once dirname( PAYPAL_PAYMENTS_MAIN_FILE ) . '/includes/handlers/class-paypal-payments-webhooks-handler.php';
+		include_once dirname( PAYPAL_PAYMENTS_MAIN_FILE ) . '/includes/handlers/class-paypal-brasil-webhooks-handler.php';
 		try {
 			// Instance the handler.
-			$handler = new PayPal_Payments_Webhooks_Handler( $this->id );
+			$handler = new PayPal_Brasil_Webhooks_Handler( $this->id );
 			// Get the data.
 			$headers       = array_change_key_case( getallheaders(), CASE_UPPER );
 			$body          = $this->get_raw_data();
@@ -979,10 +979,10 @@ class PayPal_Payments_Plus_Gateway extends PayPal_Payments_Gateway {
 		if ( is_admin() ) {
 			global $pagenow;
 
-			return $pagenow === 'post.php' ? __( 'PayPal - Checkout Transparente', 'paypal-payments' ) : __( 'Checkout Transparente', 'paypal-payments' );
+			return $pagenow === 'post.php' ? __( 'PayPal - Checkout Transparente', 'paypal-brasil-para-woocommerce' ) : __( 'Checkout Transparente', 'paypal-brasil-para-woocommerce' );
 		}
 
-		$title = get_woocommerce_currency() === "BRL" ? __( 'Cartão de Crédito', 'paypal-payments' ) : __( 'Credit Card', 'paypal-payments' );
+		$title = get_woocommerce_currency() === "BRL" ? __( 'Cartão de Crédito', 'paypal-brasil-para-woocommerce' ) : __( 'Credit Card', 'paypal-brasil-para-woocommerce' );
 		if ( ! empty( $this->title ) ) {
 			$title .= ' ' . $this->title;
 		}
