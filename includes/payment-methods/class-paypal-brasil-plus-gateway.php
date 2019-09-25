@@ -876,13 +876,13 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 	private function get_form_height() {
 		$height    = trim( $this->form_height );
 		$min_value = 400;
-		$max_value = 550;
+		$max_value = 700;
 		$test      = preg_match( '/[0-9]+/', $height, $matches );
 		if ( $test && $matches[0] === $height && $height >= $min_value && $height <= $max_value ) {
 			return $height;
 		}
 
-		return 450;
+		return 500;
 	}
 
 	/**
@@ -993,7 +993,7 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 	private function get_fields_values() {
 		return array(
 			'enabled'           => $this->enabled,
-			'form_height'       => $this->form_height ? $this->form_height : 450,
+			'form_height'       => $this->form_height ? $this->form_height : 500,
 			'mode'              => $this->mode,
 			'client'            => array(
 				'live'    => $this->client_live,

@@ -219,7 +219,7 @@
                     <input class="input-text regular-input"
                            type="range"
                            min="400"
-                           max="550"
+                           max="700"
                            id="<?php echo esc_attr( $this->get_field_key( 'form_height' ) ); ?>"
                            name="<?php echo esc_attr( $this->get_field_key( 'form_height' ) ); ?>"
                            v-model="formHeight">
