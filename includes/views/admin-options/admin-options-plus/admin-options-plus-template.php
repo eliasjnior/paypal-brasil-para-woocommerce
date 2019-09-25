@@ -217,11 +217,13 @@
                 <fieldset>
                     <legend class="screen-reader-text"><span>Altura do formulário</span></legend>
                     <input class="input-text regular-input"
-                           type="text"
+                           type="range"
+                           min="400"
+                           max="550"
                            id="<?php echo esc_attr( $this->get_field_key( 'form_height' ) ); ?>"
                            name="<?php echo esc_attr( $this->get_field_key( 'form_height' ) ); ?>"
-                           placeholder="px"
                            v-model="formHeight">
+                    <span class="form-height-value">{{formHeight}}px</span>
                     <p class="description">Utilize esta opção para definir uma altura máxima do formulário de cartão de
                         crédito (será considerado um valor em pixels). Será aceito um valor em pixels entre 400 -
                         550.</p>

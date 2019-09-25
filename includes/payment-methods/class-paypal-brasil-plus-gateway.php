@@ -882,7 +882,7 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 			return $height;
 		}
 
-		return null;
+		return 450;
 	}
 
 	/**
@@ -993,7 +993,7 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 	private function get_fields_values() {
 		return array(
 			'enabled'           => $this->enabled,
-			'form_height'       => $this->form_height,
+			'form_height'       => $this->form_height ? $this->form_height : 450,
 			'mode'              => $this->mode,
 			'client'            => array(
 				'live'    => $this->client_live,

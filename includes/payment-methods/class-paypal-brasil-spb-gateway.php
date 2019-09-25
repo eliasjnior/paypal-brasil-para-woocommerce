@@ -1205,7 +1205,7 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 	 */
 	public function payment_fields() {
 		if ( $this->is_processing_shortcut() ) {
-			echo 'Pronto! A sua conta PayPal já está habilitada para este pagamento, revise as informações do pedido e finalize sua compra.';
+			echo 'Pronto! A sua conta PayPal já está habilitada para este pagamento. Revise as informações do pedido e finalize sua compra.';
 		} else if ( $this->is_reference_transaction() ) {
 			include dirname( PAYPAL_PAYMENTS_MAIN_FILE ) . '/includes/views/checkout/reference-transaction-html-fields.php';
 		} else {
