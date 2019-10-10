@@ -14,7 +14,7 @@ try {
 	$data = $this->get_posted_data();
 } catch ( Exception $ex ) {
 	$error = $ex->getMessage();
-	wc_add_notice( $error );
+	wc_add_notice( $error, 'error' );
 	if ( $ex->data ) {
 		$data_error = $ex->data;
 	}
@@ -22,18 +22,18 @@ try {
 ?>
 <div id="wc-ppb-brasil-wrappers">
 	<?php if ( $error ): ?>
-		<p><?php echo $error; ?></p>
-		<input type="hidden" id="wc-ppp-brasil-api-error-data" name="wc-ppp-brasil-data"
-		       value="<?php echo htmlentities( json_encode( $data_error ) ); ?>">
+        <p><?php echo $error; ?></p>
+        <input type="hidden" id="wc-ppp-brasil-api-error-data" name="wc-ppp-brasil-data"
+               value="<?php echo htmlentities( json_encode( $data_error ) ); ?>">
 	<?php else: ?>
-		<input type="hidden" id="wc-ppp-brasil-data" name="wc-ppp-brasil-data"
-		       value="<?php echo htmlentities( json_encode( $data ) ); ?>">
-		<input type="hidden" id="wc-ppp-brasil-response" name="wc-ppp-brasil-response" value="">
-		<input type="hidden" id="wc-ppp-brasil-error" name="wc-ppp-brasil-error" value="">
-		<div id="wc-ppp-brasil-container-loading" class="hidden">
-			<div class="paypal-loading"></div>
-		</div>
-		<div id="wc-ppp-brasil-container-dummy" class="hidden">
+        <input type="hidden" id="wc-ppp-brasil-data" name="wc-ppp-brasil-data"
+               value="<?php echo htmlentities( json_encode( $data ) ); ?>">
+        <input type="hidden" id="wc-ppp-brasil-response" name="wc-ppp-brasil-response" value="">
+        <input type="hidden" id="wc-ppp-brasil-error" name="wc-ppp-brasil-error" value="">
+        <div id="wc-ppp-brasil-container-loading" class="hidden">
+            <div class="paypal-loading"></div>
+        </div>
+        <div id="wc-ppp-brasil-container-dummy" class="hidden">
 			<?php
 			if ( get_woocommerce_currency() === 'BRL' ) {
 				include dirname( __FILE__ ) . '/html-paypal-iframe-br.php';
@@ -41,11 +41,11 @@ try {
 				include dirname( __FILE__ ) . '/html-paypal-iframe-us.php';
 			}
 			?>
-		</div>
-		<div id="wc-ppp-brasil-container"></div>
-		<div id="wc-ppb-brasil-container-overlay" class="hidden">
-			<div class="icon-lock"></div>
-			<div class="text">
+        </div>
+        <div id="wc-ppp-brasil-container"></div>
+        <div id="wc-ppb-brasil-container-overlay" class="hidden">
+            <div class="icon-lock"></div>
+            <div class="text">
 				<?php
 				$string1_br = 'Favor preencher corretamente as informações dos passos anteriores.';
 				$string2_br = 'Caso já tenha preenchido, <a href="#" data-action="update-checkout">clique aqui</a>.';
@@ -54,7 +54,7 @@ try {
 				echo sprintf( '<p>%s</p>', get_woocommerce_currency() === 'BRL' ? $string1_br : $string1_us );
 				echo sprintf( '<p>%s</p>', get_woocommerce_currency() === 'BRL' ? $string2_br : $string2_us );
 				?>
-			</div>
-		</div>
+            </div>
+        </div>
 	<?php endif; ?>
 </div>

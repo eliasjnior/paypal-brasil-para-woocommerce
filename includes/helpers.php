@@ -30,8 +30,7 @@ function paypal_brasil_get_order_items( $order ) {
 	foreach ( $order->get_items() as $id => $item ) {
 		$product = $item->get_variation_id() ? wc_get_product( $item->get_variation_id() ) : wc_get_product( $item->get_product_id() );
 		// Force get product cents to avoid float problems.
-		$product_price_cents = intval( $item->get_subtotal() * 100 ) / $item->get_quantity();
-		$product_price       = number_format( $product_price_cents / 100, 2, '.', '' );
+		$product_price = number_format( bcdiv( $item->get_subtotal(), $item->get_quantity(), 2 ), 2, '.', '' );
 
 		$items[] = array(
 			'name'     => $product->get_title(),
@@ -45,24 +44,22 @@ function paypal_brasil_get_order_items( $order ) {
 
 	// Add discounts.
 	if ( $order->get_discount_total() ) {
-		$discount_cents = intval( $order->get_discount_total() * 100 );
-		$items[]        = array(
+		$items[] = array(
 			'name'     => __( 'Desconto', 'paypal-brasil-para-woocommerce' ),
 			'currency' => get_woocommerce_currency(),
 			'quantity' => 1,
-			'price'    => number_format( ( - $discount_cents ) / 100, 2, '.', '' ),
+			'price'    => number_format( - $order->get_discount_total(), 2, '.', '' ),
 			'sku'      => 'discount',
 		);
 	}
 
 	// Add fees.
 	if ( $order->get_total_tax() ) {
-		$tax_cents = intval( $order->get_total_tax() * 100 );
-		$items[]   = array(
+		$items[] = array(
 			'name'     => __( 'Taxas', 'paypal-brasil-para-woocommerce' ),
 			'currency' => get_woocommerce_currency(),
 			'quantity' => 1,
-			'price'    => number_format( $tax_cents / 100, 2, '.', '' ),
+			'price'    => number_format( $order->get_total_tax(), 2, '.', '' ),
 			'sku'      => 'taxes',
 		);
 	}

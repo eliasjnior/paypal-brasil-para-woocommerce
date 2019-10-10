@@ -797,12 +797,8 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 	private function process_payment_shortcut( $order ) {
 
 		// Force get product cents to avoid float problems.
-		$subtotal_cents = intval( $order->get_subtotal() * 100 );
-		$discount_cents = intval( $order->get_discount_total() * 100 );
-		$shipping_cents = intval( $order->get_shipping_total() * 100 );
-		$tax_cents      = intval( $order->get_total_tax() * 100 );
-		$subtotal       = number_format( ( $subtotal_cents - $discount_cents + $tax_cents ) / 100, 2, '.', '' );
-		$shipping       = number_format( $shipping_cents / 100, 2, '.', '' );
+		$subtotal = number_format( bcadd( bcsub( $order->get_subtotal(), $order->get_discount_total(), 2 ), $order->get_total_tax(), 2 ), 2, '.', '' );
+		$shipping = number_format( $order->get_shipping_total(), 2, '.', '' );
 
 		$data = array(
 			array(
@@ -923,8 +919,7 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 		foreach ( $order->get_items() as $id => $item ) {
 			$product = $item->get_variation_id() ? wc_get_product( $item->get_variation_id() ) : wc_get_product( $item->get_product_id() );
 			// Force get product cents to avoid float problems.
-			$product_price_cents = intval( $item->get_subtotal() * 100 ) / $item->get_quantity();
-			$product_price       = number_format( $product_price_cents / 100, 2, '.', '' );
+			$product_price = number_format( bcdiv( $item->get_subtotal(), $item->get_quantity(), 2 ), 2, '.', '' );
 
 			$items[] = array(
 				'name'     => $product->get_title(),
@@ -943,35 +938,29 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 
 		// Add discounts.
 		if ( $order->get_discount_total() ) {
-			$discount_cents = intval( $order->get_discount_total() * 100 );
-			$items[]        = array(
+			$items[] = array(
 				'name'     => __( 'Desconto', 'paypal-brasil-para-woocommerce' ),
 				'currency' => get_woocommerce_currency(),
 				'quantity' => 1,
-				'price'    => number_format( ( - $discount_cents ) / 100, 2, '.', '' ),
+				'price'    => number_format( - $order->get_discount_total(), 2, '.', '' ),
 				'sku'      => 'discount',
 			);
 		}
 
 		// Add fees.
 		if ( $order->get_total_tax() ) {
-			$tax_cents = intval( $order->get_total_tax() * 100 );
-			$items[]   = array(
+			$items[] = array(
 				'name'     => __( 'Taxas', 'paypal-brasil-para-woocommerce' ),
 				'currency' => get_woocommerce_currency(),
 				'quantity' => 1,
-				'price'    => number_format( $tax_cents / 100, 2, '.', '' ),
+				'price'    => number_format( $order->get_total_tax(), 2, '.', '' ),
 				'sku'      => 'taxes',
 			);
 		}
 
 		// Force get product cents to avoid float problems.
-		$subtotal_cents = intval( $order->get_subtotal() * 100 );
-		$discount_cents = intval( $order->get_discount_total() * 100 );
-		$shipping_cents = intval( $order->get_shipping_total() * 100 );
-		$tax_cents      = intval( $order->get_total_tax() * 100 );
-		$subtotal       = number_format( ( $subtotal_cents - $discount_cents + $tax_cents ) / 100, 2, '.', '' );
-		$shipping       = number_format( $shipping_cents / 100, 2, '.', '' );
+		$subtotal = number_format( bcadd( bcsub( $order->get_subtotal(), $order->get_discount_total(), 2 ), $order->get_total_tax(), 2 ), 2, '.', '' );
+		$shipping = number_format( $order->get_shipping_total(), 2, '.', '' );
 
 		// Try to get billing agreement from session.
 		$billing_agreement_id = WC()->session->get( 'paypal_brasil_billing_agreement_id' );
@@ -1369,10 +1358,10 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 			'paypal-brasil-shared',
 			'paypal_brasil_settings',
 			array(
-				'nonce'                       => wp_create_nonce( 'paypal-brasil-checkout' ),
-				'is_reference_transaction'    => $this->is_reference_enabled(),
-				'current_user_id'             => get_current_user_id(),
-				'style'                       => array(
+				'nonce'                     => wp_create_nonce( 'paypal-brasil-checkout' ),
+				'is_reference_transaction'  => $this->is_reference_enabled(),
+				'current_user_id'           => get_current_user_id(),
+				'style'                     => array(
 					'color'  => $this->color,
 					'format' => $this->format,
 				),
@@ -1380,8 +1369,8 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 					'wc-api' => 'paypal_brasil_handler',
 					'action' => '{ACTION}'
 				), home_url() . '/' ),
-				'checkout_page_url'           => wc_get_checkout_url(),
-				'checkout_review_page_url'    => add_query_arg( array(
+				'checkout_page_url'         => wc_get_checkout_url(),
+				'checkout_review_page_url'  => add_query_arg( array(
 					'review-payment' => '1',
 					'pay-id'         => '{PAY_ID}',
 					'payer-id'       => '{PAYER_ID}',
