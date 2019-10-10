@@ -431,7 +431,7 @@
                                false-value="">
                         Habilitar</label><br>
                     <p class="description">Os logs serão salvos no caminho: <a target="_blank"
-                                                                               href="http://paypal.localhost/wp-admin/admin.php?page=wc-status&amp;tab=logs&amp;log_file=wc-ppp-brasil-gateway-83f06720c330899c8b474a48c137d3a6.log">Status
+                                                                               href="<?php echo esc_url( admin_url( sprintf( 'admin.php?page=wc-status&tab=logs&log_file=%s', paypal_brasil_get_log_file( $this->id ) ) ) ); ?>">Status
                             do Sistema &gt; Logs</a>.</p>
                 </fieldset>
             </td>

@@ -221,3 +221,23 @@ function paypal_brasil_protect_metadata( $protected, $meta_key ) {
 }
 
 add_filter( 'is_protected_meta', 'paypal_brasil_protect_metadata', 10, 2 );
+
+/**
+ * Get the latest log for a gateway.
+ *
+ * @param $id
+ *
+ * @return string
+ */
+function paypal_brasil_get_log_file( $id ) {
+	$logs         = WC_Admin_Status::scan_log_files();
+	$matched_logs = array();
+
+	foreach ( $logs as $key => $value ) {
+		if ( preg_match( '/(' . $id . '-)/', $value ) ) {
+			$matched_logs[] = $value;
+		}
+	}
+
+	return $matched_logs ? end( $matched_logs ) : '';
+}
