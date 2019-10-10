@@ -161,8 +161,7 @@ class PayPal_Brasil_API_Checkout_Handler extends PayPal_Brasil_API_Handler {
 				$product = $item['variation_id'] ? wc_get_product( $item['variation_id'] ) : wc_get_product( $item['product_id'] );
 
 				// Force get product cents to avoid float problems.
-				$product_price_cents = intval( $item['line_subtotal'] * 100 ) / $item['quantity'];
-				$product_price       = number_format( $product_price_cents / 100, 2, '.', '' );
+				$product_price = number_format( bcdiv( $item['line_subtotal'], $item['quantity'], 2 ), 2, '.', '' );
 
 				$items[] = array(
 					'name'     => $product->get_title(),
@@ -205,12 +204,10 @@ class PayPal_Brasil_API_Checkout_Handler extends PayPal_Brasil_API_Handler {
 			}
 
 			// Force get product cents to avoid float problems.
-			$subtotal_cents = intval( $cart_totals['subtotal'] * 100 );
-			$discount_cents = intval( $cart_totals['discount_total'] * 100 );
-			$shipping_cents = intval( $cart_totals['shipping_total'] * 100 );
-			$tax_cents      = intval( $cart_totals['total_tax'] * 100 );
-			$subtotal       = number_format( ( $subtotal_cents - $discount_cents + $tax_cents ) / 100, 2, '.', '' );
-			$shipping       = number_format( $shipping_cents / 100, 2, '.', '' );
+			$subtotal_minus_discounts = bcsub( $cart_totals['subtotal'], $cart_totals['discount_total'], 2 );
+			$subtotal_sum             = bcadd( $subtotal_minus_discounts, $cart_totals['total_tax'], 2 );
+			$subtotal                 = number_format( $subtotal_sum, 2, '.', '' );
+			$shipping                 = number_format( $cart_totals['shipping_total'], 2, '.', '' );
 
 			// Set details
 			$data['transactions'][0]['amount']['details'] = array(
