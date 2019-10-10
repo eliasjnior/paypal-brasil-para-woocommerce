@@ -45,7 +45,7 @@ Um pacote completo de soluções de pagamento para a sua loja. Além do Checkout
 
 O Checkout Transparente está disponível apenas para contas PayPal cadastradas com CNPJ (Conta Empresa). Caso a sua conta seja de pessoa física, você deve abrir uma conta PayPal de pessoa jurídica por [este link](https://www.paypal.com/bizsignup/).
 
-Já a Carteira Digital, você pode u
+Já a Carteira Digital, você pode utilizar tanto com uma conta empresa quanto uma conta pessoa física.
 
 = Aprovações =
 

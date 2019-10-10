@@ -53,7 +53,7 @@ class PayPal_Brasil {
 	 * In WC payments section, filter the gateways to be displayed based in a param in URL.
 	 */
 	public function filter_gateways_settings() {
-		if ( isset( $_GET['page'] ) && isset( $_GET['tab'] ) && $_GET['page'] === 'wc-settings' && $_GET['tab'] && $_GET['tab'] === 'checkout' && isset( $_REQUEST['paypal-brasil-para-woocommerce'] ) ) {
+		if ( isset( $_GET['page'] ) && isset( $_GET['tab'] ) && $_GET['page'] === 'wc-settings' && $_GET['tab'] === 'checkout' && isset( $_REQUEST['paypal-brasil'] ) ) {
 			add_filter( 'woocommerce_payment_gateways', array( $this, 'filter_allowed_gateways' ) );
 		}
 	}
