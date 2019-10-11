@@ -241,3 +241,27 @@ function paypal_brasil_get_log_file( $id ) {
 
 	return $matched_logs ? end( $matched_logs ) : '';
 }
+
+if ( ! function_exists( 'bcdiv' ) ) {
+	function bcdiv( $value1, $value2 ) {
+		return $value1 / $value2;
+	}
+}
+
+if ( ! function_exists( 'bcmul' ) ) {
+	function bcmul( $value1, $value2 ) {
+		return $value1 * $value2;
+	}
+}
+
+if ( ! function_exists( 'bcadd' ) ) {
+	function bcadd( $value1, $value2 ) {
+		return $value1 + $value2;
+	}
+}
+
+if ( ! function_exists( 'bcsub' ) ) {
+	function bcsub( $value1, $value2 ) {
+		return $value1 - $value2;
+	}
+}
