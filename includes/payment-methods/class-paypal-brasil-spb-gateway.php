@@ -18,6 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @property string reference_enabled
  * @property string debug
  * @property string invoice_id_prefix
+ * @property string title_complement
  */
 class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 
@@ -46,13 +47,14 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 		$this->init_settings();
 
 		// Get available options.
-		$this->enabled        = $this->get_option( 'enabled' );
-		$this->title          = $this->get_option( 'title' );
-		$this->mode           = $this->get_option( 'mode' );
-		$this->client_live    = $this->get_option( 'client_live' );
-		$this->client_sandbox = $this->get_option( 'client_sandbox' );
-		$this->secret_live    = $this->get_option( 'secret_live' );
-		$this->secret_sandbox = $this->get_option( 'secret_sandbox' );
+		$this->enabled          = $this->get_option( 'enabled' );
+		$this->title            = __( 'PayPal Brasil - Carteira Digital', 'paypal-brasil-para-woocommerce' );
+		$this->title_complement = $this->get_option( 'title_complement' );
+		$this->mode             = $this->get_option( 'mode' );
+		$this->client_live      = $this->get_option( 'client_live' );
+		$this->client_sandbox   = $this->get_option( 'client_sandbox' );
+		$this->secret_live      = $this->get_option( 'secret_live' );
+		$this->secret_sandbox   = $this->get_option( 'secret_sandbox' );
 
 		$this->format            = $this->get_option( 'format' );
 		$this->color             = $this->get_option( 'color' );
@@ -168,8 +170,8 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 
 		// Title for frontend.
 		$title = __( 'PayPal', 'paypal-brasil-para-woocommerce' );
-		if ( ! empty( $this->title ) ) {
-			$title .= ' (' . $this->title . ')';
+		if ( ! empty( $this->title_complement ) ) {
+			$title .= ' (' . $this->title_complement . ')';
 		}
 
 		return apply_filters( 'woocommerce_gateway_title', $title, $this->id );
@@ -186,8 +188,8 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 				'label'   => __( 'Habilitar', 'paypal-brasil-para-woocommerce' ),
 				'default' => 'no',
 			),
-			'title'             => array(
-				'title' => __( 'Nome de exibição', 'paypal-brasil-para-woocommerce' ),
+			'title_complement'  => array(
+				'title' => __( 'Nome de exibição (complemento)', 'paypal-brasil-para-woocommerce' ),
 				'type'  => 'text',
 			),
 			'mode'              => array(
@@ -1228,6 +1230,7 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 				'color'  => $this->color,
 			),
 			'title'                => $this->title,
+			'title_complement'     => $this->title_complement,
 			'invoice_id_prefix'    => $this->invoice_id_prefix,
 			'debug'                => $this->debug,
 			'woocommerce_settings' => array(
@@ -1276,6 +1279,7 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 					'color'  => $this->color,
 				),
 				'title'                => $this->title,
+				'title_complement'     => $this->title_complement,
 				'invoice_id_prefix'    => $this->invoice_id_prefix,
 				'debug'                => $this->debug,
 				'images_path'          => plugins_url( 'assets/images/buttons', PAYPAL_PAYMENTS_MAIN_FILE ),

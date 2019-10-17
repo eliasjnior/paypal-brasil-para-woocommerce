@@ -68,20 +68,20 @@
 
         <tr valign="top">
             <th scope="row" class="titledesc">
-                <label for="<?php echo esc_attr( $this->get_field_key( 'title' ) ); ?>"><?php echo esc_html( $this->get_form_fields()['title']['title'] ); ?></label>
+                <label for="<?php echo esc_attr( $this->get_field_key( 'title_complement' ) ); ?>"><?php echo esc_html( $this->get_form_fields()['title_complement']['title'] ); ?></label>
             </th>
             <td class="forminp">
                 <fieldset>
                     <legend class="screen-reader-text">
-                        <span><?php echo esc_html( $this->get_form_fields()['title']['title'] ); ?></span>
+                        <span><?php echo esc_html( $this->get_form_fields()['title_complement']['title'] ); ?></span>
                     </legend>
                     <input class="input-text regular-input"
                            type="text"
-                           name="<?php echo esc_attr( $this->get_field_key( 'title' ) ); ?>"
-                           id="<?php echo esc_attr( $this->get_field_key( 'title' ) ); ?>"
-                           v-model="title"
+                           name="<?php echo esc_attr( $this->get_field_key( 'title_complement' ) ); ?>"
+                           id="<?php echo esc_attr( $this->get_field_key( 'title_complement' ) ); ?>"
+                           v-model="titleComplement"
                            placeholder="Exemplo: Parcelado em até 12x">
-                    <p class="description">Será exibido no checkout: Cartão de Crédito {{title ? '(' + title + ')':
+                    <p class="description">Será exibido no checkout: Cartão de Crédito {{titleComplement ? '(' + titleComplement + ')':
                         ''}}</p>
                 </fieldset>
             </td>

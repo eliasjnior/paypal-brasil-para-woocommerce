@@ -19,6 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @property string debug
  * @property string invoice_id_prefix
  * @property string form_height
+ * @property string title_complement
  */
 class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 
@@ -43,13 +44,14 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 		$this->init_settings();
 
 		// Get options in variable.
-		$this->enabled        = $this->get_option( 'enabled' );
-		$this->title          = $this->get_option( 'title' );
-		$this->mode           = $this->get_option( 'mode' );
-		$this->client_live    = $this->get_option( 'client_live' );
-		$this->client_sandbox = $this->get_option( 'client_sandbox' );
-		$this->secret_live    = $this->get_option( 'secret_live' );
-		$this->secret_sandbox = $this->get_option( 'secret_sandbox' );
+		$this->enabled          = $this->get_option( 'enabled' );
+		$this->title            = __( 'PayPal Brasil - Checkout Transparente', 'paypal-brasil-para-woocommerce' );
+		$this->title_complement = $this->get_option( 'title_complement' );
+		$this->mode             = $this->get_option( 'mode' );
+		$this->client_live      = $this->get_option( 'client_live' );
+		$this->client_sandbox   = $this->get_option( 'client_sandbox' );
+		$this->secret_live      = $this->get_option( 'secret_live' );
+		$this->secret_sandbox   = $this->get_option( 'secret_sandbox' );
 
 		$this->form_height       = $this->get_option( 'form_height' );
 		$this->invoice_id_prefix = $this->get_option( 'invoice_id_prefix' );
@@ -130,13 +132,9 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 				'label'   => __( 'Habilitar', 'paypal-brasil-para-woocommerce' ),
 				'default' => 'no',
 			),
-			'title'             => array(
-				'title'       => __( 'Nome de exibição (complemento)', 'paypal-brasil-para-woocommerce' ),
-				'type'        => 'text',
-				'default'     => '',
-				'placeholder' => __( 'Exemplo: Parcelado em até 12x', 'paypal-brasil-para-woocommerce' ),
-				'description' => __( 'Será exibido no checkout: Cartão de Crédito (Parcelado em até 12x)', 'paypal-brasil-para-woocommerce' ),
-				'desc_tip'    => __( 'Por padrão a solução do PayPal Plus é exibida como “Cartão de Crédito”, utilize esta opção para definir um texto adicional como parcelamento ou descontos.', 'paypal-brasil-para-woocommerce' ),
+			'title_complement'  => array(
+				'title' => __( 'Nome de exibição (complemento)', 'paypal-brasil-para-woocommerce' ),
+				'type'  => 'text',
 			),
 			'mode'              => array(
 				'title'       => __( 'Modo', 'paypal-brasil-para-woocommerce' ),
@@ -911,6 +909,7 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 					'sandbox' => $this->secret_sandbox,
 				),
 				'title'             => $this->title,
+				'title_complement'  => $this->title_complement,
 				'invoice_id_prefix' => $this->invoice_id_prefix,
 				'debug'             => $this->debug,
 			) );
@@ -978,8 +977,8 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 		}
 
 		$title = get_woocommerce_currency() === "BRL" ? __( 'Cartão de Crédito', 'paypal-brasil-para-woocommerce' ) : __( 'Credit Card', 'paypal-brasil-para-woocommerce' );
-		if ( ! empty( $this->title ) ) {
-			$title .= ' ' . $this->title;
+		if ( ! empty( $this->title_complement ) ) {
+			$title .= ' ' . $this->title_complement;
 		}
 
 		return apply_filters( 'woocommerce_gateway_title', $title, $this->id );
@@ -999,6 +998,7 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 				'sandbox' => $this->secret_sandbox,
 			),
 			'title'             => $this->title,
+			'title_complement'  => $this->title_complement,
 			'invoice_id_prefix' => $this->invoice_id_prefix,
 			'debug'             => $this->debug,
 		);
