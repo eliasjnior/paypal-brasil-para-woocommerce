@@ -100,7 +100,7 @@ class PayPal_Brasil_API_Shortcut_Mini_Cart_Handler extends PayPal_Brasil_API_Han
 				$product = $item['variation_id'] ? wc_get_product( $item['variation_id'] ) : wc_get_product( $item['product_id'] );
 
 				// Force get product cents to avoid float problems.
-				$product_price = number_format( bcdiv( $item['line_subtotal'], $item['quantity'], 2 ), 2, '.', '' );
+				$product_price = paypal_brasil_math_div( $item['line_subtotal'], $item['quantity'] );
 
 				$items[] = array(
 					'name'     => $product->get_title(),
@@ -117,7 +117,7 @@ class PayPal_Brasil_API_Shortcut_Mini_Cart_Handler extends PayPal_Brasil_API_Han
 
 			// Set details
 			// Force get product cents to avoid float problems.
-			$subtotal = number_format( $cart_totals['subtotal'], 2, '.', '' );
+			$subtotal = paypal_brasil_money_format( $cart_totals['subtotal'] );
 
 			$data['transactions'][0]['amount']['details'] = array(
 				'subtotal' => $subtotal,

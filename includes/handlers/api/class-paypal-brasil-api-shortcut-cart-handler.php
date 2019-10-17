@@ -96,7 +96,7 @@ class PayPal_Brasil_API_Shortcut_Cart_Handler extends PayPal_Brasil_API_Handler 
 				$product = $item['variation_id'] ? wc_get_product( $item['variation_id'] ) : wc_get_product( $item['product_id'] );
 
 				// Force get product cents to avoid float problems.
-				$product_price = number_format( bcdiv( $item['line_subtotal'], $item['quantity'], 2 ), 2, '.', '' );
+				$product_price = paypal_brasil_math_div( $item['line_subtotal'], $item['quantity'] );
 
 				$items[] = array(
 					'name'     => $product->get_title(),
@@ -117,7 +117,7 @@ class PayPal_Brasil_API_Shortcut_Cart_Handler extends PayPal_Brasil_API_Handler 
 					'name'     => __( 'Desconto', 'paypal-brasil-para-woocommerce' ),
 					'currency' => get_woocommerce_currency(),
 					'quantity' => 1,
-					'price'    => number_format( - $cart_totals['discount_total'], 2, '.', '' ),
+					'price'    => paypal_brasil_money_format( - $cart_totals['discount_total'] ),
 					'sku'      => 'discount',
 				);
 			}
@@ -128,16 +128,16 @@ class PayPal_Brasil_API_Shortcut_Cart_Handler extends PayPal_Brasil_API_Handler 
 					'name'     => __( 'Taxas', 'paypal-brasil-para-woocommerce' ),
 					'currency' => get_woocommerce_currency(),
 					'quantity' => 1,
-					'price'    => number_format( $cart_totals['total_tax'], 2, '.', '' ),
+					'price'    => paypal_brasil_money_format( $cart_totals['total_tax'] ),
 					'sku'      => 'taxes',
 				);
 			}
 
 			// Force get product cents to avoid float problems.
-			$subtotal_minus_discounts = bcsub( $cart_totals['subtotal'], $cart_totals['discount_total'], 2 );
-			$subtotal_sum             = bcadd( $subtotal_minus_discounts, $cart_totals['total_tax'], 2 );
-			$subtotal                 = number_format( $subtotal_sum, 2, '.', '' );
-			$shipping                 = number_format( $cart_totals['shipping_total'], 2, '.', '' );
+			$subtotal_minus_discounts = paypal_brasil_math_sub( $cart_totals['subtotal'], $cart_totals['discount_total'], 2 );
+			$subtotal_sum             = paypal_brasil_math_add( $subtotal_minus_discounts, $cart_totals['total_tax'], 2 );
+			$subtotal                 = paypal_brasil_money_format( $subtotal_sum );
+			$shipping                 = paypal_brasil_money_format( $cart_totals['shipping_total'] );
 
 			// Set details
 			$data['transactions'][0]['amount']['details'] = array(

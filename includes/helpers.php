@@ -30,7 +30,7 @@ function paypal_brasil_get_order_items( $order ) {
 	foreach ( $order->get_items() as $id => $item ) {
 		$product = $item->get_variation_id() ? wc_get_product( $item->get_variation_id() ) : wc_get_product( $item->get_product_id() );
 		// Force get product cents to avoid float problems.
-		$product_price = number_format( bcdiv( $item->get_subtotal(), $item->get_quantity(), 2 ), 2, '.', '' );
+		$product_price = number_format( paypal_brasil_math_div( $item->get_subtotal(), $item->get_quantity(), 2 ), 2, '.', '' );
 
 		$items[] = array(
 			'name'     => $product->get_title(),
@@ -242,26 +242,58 @@ function paypal_brasil_get_log_file( $id ) {
 	return $matched_logs ? end( $matched_logs ) : '';
 }
 
-if ( ! function_exists( 'bcdiv' ) ) {
-	function bcdiv( $value1, $value2 ) {
-		return $value1 / $value2;
-	}
+/**
+ * Method to div two values.
+ *
+ * @param $value1
+ * @param $value2
+ * @param int $precision
+ *
+ * @return string
+ */
+function paypal_brasil_math_div( $value1, $value2, $precision = 2 ) {
+	return paypal_brasil_money_format( $value1 / $value2, $precision );
 }
 
-if ( ! function_exists( 'bcmul' ) ) {
-	function bcmul( $value1, $value2 ) {
-		return $value1 * $value2;
-	}
+/**
+ * Method to multiply two values.
+ *
+ * @param $value1
+ * @param $value2
+ * @param int $precision
+ *
+ * @return string
+ */
+function paypal_brasil_math_mul( $value1, $value2, $precision = 2 ) {
+	return paypal_brasil_money_format( $value1 * $value2, $precision );
 }
 
-if ( ! function_exists( 'bcadd' ) ) {
-	function bcadd( $value1, $value2 ) {
-		return $value1 + $value2;
-	}
+/**
+ * Method to add two numbers.
+ *
+ * @param $value1
+ * @param $value2
+ * @param int $precision
+ *
+ * @return string
+ */
+function paypal_brasil_math_add( $value1, $value2, $precision = 2 ) {
+	return paypal_brasil_money_format( $value1 + $value2, $precision );
 }
 
-if ( ! function_exists( 'bcsub' ) ) {
-	function bcsub( $value1, $value2 ) {
-		return $value1 - $value2;
-	}
+/**
+ * Method to sub two numbers.
+ *
+ * @param $value1
+ * @param $value2
+ * @param int $precision
+ *
+ * @return string
+ */
+function paypal_brasil_math_sub( $value1, $value2, $precision = 2 ) {
+	return paypal_brasil_money_format( $value1 - $value2, $precision );
+}
+
+function paypal_brasil_money_format( $value, $precision = 2 ) {
+	return number_format( $value, $precision, '.', '' );
 }

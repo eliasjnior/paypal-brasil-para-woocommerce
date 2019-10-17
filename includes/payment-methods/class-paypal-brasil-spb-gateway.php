@@ -797,8 +797,8 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 	private function process_payment_shortcut( $order ) {
 
 		// Force get product cents to avoid float problems.
-		$subtotal = number_format( bcadd( bcsub( $order->get_subtotal(), $order->get_discount_total(), 2 ), $order->get_total_tax(), 2 ), 2, '.', '' );
-		$shipping = number_format( $order->get_shipping_total(), 2, '.', '' );
+		$subtotal = paypal_brasil_math_add( paypal_brasil_math_sub( $order->get_subtotal(), $order->get_discount_total() ), $order->get_total_tax() );
+		$shipping = paypal_brasil_money_format( $order->get_shipping_total() );
 
 		$data = array(
 			array(
@@ -919,7 +919,7 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 		foreach ( $order->get_items() as $id => $item ) {
 			$product = $item->get_variation_id() ? wc_get_product( $item->get_variation_id() ) : wc_get_product( $item->get_product_id() );
 			// Force get product cents to avoid float problems.
-			$product_price = number_format( bcdiv( $item->get_subtotal(), $item->get_quantity(), 2 ), 2, '.', '' );
+			$product_price = paypal_brasil_math_div( $item->get_subtotal(), $item->get_quantity() );
 
 			$items[] = array(
 				'name'     => $product->get_title(),
@@ -942,7 +942,7 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 				'name'     => __( 'Desconto', 'paypal-brasil-para-woocommerce' ),
 				'currency' => get_woocommerce_currency(),
 				'quantity' => 1,
-				'price'    => number_format( - $order->get_discount_total(), 2, '.', '' ),
+				'price'    => paypal_brasil_money_format( - $order->get_discount_total() ),
 				'sku'      => 'discount',
 			);
 		}
@@ -953,14 +953,14 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 				'name'     => __( 'Taxas', 'paypal-brasil-para-woocommerce' ),
 				'currency' => get_woocommerce_currency(),
 				'quantity' => 1,
-				'price'    => number_format( $order->get_total_tax(), 2, '.', '' ),
+				'price'    => paypal_brasil_money_format( $order->get_total_tax() ),
 				'sku'      => 'taxes',
 			);
 		}
 
 		// Force get product cents to avoid float problems.
-		$subtotal = number_format( bcadd( bcsub( $order->get_subtotal(), $order->get_discount_total(), 2 ), $order->get_total_tax(), 2 ), 2, '.', '' );
-		$shipping = number_format( $order->get_shipping_total(), 2, '.', '' );
+		$subtotal = paypal_brasil_math_add( paypal_brasil_math_sub( $order->get_subtotal(), $order->get_discount_total() ), $order->get_total_tax() );
+		$shipping = paypal_brasil_money_format( $order->get_shipping_total() );
 
 		// Try to get billing agreement from session.
 		$billing_agreement_id = WC()->session->get( 'paypal_brasil_billing_agreement_id' );

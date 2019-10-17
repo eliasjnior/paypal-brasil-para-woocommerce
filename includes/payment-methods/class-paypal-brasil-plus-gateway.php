@@ -639,7 +639,7 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 			$product = $item['variation_id'] ? wc_get_product( $item['variation_id'] ) : wc_get_product( $item['product_id'] );
 
 			// Force get product cents to avoid float problems.
-			$product_price = number_format( bcdiv( $item['line_subtotal'], $item['quantity'], 2 ), 2, '.', '' );
+			$product_price = paypal_brasil_math_div( $item['line_subtotal'], $item['quantity'] );
 
 			$items[] = array(
 				'name'     => $product->get_title(),
@@ -665,7 +665,7 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 				'name'     => __( 'Desconto', 'paypal-brasil-para-woocommerce' ),
 				'currency' => get_woocommerce_currency(),
 				'quantity' => 1,
-				'price'    => number_format( - $cart_totals['discount_total'], 2, '.', '' ),
+				'price'    => paypal_brasil_money_format( - $cart_totals['discount_total'] ),
 				'sku'      => 'discount',
 			);
 		}
@@ -676,14 +676,14 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 				'name'     => __( 'Taxas', 'paypal-brasil-para-woocommerce' ),
 				'currency' => get_woocommerce_currency(),
 				'quantity' => 1,
-				'price'    => number_format( $cart_totals['total_tax'], 2, '.', '' ),
+				'price'    => paypal_brasil_money_format( $cart_totals['total_tax'] ),
 				'sku'      => 'taxes',
 			);
 		}
 
 		// Force get product cents to avoid float problems.
-		$subtotal = number_format( bcadd( bcsub( $cart_totals['subtotal'], $cart_totals['discount_total'], 2 ), $cart_totals['total_tax'], 2 ), 2, '.', '' );
-		$shipping = number_format( $cart_totals['shipping_total'], 2, '.', '' );
+		$subtotal = paypal_brasil_math_add( paypal_brasil_math_sub( $cart_totals['subtotal'], $cart_totals['discount_total'] ), $cart_totals['total_tax'] );
+		$shipping = paypal_brasil_money_format( $cart_totals['shipping_total'] );
 
 		// Set details
 		$payment_data['transactions'][0]['amount']['details'] = array(
