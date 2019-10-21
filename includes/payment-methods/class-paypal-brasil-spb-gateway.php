@@ -1163,16 +1163,17 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 	}
 
 	public function process_refund( $order_id, $amount = null, $reason = '' ) {
-		$amount  = floatval( $amount );
 		$sale_id = get_post_meta( $order_id, 'paypal_brasil_sale_id', true );
 		// Check if the amount is bigger than zero
 		if ( $amount <= 0 ) {
-			return new WP_Error( 'error', sprintf( __( 'O reembolso não pode ser menor que %s.', 'paypal-brasil-para-woocommerce' ), wc_price( 0 ) ) );
+			$min_price = number_format( 0, wc_get_price_decimals(), wc_get_price_decimal_separator(), wc_get_price_thousand_separator() );
+
+			return new WP_Error( 'error', sprintf( __( 'O reembolso não pode ser menor que %s.', 'paypal-brasil-para-woocommerce' ), html_entity_decode( get_woocommerce_currency_symbol() ) . $min_price ) );
 		}
 		// Check if we got the sale ID
 		if ( $sale_id ) {
 			try {
-				$refund_sale = $this->api->refund_payment( $sale_id, $amount, get_woocommerce_currency() );
+				$refund_sale = $this->api->refund_payment( $sale_id, paypal_brasil_money_format( $amount ), get_woocommerce_currency() );
 				// Check the result success.
 				if ( $refund_sale['state'] === 'completed' ) {
 					return true;

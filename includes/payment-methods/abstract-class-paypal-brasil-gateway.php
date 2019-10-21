@@ -106,7 +106,13 @@ abstract class PayPal_Brasil_Gateway extends WC_Payment_Gateway {
 			if ( $signature_response['verification_status'] === 'SUCCESS' ) {
 				$handler->handle( $webhook_event );
 			}
+
+			echo __( 'Webhook tratado com sucesso.', 'paypal-brasil-para-woocommerce' );
+			exit;
 		} catch ( Exception $ex ) {
+			http_response_code( 500 );
+			echo $ex->getMessage();
+			exit;
 		}
 	}
 

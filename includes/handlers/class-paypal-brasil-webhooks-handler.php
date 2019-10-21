@@ -26,6 +26,8 @@ if ( ! class_exists( 'PayPal_Brasil_Webhooks_Handler' ) ) {
 		 * Handle the event.
 		 *
 		 * @param $event
+		 *
+		 * @throws Exception
 		 */
 		public function handle( $event ) {
 			global $wpdb;
@@ -43,6 +45,8 @@ if ( ! class_exists( 'PayPal_Brasil_Webhooks_Handler' ) ) {
 						$this->{$method_name}( $order, $event );
 					}
 				}
+			} else {
+				throw new Exception( 'Invalid method to handle.' );
 			}
 		}
 

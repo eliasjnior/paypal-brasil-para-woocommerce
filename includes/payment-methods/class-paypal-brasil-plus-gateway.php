@@ -374,16 +374,17 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 	 * @return WP_Error|bool
 	 */
 	public function process_refund( $order_id, $amount = null, $reason = '' ) {
-		$amount  = floatval( $amount );
 		$sale_id = get_post_meta( $order_id, 'wc_ppp_brasil_sale_id', true );
 		// Check if the amount is bigger than zero
 		if ( $amount <= 0 ) {
-			return new WP_Error( 'error', sprintf( __( 'O reembolso não pode ser menor que %s.', 'paypal-brasil-para-woocommerce' ), wc_price( 0 ) ) );
+			$min_price = number_format( 0, wc_get_price_decimals(), wc_get_price_decimal_separator(), wc_get_price_thousand_separator() );
+
+			return new WP_Error( 'error', sprintf( __( 'O reembolso não pode ser menor que %s.', 'paypal-brasil-para-woocommerce' ), html_entity_decode( get_woocommerce_currency_symbol() ) . $min_price ) );
 		}
 		// Check if we got the sale ID
 		if ( $sale_id ) {
 			try {
-				$refund_sale = $this->api->refund_payment( $sale_id, $amount, get_woocommerce_currency() );
+				$refund_sale = $this->api->refund_payment( $sale_id, paypal_brasil_money_format( $amount ), get_woocommerce_currency() );
 				// Check the result success.
 				if ( $refund_sale['state'] === 'completed' ) {
 					return true;
@@ -925,42 +926,6 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 		include dirname( PAYPAL_PAYMENTS_MAIN_FILE ) . '/includes/views/admin-options/admin-options-plus/admin-options-plus-template.php';
 
 		return ob_get_clean();
-	}
-
-	/**
-	 * Handle webhooks events.
-	 */
-	public function webhook_handler() {
-		// Include the handler.
-		include_once dirname( PAYPAL_PAYMENTS_MAIN_FILE ) . '/includes/handlers/class-paypal-brasil-webhooks-handler.php';
-		try {
-			// Instance the handler.
-			$handler = new PayPal_Brasil_Webhooks_Handler( $this->id );
-			// Get the data.
-			$headers       = array_change_key_case( getallheaders(), CASE_UPPER );
-			$body          = $this->get_raw_data();
-			$webhook_event = json_decode( $body, true );
-			// Prepare the signature verification.
-			$signature_verification = array(
-				'auth_algo'         => $headers['PAYPAL-AUTH-ALGO'],
-				'cert_url'          => $headers['PAYPAL-CERT-URL'],
-				'transmission_id'   => $headers['PAYPAL-TRANSMISSION-ID'],
-				'transmission_sig'  => $headers['PAYPAL-TRANSMISSION-SIG'],
-				'transmission_time' => $headers['PAYPAL-TRANSMISSION-TIME'],
-				'webhook_id'        => $this->webhook_id,
-			);
-			$payload                = "{";
-			foreach ( $signature_verification as $field => $value ) {
-				$payload .= "\"$field\": \"$value\",";
-			}
-			$payload            .= "\"webhook_event\": $body";
-			$payload            .= "}";
-			$signature_response = $this->api->verify_signature( $payload );
-			if ( $signature_response['verification_status'] === 'SUCCESS' ) {
-				$handler->handle( $webhook_event );
-			}
-		} catch ( Exception $ex ) {
-		}
 	}
 
 	/**
