@@ -80,7 +80,7 @@ abstract class PayPal_Brasil_Gateway extends WC_Payment_Gateway {
 			$headers = array_change_key_case( getallheaders(), CASE_UPPER );
 			$body    = $this->get_raw_data();
 
-			$this->log( "Webhook recebido:\n" . $body );
+			$this->log( "Webhook recebido:\n" . $body . "\n" );
 
 			$webhook_event = json_decode( $body, true );
 
