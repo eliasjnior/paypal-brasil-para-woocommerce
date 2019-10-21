@@ -1428,7 +1428,7 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 		}
 
 		// Shortcut
-		if ( $this->is_shortcut_enabled() ) {
+		if ( $this->enabled === 'yes' && $this->is_shortcut_enabled() ) {
 			$enqueues[] = array(
 				'paypal-brasil-shortcut',
 				plugins_url( 'assets/dist/js/frontend-shortcut.js', PAYPAL_PAYMENTS_MAIN_FILE ),

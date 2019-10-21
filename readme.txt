@@ -94,11 +94,17 @@ Caso tenha alguma dúvida ou dificuldade na utilização do plugin acesse a seç
 
 = 1.0.3 =
 * Otimizado método para cálculos matemáticos.
+* Melhoria nos tratamentos dos webhooks.
+* Ajuste para alguns plugins de descontos.
+* Corrigido exibição do shortcut mesmo com o gateway desabilitado.
 
 == Upgrade Notice ==
 
 = 1.0.3 =
 * Otimizado método para cálculos matemáticos.
+* Melhoria nos tratamentos dos webhooks.
+* Ajuste para alguns plugins de descontos.
+* Corrigido exibição do shortcut mesmo com o gateway desabilitado.
 
 == Screenshots ==
 
