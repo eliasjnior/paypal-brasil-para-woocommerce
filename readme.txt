@@ -97,6 +97,7 @@ Caso tenha alguma dúvida ou dificuldade na utilização do plugin acesse a seç
 * Melhoria nos tratamentos dos webhooks.
 * Ajuste para alguns plugins de descontos.
 * Corrigido exibição do shortcut mesmo com o gateway desabilitado.
+* Corrigido problema com reembolso.
 
 == Upgrade Notice ==
 
@@ -105,6 +106,7 @@ Caso tenha alguma dúvida ou dificuldade na utilização do plugin acesse a seç
 * Melhoria nos tratamentos dos webhooks.
 * Ajuste para alguns plugins de descontos.
 * Corrigido exibição do shortcut mesmo com o gateway desabilitado.
+* Corrigido problema com reembolso.
 
 == Screenshots ==
 
