@@ -52,8 +52,6 @@ class PayPal_Brasil_API_Shortcut_Cart_Handler extends PayPal_Brasil_API_Handler 
 				);
 			}
 
-			$posted_data = $validation['data'];
-
 			// Get the wanted gateway.
 			$gateway = $this->get_paypal_gateway( 'paypal-brasil-spb-gateway' );
 
@@ -89,7 +87,8 @@ class PayPal_Brasil_API_Shortcut_Cart_Handler extends PayPal_Brasil_API_Handler 
 				),
 			);
 
-			$items = array();
+			$items        = array();
+			$only_digital = true;
 
 			// Add all items.
 			foreach ( WC()->cart->get_cart() as $key => $item ) {
@@ -106,6 +105,11 @@ class PayPal_Brasil_API_Shortcut_Cart_Handler extends PayPal_Brasil_API_Handler 
 					'sku'      => $product->get_sku() ? $product->get_sku() : $product->get_id(),
 					'url'      => $product->get_permalink(),
 				);
+
+				// Check if product is not digital.
+				if ( ! ( $product->is_downloadable() || $product->is_virtual() ) ) {
+					$only_digital = false;
+				}
 			}
 
 			// Add all discounts.
@@ -154,7 +158,7 @@ class PayPal_Brasil_API_Shortcut_Cart_Handler extends PayPal_Brasil_API_Handler 
 			// Set the application context
 			$data['application_context'] = array(
 				'brand_name'          => get_bloginfo( 'name' ),
-				'shipping_preference' => 'GET_FROM_FILE',
+				'shipping_preference' => $only_digital ? 'NO_SHIPPING' : 'GET_FROM_FILE',
 				'user_action'         => 'continue',
 			);
 

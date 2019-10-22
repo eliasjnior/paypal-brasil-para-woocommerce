@@ -828,7 +828,7 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 		);
 
 		// Path address if needed.
-		if ( $this->is_shortcut_override_address() ) {
+		if ( $this->is_shortcut_override_address() && ! paypal_brasil_is_order_only_digital( $order ) ) {
 			$data[] = array(
 				'op'    => 'replace',
 				'path'  => '/transactions/0/item_list/shipping_address',

@@ -15,6 +15,32 @@ function paypal_brasil_init_gateways_on_load() {
 add_action( 'wp', 'paypal_brasil_init_gateways_on_load' );
 
 /**
+ * Check if is only digital items.
+ *
+ * @param $order WC_Order
+ *
+ * @return bool
+ */
+function paypal_brasil_is_order_only_digital( $order ) {
+	// Consider as always digital.
+	$only_digital = true;
+
+	/** @var WC_Order_Item $item */
+	foreach ( $order->get_items() as $id => $item ) {
+		// Get the product.
+		$product = $item->get_variation_id() ? wc_get_product( $item->get_variation_id() ) : wc_get_product( $item->get_product_id() );
+
+		// Check if product is not digital.
+		if ( ! ( $product->is_downloadable() || $product->is_virtual() ) ) {
+			$only_digital = false;
+			break;
+		}
+	}
+
+	return $only_digital;
+}
+
+/**
  * Get order items prepared to API.
  *
  * @param $order WC_Order
