@@ -93,19 +93,35 @@ if ( ! class_exists( 'PayPal_Brasil_Webhooks_Handler' ) ) {
 		 * When payment is refunded.
 		 *
 		 * @param $order WC_Order
+		 *
+		 * @throws Exception
 		 */
 		public function handle_process_payment_sale_refunded( $order, $event ) {
 			// Check if order exists.
 			if ( ! $order ) {
 				return;
 			}
+
+			// Check if is partial refund.
+			$partial_refund = wc_format_decimal( $order->get_total() - $order->get_total_refunded() ) !== paypal_brasil_money_format( $event['resource']['amount']['total'] );
+
 			// Check if is total refund
-			if ( $order->get_total() == floatval( $event['resource']['amount']['total'] ) ) {
-				return;
+			if ( ! $partial_refund ) {
+				$order->update_status( 'refunded', __( 'PayPal: A transação foi reembolsada por completo.', 'paypal-brasil-para-woocommerce' ) );
 			}
+
 			// Check if the current status isn't refunded.
 			if ( ! in_array( $order->get_status(), array( 'refunded' ), true ) ) {
-				$order->update_status( 'refunded', __( 'PayPal: A transação foi reembolsada.', 'paypal-paymnets' ) );
+				$refund = wc_create_refund( array(
+					'amount'         => wc_format_decimal( $event['resource']['amount']['total'] ),
+					'reason'         => $partial_refund ? __( 'PayPal: transação parcialmente reembolsada.', 'paypal-brasil-para-woocommerce' ) : __( 'PayPal: transação reembolsada por completo.', 'paypal-brasil-para-woocommerce' ),
+					'order_id'       => $order->get_id(),
+					'refund_payment' => true,
+				) );
+
+				if ( is_wp_error( $refund ) ) {
+					throw new Exception( sprintf( __( 'Houve um erro ao tentar realizar o reembolso: %s', 'paypal-brasil-para-woocommerce' ), $refund->get_error_message() ) );
+				}
 			}
 		}
 
