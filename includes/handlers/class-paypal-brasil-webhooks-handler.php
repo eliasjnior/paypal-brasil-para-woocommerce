@@ -68,7 +68,7 @@ if ( ! class_exists( 'PayPal_Brasil_Webhooks_Handler' ) ) {
 				'cancelled'
 			), true )
 			) {
-				$order->add_order_note( __( 'PayPal: Transação paga.', 'paypal-paymnets' ) );
+				$order->add_order_note( __( 'PayPal: Transação paga.', 'paypal-brasil-para-woocommerce' ) );
 				$order->payment_complete();
 			}
 		}
@@ -83,9 +83,10 @@ if ( ! class_exists( 'PayPal_Brasil_Webhooks_Handler' ) ) {
 			if ( ! $order ) {
 				return;
 			}
+			
 			// Check if the current status isn't failed.
 			if ( ! in_array( $order->get_status(), array( 'failed', 'completed', 'processing' ), true ) ) {
-				$order->update_status( 'failed', __( 'PayPal: A transação foi rejeitada pela empresa de cartão ou por fraude.', 'paypal-paymnets' ) );
+				$order->update_status( 'failed', __( 'PayPal: A transação foi rejeitada pela empresa de cartão ou por fraude.', 'paypal-brasil-para-woocommerce' ) );
 			}
 		}
 
@@ -122,6 +123,8 @@ if ( ! class_exists( 'PayPal_Brasil_Webhooks_Handler' ) ) {
 				if ( is_wp_error( $refund ) ) {
 					throw new Exception( sprintf( __( 'Houve um erro ao tentar realizar o reembolso: %s', 'paypal-brasil-para-woocommerce' ), $refund->get_error_message() ) );
 				}
+			} else {
+				throw new Exception( __( 'Esse pedido já foi reembolsado.', 'paypal-brasil-para-woocommerce' ) );
 			}
 		}
 
@@ -129,13 +132,33 @@ if ( ! class_exists( 'PayPal_Brasil_Webhooks_Handler' ) ) {
 		 * When payment is reversed.
 		 *
 		 * @param $order WC_Order
+		 *
+		 * @throws Exception
 		 */
 		public function handle_process_payment_sale_reversed( $order, $event ) {
 			// Check if order exists.
 			if ( ! $order ) {
 				return;
 			}
-			$order->update_status( 'refunded', __( 'PayPal: A transação foi revertida.', 'paypal-paymnets' ) );
+
+			// Check if the current status isn't refunded.
+			if ( ! in_array( $order->get_status(), array( 'refunded' ), true ) ) {
+				$order->update_status( 'refunded', __( 'PayPal: A transação foi revertida.', 'paypal-brasil-para-woocommerce' ) );
+
+				$refund = wc_create_refund( array(
+					'amount'         => wc_format_decimal( $order->get_total() - $order->get_total_refunded() ),
+					'reason'         => __( 'PayPal: transação revertida.', 'paypal-brasil-para-woocommerce' ),
+					'order_id'       => $order->get_id(),
+					'refund_payment' => true,
+				) );
+
+				if ( is_wp_error( $refund ) ) {
+					throw new Exception( sprintf( __( 'Houve um erro ao tentar realizar o reembolso: %s', 'paypal-brasil-para-woocommerce' ), $refund->get_error_message() ) );
+				}
+
+			} else {
+				throw new Exception( __( 'Esse pedido já foi reembolsado.', 'paypal-brasil-para-woocommerce' ) );
+			}
 		}
 
 	}
