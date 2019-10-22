@@ -565,11 +565,6 @@ class PayPal_Brasil_API {
 			'Content-Type'    => 'application/json;charset=UTF-8', // send as json for default.
 		), $headers );
 
-		// Set the partner attribution ID if exists.
-		if ( $this->partner_attribution_id ) {
-			$headers['PayPal-Partner-Attribution-Id'] = $this->partner_attribution_id;
-		}
-
 		// Add access token if needed.
 		// In case is access token request, the authorization already exists, so no way
 		// will reach the paypal_brasil_Api_Exception and paypal_brasil_Connection_Exception.
