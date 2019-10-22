@@ -122,7 +122,7 @@ abstract class PayPal_Brasil_Gateway extends WC_Payment_Gateway {
 	 * @return string|null
 	 */
 	public function get_webhook_id() {
-		return get_option( 'paypal_brasil_webhook_url-' . $this->id, null );
+		return defined('PAYPAL_BRASIL_WEBHOOK_ID') ? PAYPAL_BRASIL_WEBHOOK_ID : get_option( 'paypal_brasil_webhook_url-' . $this->id, null );
 	}
 
 	/**
@@ -220,7 +220,7 @@ abstract class PayPal_Brasil_Gateway extends WC_Payment_Gateway {
 	public function create_webhooks() {
 		// Set by default as not found.
 		$webhook     = null;
-		$webhook_url = $this->get_webhook_url();
+		$webhook_url = defined( 'PAYPAL_BRASIL_WEBHOOK_URL' ) ? PAYPAL_BRASIL_WEBHOOK_URL : $this->get_webhook_url();
 
 		try {
 
