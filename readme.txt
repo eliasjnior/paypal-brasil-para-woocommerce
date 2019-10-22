@@ -99,6 +99,7 @@ Caso tenha alguma dúvida ou dificuldade na utilização do plugin acesse a seç
 * Corrigido exibição do shortcut mesmo com o gateway desabilitado.
 * Corrigido problema com reembolso.
 * Corrigido problema com webhooks.
+* Corrigido problema com produtos digitais utilizando o PayPal no Carrinho.
 
 == Upgrade Notice ==
 
@@ -109,6 +110,7 @@ Caso tenha alguma dúvida ou dificuldade na utilização do plugin acesse a seç
 * Corrigido exibição do shortcut mesmo com o gateway desabilitado.
 * Corrigido problema com reembolso.
 * Corrigido problema com webhooks.
+* Corrigido problema com produtos digitais utilizando o PayPal no Carrinho.
 
 == Screenshots ==
 
