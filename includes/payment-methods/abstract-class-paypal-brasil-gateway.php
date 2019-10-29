@@ -80,7 +80,7 @@ abstract class PayPal_Brasil_Gateway extends WC_Payment_Gateway {
 			$headers = array_change_key_case( getallheaders(), CASE_UPPER );
 			$body    = $this->get_raw_data();
 
-			$this->log( "Webhook recebido:\n" . $body );
+			$this->log( "Webhook recebido:\n" . $body . "\n" );
 
 			$webhook_event = json_decode( $body, true );
 
@@ -106,7 +106,13 @@ abstract class PayPal_Brasil_Gateway extends WC_Payment_Gateway {
 			if ( $signature_response['verification_status'] === 'SUCCESS' ) {
 				$handler->handle( $webhook_event );
 			}
+
+			echo __( 'Webhook tratado com sucesso.', 'paypal-brasil-para-woocommerce' );
+			exit;
 		} catch ( Exception $ex ) {
+			http_response_code( 500 );
+			echo $ex->getMessage();
+			exit;
 		}
 	}
 
@@ -116,7 +122,7 @@ abstract class PayPal_Brasil_Gateway extends WC_Payment_Gateway {
 	 * @return string|null
 	 */
 	public function get_webhook_id() {
-		return get_option( 'paypal_brasil_webhook_url-' . $this->id, null );
+		return defined('PAYPAL_BRASIL_WEBHOOK_ID') ? PAYPAL_BRASIL_WEBHOOK_ID : get_option( 'paypal_brasil_webhook_url-' . $this->id, null );
 	}
 
 	/**
@@ -214,7 +220,7 @@ abstract class PayPal_Brasil_Gateway extends WC_Payment_Gateway {
 	public function create_webhooks() {
 		// Set by default as not found.
 		$webhook     = null;
-		$webhook_url = $this->get_webhook_url();
+		$webhook_url = defined( 'PAYPAL_BRASIL_WEBHOOK_URL' ) ? PAYPAL_BRASIL_WEBHOOK_URL : $this->get_webhook_url();
 
 		try {
 

@@ -42,15 +42,16 @@ try {
 			'cpf'            => in_array( $payment['payer']['payer_info']['tax_id_type'], $cpf_cases ) ? $payment['payer']['payer_info']['tax_id'] : '',
 			'cnpj'           => in_array( $payment['payer']['payer_info']['tax_id_type'], $cnpj_cases ) ? $payment['payer']['payer_info']['tax_id'] : '',
 			'company'        => in_array( $payment['payer']['payer_info']['tax_id_type'], $cnpj_cases ) ? $payment['payer']['payer_info']['business_name'] : '',
-			'shipping_name'  => $payment['payer']['payer_info']['shipping_address']['recipient_name'],
-			'address_line_1' => $payment['payer']['payer_info']['shipping_address']['line1'],
-			'city'           => $payment['payer']['payer_info']['shipping_address']['city'],
-			'state'          => $payment['payer']['payer_info']['shipping_address']['state'],
-			'postcode'       => $payment['payer']['payer_info']['shipping_address']['postal_code'],
-			'country'        => $payment['payer']['payer_info']['shipping_address']['country_code'],
+			'shipping_name'  => isset( $payment['payer']['payer_info']['shipping_address'] ) ? $payment['payer']['payer_info']['shipping_address']['recipient_name'] : '',
+			'address_line_1' => isset( $payment['payer']['payer_info']['shipping_address'] ) ? $payment['payer']['payer_info']['shipping_address']['line1'] : '',
+			'address_line_2' => '',
+			'city'           => isset( $payment['payer']['payer_info']['shipping_address'] ) ? $payment['payer']['payer_info']['shipping_address']['city'] : '',
+			'state'          => isset( $payment['payer']['payer_info']['shipping_address'] ) ? $payment['payer']['payer_info']['shipping_address']['state'] : '',
+			'postcode'       => isset( $payment['payer']['payer_info']['shipping_address'] ) ? $payment['payer']['payer_info']['shipping_address']['postal_code'] : '',
+			'country'        => isset( $payment['payer']['payer_info']['shipping_address'] ) ? $payment['payer']['payer_info']['shipping_address']['country_code'] : '',
 		);
 
-		if ( isset( $payment['payer']['payer_info']['shipping_address']['line2'] ) ) {
+		if ( isset( $payment['payer']['payer_info']['shipping_address'] ) && isset( $payment['payer']['payer_info']['shipping_address']['line2'] ) ) {
 			$payer['address_line_2'] = $payment['payer']['payer_info']['shipping_address']['line2'];
 		}
 
@@ -68,7 +69,7 @@ try {
 				'shipping_postcode'  => $payer['postcode'],
 				'shipping_city'      => $payer['city'],
 				'shipping_address_1' => $payer['address_line_1'],
-				'shipping_address_2' => '',
+				'shipping_address_2' => $payer['address_line_2'],
 			)
 		);
 
@@ -80,30 +81,41 @@ try {
             <a href="<?php echo esc_url( add_query_arg( 'override-address', true ) ); ?>"><?php _e( 'Este não é meu endereço.', 'paypal-brasil-para-woocommerce' ); ?></a>
         </div>
         <table class="shop_table">
-            <tr>
-                <th><?php _e( 'Nome', 'paypal-brasil-para-woocommerce' ); ?></th>
-                <td><?php echo sprintf( '%s', $payer['shipping_name'] ); ?></td>
-            </tr>
-            <tr>
-                <th><?php _e( 'Endereço', 'paypal-brasil-para-woocommerce' ); ?></th>
-                <td><?php echo $payer['address_line_1'] . ( isset( $payer['address_line_2'] ) ? ', ' . $payer['address_line_2'] : '' ); ?></td>
-            </tr>
-            <tr>
-                <th><?php _e( 'Cidade', 'paypal-brasil-para-woocommerce' ); ?></th>
-                <td><?php echo esc_html( $payer['city'] ); ?></td>
-            </tr>
-            <tr>
-                <th><?php _e( 'Estado', 'paypal-brasil-para-woocommerce' ); ?></th>
-                <td><?php echo esc_html( $states[ $payer['state'] ] ); ?></td>
-            </tr>
-            <tr>
-                <th><?php _e( 'País', 'paypal-brasil-para-woocommerce' ); ?></th>
-                <td><?php echo esc_html( WC()->countries->get_countries()[ $payer['country'] ] ); ?></td>
-            </tr>
-            <tr>
-                <th><?php _e( 'CEP', 'paypal-brasil-para-woocommerce' ); ?></th>
-                <td><?php echo esc_html( $payer['postcode'] ); ?></td>
-            </tr>
+			<?php // get the shipping name or the name if is NO_SHIPPING ?>
+			<?php if ( $payer['shipping_name'] ): ?>
+                <tr>
+                    <th><?php _e( 'Nome', 'paypal-brasil-para-woocommerce' ); ?></th>
+                    <td><?php echo sprintf( '%s', $payer['shipping_name'] ); ?></td>
+                </tr>
+			<?php else: ?>
+                <tr>
+                    <th><?php _e( 'Nome', 'paypal-brasil-para-woocommerce' ); ?></th>
+                    <td><?php echo sprintf( '%s %s', $payer['first_name'], $payer['last_name'] ); ?></td>
+                </tr>
+			<?php endif; ?>
+			<?php // check if have addresss, otherwise is NO_SHIPPING ?>
+			<?php if ( $payer['address_line_1'] ): ?>
+                <tr>
+                    <th><?php _e( 'Endereço', 'paypal-brasil-para-woocommerce' ); ?></th>
+                    <td><?php echo $payer['address_line_1'] . ( isset( $payer['address_line_2'] ) ? ', ' . $payer['address_line_2'] : '' ); ?></td>
+                </tr>
+                <tr>
+                    <th><?php _e( 'Cidade', 'paypal-brasil-para-woocommerce' ); ?></th>
+                    <td><?php echo esc_html( $payer['city'] ); ?></td>
+                </tr>
+                <tr>
+                    <th><?php _e( 'Estado', 'paypal-brasil-para-woocommerce' ); ?></th>
+                    <td><?php echo esc_html( $states[ $payer['state'] ] ); ?></td>
+                </tr>
+                <tr>
+                    <th><?php _e( 'País', 'paypal-brasil-para-woocommerce' ); ?></th>
+                    <td><?php echo esc_html( WC()->countries->get_countries()[ $payer['country'] ] ); ?></td>
+                </tr>
+                <tr>
+                    <th><?php _e( 'CEP', 'paypal-brasil-para-woocommerce' ); ?></th>
+                    <td><?php echo esc_html( $payer['postcode'] ); ?></td>
+                </tr>
+			<?php endif; ?>
         </table>
 	<?php endif; ?>
 	<?php

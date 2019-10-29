@@ -87,11 +87,11 @@
                     <legend class="screen-reader-text"><span>Nome de exibição</span></legend>
                     <input class="input-text regular-input"
                            type="text"
-                           name="<?php echo esc_attr( $this->get_field_key( 'title' ) ); ?>"
-                           id="<?php echo esc_attr( $this->get_field_key( 'title' ) ); ?>"
-                           v-model="title"
+                           name="<?php echo esc_attr( $this->get_field_key( 'title_complement' ) ); ?>"
+                           id="<?php echo esc_attr( $this->get_field_key( 'title_complement' ) ); ?>"
+                           v-model="titleComplement"
                            placeholder="Exemplo: (Parcelado em até 12x)">
-                    <p class="description">Será exibido no checkout: PayPal {{title ? '(' + title + ')':
+                    <p class="description">Será exibido no checkout: PayPal {{titleComplement ? '(' + titleComplement + ')':
                         ''}}</p>
                 </fieldset>
             </td>

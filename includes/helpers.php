@@ -15,6 +15,32 @@ function paypal_brasil_init_gateways_on_load() {
 add_action( 'wp', 'paypal_brasil_init_gateways_on_load' );
 
 /**
+ * Check if is only digital items.
+ *
+ * @param $order WC_Order
+ *
+ * @return bool
+ */
+function paypal_brasil_is_order_only_digital( $order ) {
+	// Consider as always digital.
+	$only_digital = true;
+
+	/** @var WC_Order_Item $item */
+	foreach ( $order->get_items() as $id => $item ) {
+		// Get the product.
+		$product = $item->get_variation_id() ? wc_get_product( $item->get_variation_id() ) : wc_get_product( $item->get_product_id() );
+
+		// Check if product is not digital.
+		if ( ! ( $product->is_downloadable() || $product->is_virtual() ) ) {
+			$only_digital = false;
+			break;
+		}
+	}
+
+	return $only_digital;
+}
+
+/**
  * Get order items prepared to API.
  *
  * @param $order WC_Order
@@ -30,7 +56,7 @@ function paypal_brasil_get_order_items( $order ) {
 	foreach ( $order->get_items() as $id => $item ) {
 		$product = $item->get_variation_id() ? wc_get_product( $item->get_variation_id() ) : wc_get_product( $item->get_product_id() );
 		// Force get product cents to avoid float problems.
-		$product_price = number_format( bcdiv( $item->get_subtotal(), $item->get_quantity(), 2 ), 2, '.', '' );
+		$product_price = number_format( paypal_brasil_math_div( $item->get_subtotal(), $item->get_quantity(), 2 ), 2, '.', '' );
 
 		$items[] = array(
 			'name'     => $product->get_title(),
@@ -240,4 +266,60 @@ function paypal_brasil_get_log_file( $id ) {
 	}
 
 	return $matched_logs ? end( $matched_logs ) : '';
+}
+
+/**
+ * Method to div two values.
+ *
+ * @param $value1
+ * @param $value2
+ * @param int $precision
+ *
+ * @return string
+ */
+function paypal_brasil_math_div( $value1, $value2, $precision = 2 ) {
+	return paypal_brasil_money_format( $value1 / $value2, $precision );
+}
+
+/**
+ * Method to multiply two values.
+ *
+ * @param $value1
+ * @param $value2
+ * @param int $precision
+ *
+ * @return string
+ */
+function paypal_brasil_math_mul( $value1, $value2, $precision = 2 ) {
+	return paypal_brasil_money_format( $value1 * $value2, $precision );
+}
+
+/**
+ * Method to add two numbers.
+ *
+ * @param $value1
+ * @param $value2
+ * @param int $precision
+ *
+ * @return string
+ */
+function paypal_brasil_math_add( $value1, $value2, $precision = 2 ) {
+	return paypal_brasil_money_format( $value1 + $value2, $precision );
+}
+
+/**
+ * Method to sub two numbers.
+ *
+ * @param $value1
+ * @param $value2
+ * @param int $precision
+ *
+ * @return string
+ */
+function paypal_brasil_math_sub( $value1, $value2, $precision = 2 ) {
+	return paypal_brasil_money_format( $value1 - $value2, $precision );
+}
+
+function paypal_brasil_money_format( $value, $precision = 2 ) {
+	return number_format( $value, $precision, '.', '' );
 }

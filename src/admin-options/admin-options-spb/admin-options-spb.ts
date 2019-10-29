@@ -9,6 +9,7 @@ declare const paypal_brasil_admin_options_spb: {
     template: string,
     enabled: string,
     title: string,
+    title_complement: string,
     mode: string,
     client: {
         live: string,
@@ -41,6 +42,7 @@ export default class AdminOptionsSpb extends Vue {
 
     enabled = '';
     title = '';
+    titleComplement = '';
     mode = '';
     client = {live: '', sandbox: ''};
     secret = {live: '', sandbox: ''};
@@ -81,6 +83,7 @@ export default class AdminOptionsSpb extends Vue {
         console.log('options', options);
         this.enabled = options.enabled || '';
         this.title = options.title || '';
+        this.titleComplement = options.title_complement || '';
         this.mode = options.mode || 'live';
         this.client = {
             live: options.client.live || '',

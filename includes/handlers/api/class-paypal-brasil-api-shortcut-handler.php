@@ -52,8 +52,6 @@ class PayPal_Brasil_API_Shortcut_Mini_Cart_Handler extends PayPal_Brasil_API_Han
 				);
 			}
 
-			$posted_data = $validation['data'];
-
 			// Get the wanted gateway.
 			$gateway = $this->get_paypal_gateway( 'paypal-brasil-spb-gateway' );
 
@@ -93,14 +91,15 @@ class PayPal_Brasil_API_Shortcut_Mini_Cart_Handler extends PayPal_Brasil_API_Han
 				),
 			);
 
-			$items = array();
+			$items        = array();
+			$only_digital = true;
 
 			// Add all items.
 			foreach ( WC()->cart->get_cart() as $key => $item ) {
 				$product = $item['variation_id'] ? wc_get_product( $item['variation_id'] ) : wc_get_product( $item['product_id'] );
 
 				// Force get product cents to avoid float problems.
-				$product_price = number_format( bcdiv( $item['line_subtotal'], $item['quantity'], 2 ), 2, '.', '' );
+				$product_price = paypal_brasil_math_div( $item['line_subtotal'], $item['quantity'] );
 
 				$items[] = array(
 					'name'     => $product->get_title(),
@@ -110,6 +109,11 @@ class PayPal_Brasil_API_Shortcut_Mini_Cart_Handler extends PayPal_Brasil_API_Han
 					'sku'      => $product->get_sku() ? $product->get_sku() : $product->get_id(),
 					'url'      => $product->get_permalink(),
 				);
+
+				// Check if product is not digital.
+				if ( ! ( $product->is_downloadable() || $product->is_virtual() ) ) {
+					$only_digital = false;
+				}
 			}
 
 			// Add all discounts.
@@ -117,7 +121,7 @@ class PayPal_Brasil_API_Shortcut_Mini_Cart_Handler extends PayPal_Brasil_API_Han
 
 			// Set details
 			// Force get product cents to avoid float problems.
-			$subtotal = number_format( $cart_totals['subtotal'], 2, '.', '' );
+			$subtotal = paypal_brasil_money_format( $cart_totals['subtotal'] );
 
 			$data['transactions'][0]['amount']['details'] = array(
 				'subtotal' => $subtotal,
@@ -132,7 +136,7 @@ class PayPal_Brasil_API_Shortcut_Mini_Cart_Handler extends PayPal_Brasil_API_Han
 			// Set the application context
 			$data['application_context'] = array(
 				'brand_name'          => get_bloginfo( 'name' ),
-				'shipping_preference' => 'GET_FROM_FILE',
+				'shipping_preference' => $only_digital ? 'NO_SHIPPING' : 'GET_FROM_FILE',
 				'user_action'         => 'continue',
 			);
 

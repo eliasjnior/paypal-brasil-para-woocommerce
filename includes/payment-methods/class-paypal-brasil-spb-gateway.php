@@ -18,6 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @property string reference_enabled
  * @property string debug
  * @property string invoice_id_prefix
+ * @property string title_complement
  */
 class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 
@@ -46,13 +47,14 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 		$this->init_settings();
 
 		// Get available options.
-		$this->enabled        = $this->get_option( 'enabled' );
-		$this->title          = $this->get_option( 'title' );
-		$this->mode           = $this->get_option( 'mode' );
-		$this->client_live    = $this->get_option( 'client_live' );
-		$this->client_sandbox = $this->get_option( 'client_sandbox' );
-		$this->secret_live    = $this->get_option( 'secret_live' );
-		$this->secret_sandbox = $this->get_option( 'secret_sandbox' );
+		$this->enabled          = $this->get_option( 'enabled' );
+		$this->title            = __( 'PayPal Brasil - Carteira Digital', 'paypal-brasil-para-woocommerce' );
+		$this->title_complement = $this->get_option( 'title_complement' );
+		$this->mode             = $this->get_option( 'mode' );
+		$this->client_live      = $this->get_option( 'client_live' );
+		$this->client_sandbox   = $this->get_option( 'client_sandbox' );
+		$this->secret_live      = $this->get_option( 'secret_live' );
+		$this->secret_sandbox   = $this->get_option( 'secret_sandbox' );
 
 		$this->format            = $this->get_option( 'format' );
 		$this->color             = $this->get_option( 'color' );
@@ -168,8 +170,8 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 
 		// Title for frontend.
 		$title = __( 'PayPal', 'paypal-brasil-para-woocommerce' );
-		if ( ! empty( $this->title ) ) {
-			$title .= ' (' . $this->title . ')';
+		if ( ! empty( $this->title_complement ) ) {
+			$title .= ' (' . $this->title_complement . ')';
 		}
 
 		return apply_filters( 'woocommerce_gateway_title', $title, $this->id );
@@ -186,8 +188,8 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 				'label'   => __( 'Habilitar', 'paypal-brasil-para-woocommerce' ),
 				'default' => 'no',
 			),
-			'title'             => array(
-				'title' => __( 'Nome de exibição', 'paypal-brasil-para-woocommerce' ),
+			'title_complement'  => array(
+				'title' => __( 'Nome de exibição (complemento)', 'paypal-brasil-para-woocommerce' ),
 				'type'  => 'text',
 			),
 			'mode'              => array(
@@ -797,8 +799,8 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 	private function process_payment_shortcut( $order ) {
 
 		// Force get product cents to avoid float problems.
-		$subtotal = number_format( bcadd( bcsub( $order->get_subtotal(), $order->get_discount_total(), 2 ), $order->get_total_tax(), 2 ), 2, '.', '' );
-		$shipping = number_format( $order->get_shipping_total(), 2, '.', '' );
+		$subtotal = paypal_brasil_math_add( paypal_brasil_math_sub( $order->get_subtotal(), $order->get_discount_total() ), $order->get_total_tax() );
+		$shipping = paypal_brasil_money_format( $order->get_shipping_total() );
 
 		$data = array(
 			array(
@@ -826,7 +828,7 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 		);
 
 		// Path address if needed.
-		if ( $this->is_shortcut_override_address() ) {
+		if ( $this->is_shortcut_override_address() && ! paypal_brasil_is_order_only_digital( $order ) ) {
 			$data[] = array(
 				'op'    => 'replace',
 				'path'  => '/transactions/0/item_list/shipping_address',
@@ -919,7 +921,7 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 		foreach ( $order->get_items() as $id => $item ) {
 			$product = $item->get_variation_id() ? wc_get_product( $item->get_variation_id() ) : wc_get_product( $item->get_product_id() );
 			// Force get product cents to avoid float problems.
-			$product_price = number_format( bcdiv( $item->get_subtotal(), $item->get_quantity(), 2 ), 2, '.', '' );
+			$product_price = paypal_brasil_math_div( $item->get_subtotal(), $item->get_quantity() );
 
 			$items[] = array(
 				'name'     => $product->get_title(),
@@ -942,7 +944,7 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 				'name'     => __( 'Desconto', 'paypal-brasil-para-woocommerce' ),
 				'currency' => get_woocommerce_currency(),
 				'quantity' => 1,
-				'price'    => number_format( - $order->get_discount_total(), 2, '.', '' ),
+				'price'    => paypal_brasil_money_format( - $order->get_discount_total() ),
 				'sku'      => 'discount',
 			);
 		}
@@ -953,14 +955,14 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 				'name'     => __( 'Taxas', 'paypal-brasil-para-woocommerce' ),
 				'currency' => get_woocommerce_currency(),
 				'quantity' => 1,
-				'price'    => number_format( $order->get_total_tax(), 2, '.', '' ),
+				'price'    => paypal_brasil_money_format( $order->get_total_tax() ),
 				'sku'      => 'taxes',
 			);
 		}
 
 		// Force get product cents to avoid float problems.
-		$subtotal = number_format( bcadd( bcsub( $order->get_subtotal(), $order->get_discount_total(), 2 ), $order->get_total_tax(), 2 ), 2, '.', '' );
-		$shipping = number_format( $order->get_shipping_total(), 2, '.', '' );
+		$subtotal = paypal_brasil_math_add( paypal_brasil_math_sub( $order->get_subtotal(), $order->get_discount_total() ), $order->get_total_tax() );
+		$shipping = paypal_brasil_money_format( $order->get_shipping_total() );
 
 		// Try to get billing agreement from session.
 		$billing_agreement_id = WC()->session->get( 'paypal_brasil_billing_agreement_id' );
@@ -1161,16 +1163,17 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 	}
 
 	public function process_refund( $order_id, $amount = null, $reason = '' ) {
-		$amount  = floatval( $amount );
 		$sale_id = get_post_meta( $order_id, 'paypal_brasil_sale_id', true );
 		// Check if the amount is bigger than zero
 		if ( $amount <= 0 ) {
-			return new WP_Error( 'error', sprintf( __( 'O reembolso não pode ser menor que %s.', 'paypal-brasil-para-woocommerce' ), wc_price( 0 ) ) );
+			$min_price = number_format( 0, wc_get_price_decimals(), wc_get_price_decimal_separator(), wc_get_price_thousand_separator() );
+
+			return new WP_Error( 'error', sprintf( __( 'O reembolso não pode ser menor que %s.', 'paypal-brasil-para-woocommerce' ), html_entity_decode( get_woocommerce_currency_symbol() ) . $min_price ) );
 		}
 		// Check if we got the sale ID
 		if ( $sale_id ) {
 			try {
-				$refund_sale = $this->api->refund_payment( $sale_id, $amount, get_woocommerce_currency() );
+				$refund_sale = $this->api->refund_payment( $sale_id, paypal_brasil_money_format( $amount ), get_woocommerce_currency() );
 				// Check the result success.
 				if ( $refund_sale['state'] === 'completed' ) {
 					return true;
@@ -1228,6 +1231,7 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 				'color'  => $this->color,
 			),
 			'title'                => $this->title,
+			'title_complement'     => $this->title_complement,
 			'invoice_id_prefix'    => $this->invoice_id_prefix,
 			'debug'                => $this->debug,
 			'woocommerce_settings' => array(
@@ -1276,6 +1280,7 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 					'color'  => $this->color,
 				),
 				'title'                => $this->title,
+				'title_complement'     => $this->title_complement,
 				'invoice_id_prefix'    => $this->invoice_id_prefix,
 				'debug'                => $this->debug,
 				'images_path'          => plugins_url( 'assets/images/buttons', PAYPAL_PAYMENTS_MAIN_FILE ),
@@ -1423,7 +1428,7 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 		}
 
 		// Shortcut
-		if ( $this->is_shortcut_enabled() ) {
+		if ( $this->enabled === 'yes' && $this->is_shortcut_enabled() ) {
 			$enqueues[] = array(
 				'paypal-brasil-shortcut',
 				plugins_url( 'assets/dist/js/frontend-shortcut.js', PAYPAL_PAYMENTS_MAIN_FILE ),
