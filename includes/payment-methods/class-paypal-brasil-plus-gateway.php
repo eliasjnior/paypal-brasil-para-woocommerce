@@ -540,7 +540,8 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 		$data    = apply_filters( 'wc_ppp_brasil_user_data', $data );
 		$invalid = $this->validate_data( $data );
 		// if its invalid, return demo data.
-		if ( $invalid ) {
+		// Also check if we are on our payment method. If not, render demo data.
+		if ( $invalid || $post_data['payment_method'] !== $this->id ) {
 			$data = array(
 				'first_name'   => 'PayPal',
 				'last_name'    => 'Brasil',
@@ -670,6 +671,19 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 		}
 
 		// Add fees.
+		if ( $cart_totals['fee_total'] ) {
+			foreach ( WC()->cart->get_fees() as $fee ) {
+				$items[] = array(
+					'name'     => $fee->name,
+					'currency' => get_woocommerce_currency(),
+					'quantity' => 1,
+					'price'    => paypal_brasil_money_format( $fee->total ),
+					'sku'      => $fee->id,
+				);
+			}
+		}
+
+		// Add tax.
 		if ( $cart_totals['total_tax'] ) {
 			$items[] = array(
 				'name'     => __( 'Taxas', 'paypal-brasil-para-woocommerce' ),
@@ -687,7 +701,7 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 		// Set details
 		$payment_data['transactions'][0]['amount']['details'] = array(
 			'shipping' => $shipping,
-			'subtotal' => $subtotal,
+			'subtotal' => paypal_brasil_math_add( $subtotal, $cart_totals['fee_total'] ),
 		);
 
 		// Set total Total
