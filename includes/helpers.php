@@ -41,6 +41,28 @@ function paypal_brasil_is_order_only_digital( $order ) {
 }
 
 /**
+ * Check if cart is only digital items.
+ *
+ * @return bool
+ */
+function paypal_brasil_is_cart_only_digital() {
+	// Consider as always digital.
+	$only_digital_items = true;
+
+	/** @var WC_Order_Item $item */
+	foreach ( WC()->cart->get_cart() as $id => $item ) {
+		$product = $item['variation_id'] ? wc_get_product( $item['variation_id'] ) : wc_get_product( $item['product_id'] );
+
+		// Check if product is not digital.
+		if ( ! ( $product->is_downloadable() || $product->is_virtual() ) ) {
+			$only_digital_items = false;
+		}
+	}
+
+	return $only_digital_items;
+}
+
+/**
  * Get cart items prepared for API.
  *
  * @param bool $only_items
