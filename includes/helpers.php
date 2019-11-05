@@ -229,7 +229,7 @@ function paypal_brasil_get_order_items( $order ) {
 	$subtotal_without_diff = paypal_brasil_math_add( $order->get_subtotal(), $fees, $order->get_total_tax() );
 
 	// Check the difference.
-	if ( ( $diff = paypal_brasil_math_sub( $total_without_shipping, $subtotal_without_diff ) ) !== '0.00' ) {
+	if ( ( $diff = paypal_brasil_math_sub( $total_without_shipping, $subtotal_without_diff, - $order->get_discount_total() ) ) !== '0.00' ) {
 		$items[] = array(
 			'name'     => __( 'Arredondamento', 'paypal-brasil-para-woocommerce' ),
 			'currency' => get_woocommerce_currency(),
@@ -242,7 +242,7 @@ function paypal_brasil_get_order_items( $order ) {
 	return array(
 		'items'              => $items,
 		'shipping'           => $order->get_shipping_total(),
-		'subtotal'           => paypal_brasil_math_add( $order->get_subtotal(), $diff, $fees, $order->get_total_tax() ),
+		'subtotal'           => paypal_brasil_math_add( $order->get_subtotal(), $diff, $fees, $order->get_total_tax(), - $order->get_discount_total() ),
 		'has_rounding'       => $diff !== '0.00',
 		'only_digital_items' => $only_digital_items,
 	);
