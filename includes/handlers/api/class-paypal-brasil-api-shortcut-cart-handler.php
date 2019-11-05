@@ -55,6 +55,12 @@ class PayPal_Brasil_API_Shortcut_Cart_Handler extends PayPal_Brasil_API_Handler 
 			// Get the wanted gateway.
 			$gateway = $this->get_paypal_gateway( 'paypal-brasil-spb-gateway' );
 
+			// Set the gateway as default payment method
+			WC()->session->set( 'chosen_payment_method', $gateway->id );
+
+			// Recalculate totals
+			WC()->cart->calculate_totals();
+
 			// Store cart.
 			$cart = WC()->cart;
 
@@ -87,78 +93,25 @@ class PayPal_Brasil_API_Shortcut_Cart_Handler extends PayPal_Brasil_API_Handler 
 				),
 			);
 
-			$items        = array();
-			$only_digital = true;
-
-			// Add all items.
-			foreach ( WC()->cart->get_cart() as $key => $item ) {
-				$product = $item['variation_id'] ? wc_get_product( $item['variation_id'] ) : wc_get_product( $item['product_id'] );
-
-				// Force get product cents to avoid float problems.
-				$product_price = paypal_brasil_math_div( $item['line_subtotal'], $item['quantity'] );
-
-				$items[] = array(
-					'name'     => $product->get_title(),
-					'currency' => get_woocommerce_currency(),
-					'quantity' => $item['quantity'],
-					'price'    => $product_price,
-					'sku'      => $product->get_sku() ? $product->get_sku() : $product->get_id(),
-					'url'      => $product->get_permalink(),
-				);
-
-				// Check if product is not digital.
-				if ( ! ( $product->is_downloadable() || $product->is_virtual() ) ) {
-					$only_digital = false;
-				}
-			}
-
-			// Add all discounts.
+			$items       = paypal_brasil_get_cart_items();
 			$cart_totals = WC()->cart->get_totals();
-
-			// Add discounts.
-			if ( $cart_totals['discount_total'] ) {
-				$items[] = array(
-					'name'     => __( 'Desconto', 'paypal-brasil-para-woocommerce' ),
-					'currency' => get_woocommerce_currency(),
-					'quantity' => 1,
-					'price'    => paypal_brasil_money_format( - $cart_totals['discount_total'] ),
-					'sku'      => 'discount',
-				);
-			}
-
-			// Add fees.
-			if ( $cart_totals['total_tax'] ) {
-				$items[] = array(
-					'name'     => __( 'Taxas', 'paypal-brasil-para-woocommerce' ),
-					'currency' => get_woocommerce_currency(),
-					'quantity' => 1,
-					'price'    => paypal_brasil_money_format( $cart_totals['total_tax'] ),
-					'sku'      => 'taxes',
-				);
-			}
-
-			// Force get product cents to avoid float problems.
-			$subtotal_minus_discounts = paypal_brasil_math_sub( $cart_totals['subtotal'], $cart_totals['discount_total'], 2 );
-			$subtotal_sum             = paypal_brasil_math_add( $subtotal_minus_discounts, $cart_totals['total_tax'], 2 );
-			$subtotal                 = paypal_brasil_money_format( $subtotal_sum );
-			$shipping                 = paypal_brasil_money_format( $cart_totals['shipping_total'] );
 
 			// Set details
 			$data['transactions'][0]['amount']['details'] = array(
-				'shipping' => $shipping,
-				'subtotal' => $subtotal,
+				'shipping' => $items['shipping'],
+				'subtotal' => $items['subtotal'],
 			);
 
 			// Set total Total
 			$data['transactions'][0]['amount']['total'] = $cart_totals['total'];
 
 			// Add items to data.
-			$data['transactions'][0]['item_list']['items'] = $items;
+			$data['transactions'][0]['item_list']['items'] = $items['items'];
 
 			// Set the application context
 			$data['application_context'] = array(
 				'brand_name'          => get_bloginfo( 'name' ),
-				'shipping_preference' => $only_digital ? 'NO_SHIPPING' : 'GET_FROM_FILE',
+				'shipping_preference' => $items['only_digital_items'] ? 'NO_SHIPPING' : 'GET_FROM_FILE',
 				'user_action'         => 'continue',
 			);
 

@@ -5,14 +5,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Class paypal_brasil_Api_Exception.
+ * Class PayPal_Brasil_API_Exception.
  */
-class paypal_brasil_Api_Exception extends Exception {
+class PayPal_Brasil_API_Exception extends Exception {
 	protected $error_code;
 	protected $data;
 
 	/**
-	 * paypal_brasil_Api_Exception constructor.
+	 * PayPal_Brasil_API_Exception constructor.
 	 *
 	 * @param mixed $error_code
 	 * @param string $error_message

@@ -385,7 +385,7 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 		try {
 			$this->api->create_billing_agreement_token();
 			update_option( $this->get_option_key() . '_reference_transaction_validator', 'yes' );
-		} catch ( paypal_brasil_Api_Exception $ex ) {
+		} catch ( PayPal_Brasil_API_Exception $ex ) {
 			$data = $ex->getData();
 			if ( isset( $data['name'] ) && $data['name'] === 'AUTHORIZATION_ERROR'
 			     && isset( $data['details'] ) && $data['details'][0]['name'] === 'REFUSED_MARK_REF_TXN_NOT_ENABLED' ) {
@@ -579,7 +579,7 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 							WC()->session->set( 'paypal_brasil_billing_agreement_id', $billing_agreement['id'] );
 							WC()->session->set( 'paypal_brasil_billing_agreement_payer_info', $billing_agreement['payer']['payer_info'] );
 						}
-					} catch ( paypal_brasil_Api_Exception $ex ) {
+					} catch ( PayPal_Brasil_API_Exception $ex ) {
 						// Some problem happened creating billing agreement.
 						wc_add_notice( __( 'Houve um erro na criação da autorização de pagamento.', 'paypal-brasil-para-woocommerce' ), 'error' );
 					}
@@ -793,14 +793,13 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 	 * @param WC_order $order
 	 *
 	 * @return array
-	 * @throws paypal_brasil_Api_Exception
+	 * @throws PayPal_Brasil_API_Exception
 	 * @throws paypal_brasil_Connection_Exception
 	 */
 	private function process_payment_shortcut( $order ) {
 
 		// Force get product cents to avoid float problems.
-		$subtotal = paypal_brasil_math_add( paypal_brasil_math_sub( $order->get_subtotal(), $order->get_discount_total() ), $order->get_total_tax() );
-		$shipping = paypal_brasil_money_format( $order->get_shipping_total() );
+		$items = paypal_brasil_get_order_items( $order );
 
 		$data = array(
 			array(
@@ -810,15 +809,15 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 					'total'    => $order->get_total(),
 					'currency' => $order->get_currency(),
 					'details'  => array(
-						'subtotal' => $subtotal,
-						'shipping' => $shipping,
+						'subtotal' => $items['subtotal'],
+						'shipping' => $items['shipping'],
 					),
 				),
 			),
 			array(
 				'op'    => 'replace',
 				'path'  => '/transactions/0/item_list/items',
-				'value' => paypal_brasil_get_order_items( $order ),
+				'value' => $items['items'],
 			),
 			array(
 				'op'    => 'add',
@@ -898,7 +897,7 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 	 * @param WC_Order $order
 	 *
 	 * @return array
-	 * @throws paypal_brasil_Api_Exception
+	 * @throws PayPal_Brasil_API_Exception
 	 * @throws paypal_brasil_Connection_Exception
 	 */
 	private function process_payment_reference_transaction( $order ) {
@@ -913,56 +912,8 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 			return;
 		}
 
-		$items              = array();
-		$only_digital_items = true;
-
-		// Add all items.
-		/** @var WC_Order_Item_Product $item */
-		foreach ( $order->get_items() as $id => $item ) {
-			$product = $item->get_variation_id() ? wc_get_product( $item->get_variation_id() ) : wc_get_product( $item->get_product_id() );
-			// Force get product cents to avoid float problems.
-			$product_price = paypal_brasil_math_div( $item->get_subtotal(), $item->get_quantity() );
-
-			$items[] = array(
-				'name'     => $product->get_title(),
-				'currency' => get_woocommerce_currency(),
-				'quantity' => $item->get_quantity(),
-				'price'    => $product_price,
-				'sku'      => $product->get_sku() ? $product->get_sku() : $product->get_id(),
-				'url'      => $product->get_permalink(),
-			);
-
-			// Check if product is not digital.
-			if ( ! ( $product->is_downloadable() || $product->is_virtual() ) ) {
-				$only_digital_items = false;
-			}
-		}
-
-		// Add discounts.
-		if ( $order->get_discount_total() ) {
-			$items[] = array(
-				'name'     => __( 'Desconto', 'paypal-brasil-para-woocommerce' ),
-				'currency' => get_woocommerce_currency(),
-				'quantity' => 1,
-				'price'    => paypal_brasil_money_format( - $order->get_discount_total() ),
-				'sku'      => 'discount',
-			);
-		}
-
-		// Add fees.
-		if ( $order->get_total_tax() ) {
-			$items[] = array(
-				'name'     => __( 'Taxas', 'paypal-brasil-para-woocommerce' ),
-				'currency' => get_woocommerce_currency(),
-				'quantity' => 1,
-				'price'    => paypal_brasil_money_format( $order->get_total_tax() ),
-				'sku'      => 'taxes',
-			);
-		}
-
-		// Force get product cents to avoid float problems.
-		$subtotal = paypal_brasil_math_add( paypal_brasil_math_sub( $order->get_subtotal(), $order->get_discount_total() ), $order->get_total_tax() );
-		$shipping = paypal_brasil_money_format( $order->get_shipping_total() );
+		// Get items.
+		$items = paypal_brasil_get_order_items( $order );
 
 		// Try to get billing agreement from session.
 		$billing_agreement_id = WC()->session->get( 'paypal_brasil_billing_agreement_id' );
@@ -987,7 +938,7 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 			),
 			'application_context' => array(
 				'brand_name'          => get_bloginfo( 'name' ),
-				'shipping_preference' => $only_digital_items ? 'NO_SHIPPING' : 'SET_PROVIDED_ADDRESS',
+				'shipping_preference' => $items['only_digital_items'] ? 'NO_SHIPPING' : 'SET_PROVIDED_ADDRESS',
 			),
 			'transactions'        => array(
 				array(
@@ -995,14 +946,14 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 						'currency' => $order->get_currency(),
 						'total'    => $order->get_total(),
 						'details'  => array(
-							'shipping' => $shipping,
-							'subtotal' => $subtotal,
+							'shipping' => $items['shipping'],
+							'subtotal' => $items['subtotal'],
 						),
 					),
 					'description'    => sprintf( __( 'Pagamento do pedido #%s na loja %s', 'paypal-brasil-para-woocommerce' ), $order->get_id(), get_bloginfo( 'name' ) ),
 					'invoice_number' => sprintf( '%s%s', $this->invoice_id_prefix, $order->get_id() ),
 					'item_list'      => array(
-						'items' => $items,
+						'items' => $items['items'],
 					),
 
 				),
@@ -1014,7 +965,7 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 		);
 
 		// Add shipping address for non digital goods
-		if ( ! $only_digital_items ) {
+		if ( ! $items['only_digital_items'] ) {
 			$data['transactions'][0]['item_list']['shipping_address'] = paypal_brasil_get_shipping_address( $order );
 		}
 
@@ -1076,7 +1027,7 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 	 * @param WC_Order $order
 	 *
 	 * @return array
-	 * @throws paypal_brasil_Api_Exception
+	 * @throws PayPal_Brasil_API_Exception
 	 * @throws paypal_brasil_Connection_Exception
 	 */
 	private function process_payment_spb( $order ) {
@@ -1125,7 +1076,6 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 	 * @param $order_id
 	 *
 	 * @return array
-	 * @throws paypal_brasil_Api_Exception
 	 * @throws paypal_brasil_Connection_Exception
 	 */
 	public function process_payment( $order_id ) {
@@ -1141,15 +1091,15 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 			} else {
 				wc_add_notice( __( 'O método de pagamento não foi detectado corretamente. Por favor, tente novamente.', 'paypal-brasil-para-woocommerce' ), 'error' );
 			}
-		} catch ( paypal_brasil_Api_Exception $ex ) {
+		} catch ( PayPal_Brasil_API_Exception $ex ) {
 			$data = $ex->getData();
 			switch ( $data['name'] ) {
 				// Repeat the execution
 				case 'INTERNAL_SERVICE_ERROR':
-					wc_add_notice( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir entre em contato.', 'paypal-brasil-para-woocommerce' ), 'error' );
+					wc_add_notice( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir entre em contato. (#101)', 'paypal-brasil-para-woocommerce' ), 'error' );
 					break;
 				case 'VALIDATION_ERROR':
-					wc_add_notice( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir entre em contato.', 'paypal-brasil-para-woocommerce' ), 'error' );
+					wc_add_notice( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir entre em contato. (#112)', 'paypal-brasil-para-woocommerce' ), 'error' );
 					break;
 				case 'PAYMENT_ALREADY_DONE':
 					wc_add_notice( __( 'Já existe um pagamento para este pedido.', 'paypal-brasil-para-woocommerce' ), 'error' );
@@ -1180,7 +1130,7 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 				} else {
 					return new WP_Error( 'error', $refund_sale->getReason() );
 				}
-			} catch ( paypal_brasil_Api_Exception $ex ) { // Catch any PayPal error.
+			} catch ( PayPal_Brasil_API_Exception $ex ) { // Catch any PayPal error.
 				$data = $ex->getData();
 
 				return new WP_Error( 'error', $data['message'] );

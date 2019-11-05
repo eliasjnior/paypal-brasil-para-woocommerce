@@ -229,7 +229,7 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 				case 'UNKNOWN_INTERNAL_ERROR':
 				case 'fiWalletLifecycle_unknown_error':
 				case 'Failed to decrypt term info':
-					wc_add_notice( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir entre em contato.', 'paypal-brasil-para-woocommerce' ), 'error' );
+					wc_add_notice( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir entre em contato. (#123)', 'paypal-brasil-para-woocommerce' ), 'error' );
 					break;
 				case 'RISK_N_DECLINE':
 				case 'NO_VALID_FUNDING_SOURCE_OR_RISK_REFUSED':
@@ -333,19 +333,19 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 					'redirect' => $this->get_return_url( $order ),
 				);
 			}
-		} catch ( paypal_brasil_Api_Exception $ex ) {
+		} catch ( PayPal_Brasil_API_Exception $ex ) {
 			$data = $ex->getData();
 			switch ( $data['name'] ) {
 				// Repeat the execution
 				case 'INTERNAL_SERVICE_ERROR':
 					if ( $force ) {
-						wc_add_notice( sprintf( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir entre em contato.', 'paypal-brasil-para-woocommerce' ) ), 'error' );
+						wc_add_notice( sprintf( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir entre em contato. (#134)', 'paypal-brasil-para-woocommerce' ) ), 'error' );
 					} else {
 						$this->process_payment( $order_id, true );
 					}
 					break;
 				case 'VALIDATION_ERROR':
-					wc_add_notice( sprintf( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir entre em contato.', 'paypal-brasil-para-woocommerce' ) ), 'error' );
+					wc_add_notice( sprintf( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir entre em contato. (#145)', 'paypal-brasil-para-woocommerce' ) ), 'error' );
 					break;
 				case 'PAYMENT_ALREADY_DONE':
 					wc_add_notice( __( 'Já existe um pagamento para este pedido.', 'paypal-brasil-para-woocommerce' ), 'error' );
@@ -391,7 +391,7 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 				} else {
 					return new WP_Error( 'error', $refund_sale->getReason() );
 				}
-			} catch ( paypal_brasil_Api_Exception $ex ) { // Catch any PayPal error.
+			} catch ( PayPal_Brasil_API_Exception $ex ) { // Catch any PayPal error.
 				$data = $ex->getData();
 
 				return new WP_Error( 'error', $data['message'] );
@@ -411,7 +411,7 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 	 * @param $payer_id
 	 *
 	 * @return array|mixed|object
-	 * @throws paypal_brasil_Api_Exception
+	 * @throws PayPal_Brasil_API_Exception
 	 * @throws paypal_brasil_Connection_Exception
 	 */
 	public function execute_payment( $order, $payment_id, $payer_id ) {
@@ -541,7 +541,11 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 		$invalid = $this->validate_data( $data );
 		// if its invalid, return demo data.
 		// Also check if we are on our payment method. If not, render demo data.
-		if ( $invalid || $post_data['payment_method'] !== $this->id ) {
+		if ( $post_data['payment_method'] !== $this->id ) {
+			$invalid['wrong-payment-method'] = __( 'Não está selecionado o método de pagamento do PayPal Plus.', 'paypal-brasil-para-woocommerce' );
+		}
+
+		if ( $invalid ) {
 			$data = array(
 				'first_name'   => 'PayPal',
 				'last_name'    => 'Brasil',
@@ -631,89 +635,25 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 			),
 		);
 
-		$items = array();
-
-		// Add all items.
-		$only_digital = true;
-		foreach ( WC()->cart->get_cart() as $key => $item ) {
-			$product = $item['variation_id'] ? wc_get_product( $item['variation_id'] ) : wc_get_product( $item['product_id'] );
-
-			// Force get product cents to avoid float problems.
-			$product_price = paypal_brasil_math_div( $item['line_subtotal'], $item['quantity'] );
-
-			$items[] = array(
-				'name'     => $product->get_title(),
-				'currency' => get_woocommerce_currency(),
-				'quantity' => $item['quantity'],
-				'price'    => $product_price,
-				'sku'      => $product->get_sku() ? $product->get_sku() : $product->get_id(),
-				'url'      => $product->get_permalink(),
-			);
-
-			// Check if product is not digital.
-			if ( ! ( $product->is_downloadable() || $product->is_virtual() ) ) {
-				$only_digital = false;
-			}
-		}
-
-		// Add all discounts.
-		$cart_totals = WC()->cart->get_totals();
-
-		// Add discounts.
-		if ( $cart_totals['discount_total'] ) {
-			$items[] = array(
-				'name'     => __( 'Desconto', 'paypal-brasil-para-woocommerce' ),
-				'currency' => get_woocommerce_currency(),
-				'quantity' => 1,
-				'price'    => paypal_brasil_money_format( - $cart_totals['discount_total'] ),
-				'sku'      => 'discount',
-			);
-		}
-
-		// Add fees.
-		if ( $cart_totals['fee_total'] ) {
-			foreach ( WC()->cart->get_fees() as $fee ) {
-				$items[] = array(
-					'name'     => $fee->name,
-					'currency' => get_woocommerce_currency(),
-					'quantity' => 1,
-					'price'    => paypal_brasil_money_format( $fee->total ),
-					'sku'      => $fee->id,
-				);
-			}
-		}
-
-		// Add tax.
-		if ( $cart_totals['total_tax'] ) {
-			$items[] = array(
-				'name'     => __( 'Taxas', 'paypal-brasil-para-woocommerce' ),
-				'currency' => get_woocommerce_currency(),
-				'quantity' => 1,
-				'price'    => paypal_brasil_money_format( $cart_totals['total_tax'] ),
-				'sku'      => 'taxes',
-			);
-		}
-
-		// Force get product cents to avoid float problems.
-		$subtotal = paypal_brasil_math_add( paypal_brasil_math_sub( $cart_totals['subtotal'], $cart_totals['discount_total'] ), $cart_totals['total_tax'] );
-		$shipping = paypal_brasil_money_format( $cart_totals['shipping_total'] );
+		// Get items.
+		$items = paypal_brasil_get_cart_items();
 
 		// Set details
 		$payment_data['transactions'][0]['amount']['details'] = array(
-			'shipping' => $shipping,
-			'subtotal' => paypal_brasil_math_add( $subtotal, $cart_totals['fee_total'] ),
+			'shipping' => $items['shipping'],
+			'subtotal' => $items['subtotal'],
 		);
 
 		// Set total Total
-		$payment_data['transactions'][0]['amount']['total'] = $cart_totals['total'];
+		$payment_data['transactions'][0]['amount']['total'] = $items['total'];
 
 		// Add items to data.
-		$payment_data['transactions'][0]['item_list']['items'] = $items;
+		$payment_data['transactions'][0]['item_list']['items'] = $items['items'];
 
 		// Set the application context
 		$payment_data['application_context'] = array(
 			'brand_name'          => get_bloginfo( 'name' ),
-			'shipping_preference' => $only_digital ? 'NO_SHIPPING' : 'SET_PROVIDED_ADDRESS',
+			'shipping_preference' => $items['only_digital_items'] ? 'NO_SHIPPING' : 'SET_PROVIDED_ADDRESS',
 		);
 
 		// Check if is order pay
@@ -722,7 +662,7 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 		// Create the address.
 		if ( ! $dummy ) {
 			// Set shipping only when isn't digital
-			if ( ! $only_digital ) {
+			if ( ! $items['only_digital_items'] ) {
 				// Prepare empty address_line_1
 				$address_line_1 = array();
 				// Add the address
@@ -765,14 +705,14 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 			$result = $this->api->create_payment( $payment_data );
 
 			return $result;
-		} catch ( paypal_brasil_Api_Exception $ex ) { // Catch any PayPal error.
+		} catch ( PayPal_Brasil_API_Exception $ex ) { // Catch any PayPal error.
 			$error_data = $ex->getData();
 			if ( $error_data['name'] === 'VALIDATION_ERROR' ) {
 				$exception_data = $error_data['details'];
 			}
 		}
 
-		$exception       = new Exception( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir entre em contato.', 'paypal-brasil-para-woocommerce' ) );
+		$exception       = new Exception( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir entre em contato. (#156)', 'paypal-brasil-para-woocommerce' ) );
 		$exception->data = $exception_data;
 
 		throw $exception;
