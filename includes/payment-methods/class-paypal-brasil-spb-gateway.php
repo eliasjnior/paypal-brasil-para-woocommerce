@@ -794,7 +794,7 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 	 *
 	 * @return array
 	 * @throws PayPal_Brasil_API_Exception
-	 * @throws paypal_brasil_Connection_Exception
+	 * @throws PayPal_Brasil_Connection_Exception
 	 */
 	private function process_payment_shortcut( $order ) {
 
@@ -898,7 +898,7 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 	 *
 	 * @return array
 	 * @throws PayPal_Brasil_API_Exception
-	 * @throws paypal_brasil_Connection_Exception
+	 * @throws PayPal_Brasil_Connection_Exception
 	 */
 	private function process_payment_reference_transaction( $order ) {
 		$installment = isset( $_POST['paypal_brasil_billing_agreement_installment'] ) ? json_decode( stripslashes( $_POST['paypal_brasil_billing_agreement_installment'] ), true ) : array();
@@ -1028,7 +1028,7 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 	 *
 	 * @return array
 	 * @throws PayPal_Brasil_API_Exception
-	 * @throws paypal_brasil_Connection_Exception
+	 * @throws PayPal_Brasil_Connection_Exception
 	 */
 	private function process_payment_spb( $order ) {
 		$spb_order_id = sanitize_text_field( $_POST['paypal-brasil-spb-order-id'] );
@@ -1076,7 +1076,7 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 	 * @param $order_id
 	 *
 	 * @return array
-	 * @throws paypal_brasil_Connection_Exception
+	 * @throws PayPal_Brasil_Connection_Exception
 	 */
 	public function process_payment( $order_id ) {
 		$order = wc_get_order( $order_id );
@@ -1096,10 +1096,10 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 			switch ( $data['name'] ) {
 				// Repeat the execution
 				case 'INTERNAL_SERVICE_ERROR':
-					wc_add_notice( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir entre em contato. (#101)', 'paypal-brasil-para-woocommerce' ), 'error' );
+					wc_add_notice( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir entre em contato. (#01)', 'paypal-brasil-para-woocommerce' ), 'error' );
 					break;
 				case 'VALIDATION_ERROR':
-					wc_add_notice( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir entre em contato. (#112)', 'paypal-brasil-para-woocommerce' ), 'error' );
+					wc_add_notice( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir entre em contato. (#12)', 'paypal-brasil-para-woocommerce' ), 'error' );
 					break;
 				case 'PAYMENT_ALREADY_DONE':
 					wc_add_notice( __( 'Já existe um pagamento para este pedido.', 'paypal-brasil-para-woocommerce' ), 'error' );

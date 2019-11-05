@@ -95,7 +95,7 @@ class PayPal_Brasil_API {
 	 *
 	 * @return array|WP_Error
 	 * @throws PayPal_Brasil_API_Exception
-	 * @throws paypal_brasil_Connection_Exception
+	 * @throws PayPal_Brasil_Connection_Exception
 	 * @todo: adicionar forçar um mode
 	 *
 	 */
@@ -123,7 +123,7 @@ class PayPal_Brasil_API {
 
 		// Check if is WP_Error
 		if ( is_wp_error( $response ) ) {
-			throw new paypal_brasil_Connection_Exception( $response->get_error_code(), $response->errors );
+			throw new PayPal_Brasil_Connection_Exception( $response->get_error_code(), $response->errors );
 		}
 
 		$code = wp_remote_retrieve_response_code( $response );
@@ -147,7 +147,7 @@ class PayPal_Brasil_API {
 	 *
 	 * @return mixed
 	 * @throws PayPal_Brasil_API_Exception
-	 * @throws paypal_brasil_Connection_Exception
+	 * @throws PayPal_Brasil_Connection_Exception
 	 */
 	public function create_payment( $data, $headers = array(), $bn_code_key = null ) {
 		$url = $this->get_base_url() . '/payments/payment';
@@ -163,7 +163,7 @@ class PayPal_Brasil_API {
 
 		// Check if is WP_Error
 		if ( is_wp_error( $response ) ) {
-			throw new paypal_brasil_Connection_Exception( $response->get_error_code(), $response->errors );
+			throw new PayPal_Brasil_Connection_Exception( $response->get_error_code(), $response->errors );
 		}
 
 		$code = wp_remote_retrieve_response_code( $response );
@@ -183,7 +183,7 @@ class PayPal_Brasil_API {
 	 *
 	 * @return array|mixed|object
 	 * @throws PayPal_Brasil_API_Exception
-	 * @throws paypal_brasil_Connection_Exception
+	 * @throws PayPal_Brasil_Connection_Exception
 	 */
 	public function get_payment( $payment_id, $headers = array(), $bn_code_key = null ) {
 		$url = $this->get_base_url() . '/payments/payment/' . $payment_id;
@@ -199,7 +199,7 @@ class PayPal_Brasil_API {
 
 		// Check if is WP_Error
 		if ( is_wp_error( $response ) ) {
-			throw new paypal_brasil_Connection_Exception( $response->get_error_code(), $response->errors );
+			throw new PayPal_Brasil_Connection_Exception( $response->get_error_code(), $response->errors );
 		}
 
 		$code = wp_remote_retrieve_response_code( $response );
@@ -220,7 +220,7 @@ class PayPal_Brasil_API {
 	 *
 	 * @return array|mixed|object
 	 * @throws PayPal_Brasil_API_Exception
-	 * @throws paypal_brasil_Connection_Exception
+	 * @throws PayPal_Brasil_Connection_Exception
 	 */
 	public function execute_payment( $payment_id, $payer_id, $headers = array(), $bn_code_key = null ) {
 		$url = $this->get_base_url() . '/payments/payment/' . $payment_id . '/execute';
@@ -240,7 +240,7 @@ class PayPal_Brasil_API {
 
 		// Check if is WP_Error
 		if ( is_wp_error( $response ) ) {
-			throw new paypal_brasil_Connection_Exception( $response->get_error_code(), $response->errors );
+			throw new PayPal_Brasil_Connection_Exception( $response->get_error_code(), $response->errors );
 		}
 
 		$code = wp_remote_retrieve_response_code( $response );
@@ -259,7 +259,7 @@ class PayPal_Brasil_API {
 	 *
 	 * @return array|mixed|object
 	 * @throws PayPal_Brasil_API_Exception
-	 * @throws paypal_brasil_Connection_Exception
+	 * @throws PayPal_Brasil_Connection_Exception
 	 */
 	public function update_payment( $payment_id, $data, $headers = array(), $bn_code_key = null ) {
 		$url = $this->get_base_url() . '/payments/payment/' . $payment_id;
@@ -275,7 +275,7 @@ class PayPal_Brasil_API {
 
 		// Check if is WP_Error
 		if ( is_wp_error( $response ) ) {
-			throw new paypal_brasil_Connection_Exception( $response->get_error_code(), $response->errors );
+			throw new PayPal_Brasil_Connection_Exception( $response->get_error_code(), $response->errors );
 		}
 
 		$code = wp_remote_retrieve_response_code( $response );
@@ -293,7 +293,7 @@ class PayPal_Brasil_API {
 	 *
 	 * @return array|mixed|object
 	 * @throws PayPal_Brasil_API_Exception
-	 * @throws paypal_brasil_Connection_Exception
+	 * @throws PayPal_Brasil_Connection_Exception
 	 */
 	public function create_billing_agreement_token() {
 		$url  = $this->get_base_url() . '/billing-agreements/agreement-tokens';
@@ -321,7 +321,7 @@ class PayPal_Brasil_API {
 
 		// Check if is WP_Error
 		if ( is_wp_error( $response ) ) {
-			throw new paypal_brasil_Connection_Exception( $response->get_error_code(), $response->errors );
+			throw new PayPal_Brasil_Connection_Exception( $response->get_error_code(), $response->errors );
 		}
 
 		$code = wp_remote_retrieve_response_code( $response );
@@ -346,7 +346,7 @@ class PayPal_Brasil_API {
 
 		// Check if is WP_Error
 		if ( is_wp_error( $response ) ) {
-			throw new paypal_brasil_Connection_Exception( $response->get_error_code(), $response->errors );
+			throw new PayPal_Brasil_Connection_Exception( $response->get_error_code(), $response->errors );
 		}
 
 		$code = wp_remote_retrieve_response_code( $response );
@@ -381,7 +381,7 @@ class PayPal_Brasil_API {
 
 		// Check if is WP_Error
 		if ( is_wp_error( $response ) ) {
-			throw new paypal_brasil_Connection_Exception( $response->get_error_code(), $response->errors );
+			throw new PayPal_Brasil_Connection_Exception( $response->get_error_code(), $response->errors );
 		}
 
 		$code = wp_remote_retrieve_response_code( $response );
@@ -401,7 +401,7 @@ class PayPal_Brasil_API {
 	 *
 	 * @return array|mixed|object
 	 * @throws PayPal_Brasil_API_Exception
-	 * @throws paypal_brasil_Connection_Exception
+	 * @throws PayPal_Brasil_Connection_Exception
 	 */
 	public function verify_signature( $data ) {
 		$url = $this->get_base_url() . '/notifications/verify-webhook-signature';
@@ -412,7 +412,7 @@ class PayPal_Brasil_API {
 
 		// Check if is WP_Error
 		if ( is_wp_error( $response ) ) {
-			throw new paypal_brasil_Connection_Exception( $response->get_error_code(), $response->errors );
+			throw new PayPal_Brasil_Connection_Exception( $response->get_error_code(), $response->errors );
 		}
 
 		$code = wp_remote_retrieve_response_code( $response );
@@ -430,7 +430,7 @@ class PayPal_Brasil_API {
 	 *
 	 * @return array|mixed|object
 	 * @throws PayPal_Brasil_API_Exception
-	 * @throws paypal_brasil_Connection_Exception
+	 * @throws PayPal_Brasil_Connection_Exception
 	 */
 	public function get_webhooks() {
 		$url = $this->get_base_url() . '/notifications/webhooks';
@@ -441,7 +441,7 @@ class PayPal_Brasil_API {
 
 		// Check if is WP_Error
 		if ( is_wp_error( $response ) ) {
-			throw new paypal_brasil_Connection_Exception( $response->get_error_code(), $response->errors );
+			throw new PayPal_Brasil_Connection_Exception( $response->get_error_code(), $response->errors );
 		}
 
 		$code = wp_remote_retrieve_response_code( $response );
@@ -462,7 +462,7 @@ class PayPal_Brasil_API {
 	 *
 	 * @return array|mixed|object
 	 * @throws PayPal_Brasil_API_Exception
-	 * @throws paypal_brasil_Connection_Exception
+	 * @throws PayPal_Brasil_Connection_Exception
 	 */
 	public function create_webhook( $webhook_url, $events ) {
 		$url = $this->get_base_url() . '/notifications/webhooks';
@@ -486,7 +486,7 @@ class PayPal_Brasil_API {
 
 		// Check if is WP_Error
 		if ( is_wp_error( $response ) ) {
-			throw new paypal_brasil_Connection_Exception( $response->get_error_code(), $response->errors );
+			throw new PayPal_Brasil_Connection_Exception( $response->get_error_code(), $response->errors );
 		}
 
 		$code = wp_remote_retrieve_response_code( $response );
@@ -508,7 +508,7 @@ class PayPal_Brasil_API {
 	 *
 	 * @return array|mixed|object
 	 * @throws PayPal_Brasil_API_Exception
-	 * @throws paypal_brasil_Connection_Exception
+	 * @throws PayPal_Brasil_Connection_Exception
 	 */
 	public function refund_payment( $payment_id, $total = null, $currency = null ) {
 		$url = $this->get_base_url() . '/payments/sale/' . $payment_id . '/refund';
@@ -532,7 +532,7 @@ class PayPal_Brasil_API {
 
 		// Check if is WP_Error
 		if ( is_wp_error( $response ) ) {
-			throw new paypal_brasil_Connection_Exception( $response->get_error_code(), $response->errors );
+			throw new PayPal_Brasil_Connection_Exception( $response->get_error_code(), $response->errors );
 		}
 
 		$code = wp_remote_retrieve_response_code( $response );
@@ -555,7 +555,7 @@ class PayPal_Brasil_API {
 	 *
 	 * @return array            Request response.
 	 * @throws PayPal_Brasil_API_Exception
-	 * @throws paypal_brasil_Connection_Exception
+	 * @throws PayPal_Brasil_Connection_Exception
 	 */
 	protected function do_request( $url, $method = 'POST', $data = array(), $headers = array(), $log = true ) {
 

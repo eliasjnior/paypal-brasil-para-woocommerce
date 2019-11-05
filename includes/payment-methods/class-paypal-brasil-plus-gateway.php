@@ -209,7 +209,7 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 	 * @param bool $force
 	 *
 	 * @return null|array
-	 * @throws paypal_brasil_Connection_Exception
+	 * @throws PayPal_Brasil_Connection_Exception
 	 */
 	public function process_payment( $order_id, $force = false ) {
 		$order      = wc_get_order( $order_id );
@@ -229,7 +229,7 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 				case 'UNKNOWN_INTERNAL_ERROR':
 				case 'fiWalletLifecycle_unknown_error':
 				case 'Failed to decrypt term info':
-					wc_add_notice( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir entre em contato. (#123)', 'paypal-brasil-para-woocommerce' ), 'error' );
+					wc_add_notice( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir entre em contato. (#23)', 'paypal-brasil-para-woocommerce' ), 'error' );
 					break;
 				case 'RISK_N_DECLINE':
 				case 'NO_VALID_FUNDING_SOURCE_OR_RISK_REFUSED':
@@ -277,7 +277,7 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 			$remember_cards = $response_data['remembered_cards_token'];
 			// Check if the payment id
 			if ( empty( $payer_id ) ) {
-				wc_add_notice( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir, entre em contato.', 'paypal-brasil-para-woocommerce' ), 'error' );
+				wc_add_notice( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir entre em contato. (#67)', 'paypal-brasil-para-woocommerce' ), 'error' );
 				// Set refresh totals to trigger update_checkout on frontend.
 				WC()->session->set( 'refresh_totals', true );
 				do_action( 'wc_ppp_brasil_process_payment_error', 'PAYER_ID', $order_id, null );
@@ -339,13 +339,13 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 				// Repeat the execution
 				case 'INTERNAL_SERVICE_ERROR':
 					if ( $force ) {
-						wc_add_notice( sprintf( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir entre em contato. (#134)', 'paypal-brasil-para-woocommerce' ) ), 'error' );
+						wc_add_notice( sprintf( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir entre em contato. (#34)', 'paypal-brasil-para-woocommerce' ) ), 'error' );
 					} else {
 						$this->process_payment( $order_id, true );
 					}
 					break;
 				case 'VALIDATION_ERROR':
-					wc_add_notice( sprintf( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir entre em contato. (#145)', 'paypal-brasil-para-woocommerce' ) ), 'error' );
+					wc_add_notice( sprintf( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir entre em contato. (#45)', 'paypal-brasil-para-woocommerce' ) ), 'error' );
 					break;
 				case 'PAYMENT_ALREADY_DONE':
 					wc_add_notice( __( 'Já existe um pagamento para este pedido.', 'paypal-brasil-para-woocommerce' ), 'error' );
@@ -412,7 +412,7 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 	 *
 	 * @return array|mixed|object
 	 * @throws PayPal_Brasil_API_Exception
-	 * @throws paypal_brasil_Connection_Exception
+	 * @throws PayPal_Brasil_Connection_Exception
 	 */
 	public function execute_payment( $order, $payment_id, $payer_id ) {
 		$patch_data = array(
@@ -712,7 +712,7 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 			}
 		}
 
-		$exception       = new Exception( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir entre em contato. (#156)', 'paypal-brasil-para-woocommerce' ) );
+		$exception       = new Exception( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir entre em contato. (#56)', 'paypal-brasil-para-woocommerce' ) );
 		$exception->data = $exception_data;
 
 		throw $exception;
