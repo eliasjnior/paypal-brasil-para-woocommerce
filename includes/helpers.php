@@ -121,7 +121,7 @@ function paypal_brasil_get_cart_items( $only_items = false ) {
 	if ( ! $only_items ) {
 		if ( ( $diff = paypal_brasil_math_sub( $cart_totals['total'] - $cart_totals['shipping_total'], paypal_brasil_sum_items( $items ) ) ) !== '0.00' ) {
 			$items[] = array(
-				'name'     => __( 'Ajuste de preço', 'paypal-brasil-para-woocommerce' ),
+				'name'     => __( 'Arredondamento', 'paypal-brasil-para-woocommerce' ),
 				'currency' => get_woocommerce_currency(),
 				'quantity' => 1,
 				'price'    => $diff,
@@ -508,7 +508,7 @@ function paypal_brasil_sum_items( $items ) {
 	$sum = '0.00';
 
 	foreach ( $items as $item ) {
-		$sum = paypal_brasil_math_add( $sum, $item['price'] );
+		$sum = paypal_brasil_math_add( $sum, $item['price'] * $item['quantity'] );
 	}
 
 	return $sum;

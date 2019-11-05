@@ -18,7 +18,7 @@ class PayPal_Brasil_API_Exception extends Exception {
 	 * @param string $error_message
 	 * @param mixed $data
 	 */
-	public function __construct( $error_code = '', $error_message = '', $data = null ) {
+	public function __construct( $error_code = 0, $error_message = '', $data = null ) {
 		$this->error_code = $error_code;
 		$this->data       = $data;
 		parent::__construct( $error_message, $error_code );
