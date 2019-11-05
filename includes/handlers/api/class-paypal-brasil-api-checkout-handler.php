@@ -142,9 +142,6 @@ class PayPal_Brasil_API_Checkout_Handler extends PayPal_Brasil_API_Handler {
 						'payment_options' => array(
 							'allowed_payment_method' => 'IMMEDIATE_PAY',
 						),
-						'item_list'       => array(
-							'items' => array(),
-						),
 						'amount'          => array(
 							'currency' => get_woocommerce_currency(),
 						),
@@ -156,20 +153,17 @@ class PayPal_Brasil_API_Checkout_Handler extends PayPal_Brasil_API_Handler {
 				),
 			);
 
-			$items       = paypal_brasil_get_cart_items();
-			$cart_totals = WC()->cart->get_totals();
+			$cart_totals        = WC()->cart->get_totals();
+			$only_digital_items = paypal_brasil_is_cart_only_digital();
 
 			// Set details
 			$data['transactions'][0]['amount']['details'] = array(
-				'shipping' => $items['shipping'],
-				'subtotal' => $items['subtotal'],
+				'shipping' => paypal_brasil_money_format( $cart_totals['shipping_total'] ),
+				'subtotal' => paypal_brasil_math_sub( $cart_totals['total'], $cart_totals['shipping_total'] ),
 			);
 
 			// Set total Total
-			$data['transactions'][0]['amount']['total'] = $cart_totals['total'];
-
-			// Add items to data.
-			$data['transactions'][0]['item_list']['items'] = $items['items'];
+			$data['transactions'][0]['amount']['total'] = paypal_brasil_money_format( $cart_totals['total'] );
 
 			// Prepare address
 			$address_line_1 = array();
@@ -208,14 +202,14 @@ class PayPal_Brasil_API_Checkout_Handler extends PayPal_Brasil_API_Handler {
 			}
 
 			// Add shipping address for non digital goods
-			if ( ! $items['only_digital_items'] ) {
-				$data['transactions'][0]['item_list']['shipping_address'] = $shipping_address;
+			if ( ! $only_digital_items ) {
+				$data['transactions'][0]['item_list'] = array( 'shipping_address' => $shipping_address );
 			}
 
 			// Set the application context
 			$data['application_context'] = array(
 				'brand_name'          => get_bloginfo( 'name' ),
-				'shipping_preference' => $items['only_digital_items'] ? 'NO_SHIPPING' : 'SET_PROVIDED_ADDRESS',
+				'shipping_preference' => $only_digital_items ? 'NO_SHIPPING' : 'SET_PROVIDED_ADDRESS',
 			);
 
 			// Create the payment in API.
