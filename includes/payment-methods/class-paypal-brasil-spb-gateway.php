@@ -821,10 +821,8 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 		if ( $this->is_shortcut_override_address() && ! paypal_brasil_is_order_only_digital( $order ) ) {
 			$data[] = array(
 				'op'    => 'replace',
-				'path'  => '/transactions/0/item_list',
-				'value' => array(
-					'shipping_address' => paypal_brasil_get_shipping_address( $order ),
-				),
+				'path'  => '/transactions/0/item_list/shipping_address',
+				'value' => paypal_brasil_get_shipping_address( $order ),
 			);
 		}
 
@@ -943,6 +941,17 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 							'subtotal' => paypal_brasil_math_sub( $order->get_total(), $order->get_shipping_total() ),
 						),
 					),
+					'item_list'      => array(
+						'items' => array(
+							array(
+								'name'     => sprintf( __( 'Pedido Loja %s', 'paypal-brasil-para-woocommerce' ), get_bloginfo( 'name' ) ),
+								'currency' => get_woocommerce_currency(),
+								'quantity' => 1,
+								'price'    => paypal_brasil_math_sub( $order->get_total(), $order->get_shipping_total() ),
+								'sku'      => 'order-items',
+							)
+						),
+					),
 					'description'    => sprintf( __( 'Pagamento do pedido #%s na loja %s', 'paypal-brasil-para-woocommerce' ), $order->get_id(), get_bloginfo( 'name' ) ),
 					'invoice_number' => sprintf( '%s%s', $this->invoice_id_prefix, $order->get_id() ),
 				),
@@ -955,9 +964,7 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 
 		// Add shipping address for non digital goods
 		if ( ! $only_digital_items ) {
-			$data['transactions'][0]['item_list'] = array(
-				'shipping_address' => paypal_brasil_get_shipping_address( $order ),
-			);
+			$data['transactions'][0]['item_list']['shipping_address'] = paypal_brasil_get_shipping_address( $order );
 		}
 
 		// Make API request.
@@ -1022,7 +1029,6 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 	 * @throws PayPal_Brasil_Connection_Exception
 	 */
 	private function process_payment_spb( $order ) {
-		$spb_order_id = sanitize_text_field( $_POST['paypal-brasil-spb-order-id'] );
 		$spb_payer_id = sanitize_text_field( $_POST['paypal-brasil-spb-payer-id'] );
 		$spb_pay_id   = sanitize_text_field( $_POST['paypal-brasil-spb-pay-id'] );
 

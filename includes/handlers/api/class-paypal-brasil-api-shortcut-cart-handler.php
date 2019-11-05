@@ -69,6 +69,9 @@ class PayPal_Brasil_API_Shortcut_Cart_Handler extends PayPal_Brasil_API_Handler 
 				$this->send_error_response( __( 'Você não pode fazer o pagamento de um pedido vazio.', 'paypal-brasil-para-woocommerce' ) );
 			}
 
+			$cart_totals        = WC()->cart->get_totals();
+			$only_digital_items = paypal_brasil_is_cart_only_digital();
+
 			$data = array(
 				'intent'        => 'sale',
 				'payer'         => array(
@@ -78,6 +81,17 @@ class PayPal_Brasil_API_Shortcut_Cart_Handler extends PayPal_Brasil_API_Handler 
 					array(
 						'payment_options' => array(
 							'allowed_payment_method' => 'IMMEDIATE_PAY',
+						),
+						'item_list'       => array(
+							'items' => array(
+								array(
+									'name'     => sprintf( __( 'Pedido Loja %s', 'paypal-brasil-para-woocommerce' ), get_bloginfo( 'name' ) ),
+									'currency' => get_woocommerce_currency(),
+									'quantity' => 1,
+									'price'    => paypal_brasil_math_sub( $cart_totals['total'], $cart_totals['shipping_total'] ),
+									'sku'      => 'order-items',
+								)
+							),
 						),
 						'amount'          => array(
 							'currency' => get_woocommerce_currency(),
@@ -89,9 +103,6 @@ class PayPal_Brasil_API_Shortcut_Cart_Handler extends PayPal_Brasil_API_Handler 
 					'cancel_url' => home_url(),
 				),
 			);
-
-			$cart_totals = WC()->cart->get_totals();
-			$only_digital_items = paypal_brasil_is_cart_only_digital();
 
 			// Set details
 			$data['transactions'][0]['amount']['details'] = array(
