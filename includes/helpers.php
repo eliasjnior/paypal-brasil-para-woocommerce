@@ -391,11 +391,9 @@ function paypal_brasil_protect_metadata( $protected, $meta_key ) {
 	);
 
 	if ( 'shop_order' == get_post_type() ) {
-
 		if ( in_array( $meta_key, $keys ) ) {
 			return true;
 		}
-
 	}
 
 	return $protected;
@@ -487,10 +485,25 @@ function paypal_brasil_math_sub( ...$values ) {
 	return $sub;
 }
 
+/**
+ * Format the money for PayPal API.
+ *
+ * @param $value
+ * @param int $precision
+ *
+ * @return string
+ */
 function paypal_brasil_money_format( $value, $precision = 2 ) {
 	return number_format( $value, $precision, '.', '' );
 }
 
+/**
+ * Sum PayPal API items.
+ *
+ * @param $items
+ *
+ * @return string
+ */
 function paypal_brasil_sum_items( $items ) {
 	$sum = '0.00';
 
@@ -499,4 +512,12 @@ function paypal_brasil_sum_items( $items ) {
 	}
 
 	return $sum;
+}
+
+/**
+ * Generate a unique id.
+ * @return int
+ */
+function paypal_brasil_unique_id() {
+	return rand( 1, 10000 );
 }
