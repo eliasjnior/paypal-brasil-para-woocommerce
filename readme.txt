@@ -104,7 +104,6 @@ Caso tenha alguma dúvida ou dificuldade na utilização do plugin acesse a seç
 = 1.0.4 =
 * Adicionado suporte a alguns plugins de desconto.
 * Corrigido problema que causava carregamento infinito devido a plugins de desconto.
-* Adicionando os campos inválidos na mensagem de erro do Checkout Transparente.
 * Aprimorado tratamentos para plugins de desconto e desconto nativo.
 
 == Upgrade Notice ==
@@ -112,7 +111,6 @@ Caso tenha alguma dúvida ou dificuldade na utilização do plugin acesse a seç
 = 1.0.4 =
 * Adicionado suporte a alguns plugins de desconto.
 * Corrigido problema que causava carregamento infinito devido a plugins de desconto.
-* Adicionando os campos inválidos na mensagem de erro do Checkout Transparente.
 * Aprimorado tratamentos para plugins de descontos e descontos nativo.
 
 == Screenshots ==
