@@ -4,7 +4,7 @@ Contributors: [apuhlmann](https://profiles.wordpress.org/apuhlmann)
 Tags: paypal, paypal plus, woocommerce, woo commerce, checkout transparente, transparente, pagamento, gateway, paypal brasil, ecommerce, e-commerce
 Requires at least: 4.4
 Tested up to: 5.2
-Stable tag: 1.0.4
+Stable tag: 1.0.5
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI:  [http://www.gnu.org/licenses/gpl-2.0.html](http://www.gnu.org/licenses/gpl-2.0.html)
@@ -106,12 +106,13 @@ Caso tenha alguma dúvida ou dificuldade na utilização do plugin acesse a seç
 * Corrigido problema que causava carregamento infinito devido a plugins de desconto.
 * Aprimorado tratamentos para plugins de desconto e desconto nativo.
 
+= 1.0.5 =
+* Modificado tratamentos das ações no Checkout Transparente.
+
 == Upgrade Notice ==
 
-= 1.0.4 =
-* Adicionado suporte a alguns plugins de desconto.
-* Corrigido problema que causava carregamento infinito devido a plugins de desconto.
-* Aprimorado tratamentos para plugins de descontos e descontos nativo.
+= 1.0.5 =
+* Modificado tratamentos das ações no Checkout Transparente.
 
 == Screenshots ==
 
