@@ -41,211 +41,25 @@ function paypal_brasil_is_order_only_digital( $order ) {
 }
 
 /**
- * Get cart items prepared for API.
+ * Check if cart is only digital items.
  *
- * @param bool $only_items
- *
- * @return array
+ * @return bool
  */
-function paypal_brasil_get_cart_items( $only_items = false ) {
-	$items              = array();
+function paypal_brasil_is_cart_only_digital() {
+	// Consider as always digital.
 	$only_digital_items = true;
-	$diff               = '0.00';
 
-	// Add all items.
-	foreach ( WC()->cart->get_cart() as $key => $item ) {
+	/** @var WC_Order_Item $item */
+	foreach ( WC()->cart->get_cart() as $id => $item ) {
 		$product = $item['variation_id'] ? wc_get_product( $item['variation_id'] ) : wc_get_product( $item['product_id'] );
 
-		// Force get product cents to avoid float problems.
-		$product_price = paypal_brasil_math_div( $item['line_subtotal'], $item['quantity'] );
-
-		$items[] = array(
-			'name'     => $product->get_title(),
-			'currency' => get_woocommerce_currency(),
-			'quantity' => $item['quantity'],
-			'price'    => $product_price,
-			'sku'      => $product->get_sku() ? $product->get_sku() : $product->get_id(),
-			'url'      => $product->get_permalink(),
-		);
-
 		// Check if product is not digital.
 		if ( ! ( $product->is_downloadable() || $product->is_virtual() ) ) {
 			$only_digital_items = false;
 		}
 	}
 
-	// Add all discounts.
-	$cart_totals = WC()->cart->get_totals();
-
-	// Add discounts.
-	if ( ! $only_items ) {
-		if ( $cart_totals['discount_total'] ) {
-			$items[] = array(
-				'name'     => __( 'Desconto', 'paypal-brasil-para-woocommerce' ),
-				'currency' => get_woocommerce_currency(),
-				'quantity' => 1,
-				'price'    => paypal_brasil_money_format( - $cart_totals['discount_total'] ),
-				'sku'      => 'discount',
-			);
-		}
-	}
-
-	// Add fees.
-	if ( ! $only_items ) {
-		if ( $cart_totals['fee_total'] ) {
-			foreach ( WC()->cart->get_fees() as $fee ) {
-				$items[] = array(
-					'name'     => $fee->name,
-					'currency' => get_woocommerce_currency(),
-					'quantity' => 1,
-					'price'    => paypal_brasil_money_format( $fee->total ),
-					'sku'      => $fee->id,
-				);
-			}
-		}
-	}
-
-	// Add taxes.
-	if ( ! $only_items ) {
-		if ( $cart_totals['total_tax'] ) {
-			$items[] = array(
-				'name'     => __( 'Taxas', 'paypal-brasil-para-woocommerce' ),
-				'currency' => get_woocommerce_currency(),
-				'quantity' => 1,
-				'price'    => paypal_brasil_money_format( $cart_totals['total_tax'] ),
-				'sku'      => 'taxes',
-			);
-		}
-	}
-
-	if ( ! $only_items ) {
-		if ( ( $diff = paypal_brasil_math_sub( $cart_totals['total'] - $cart_totals['shipping_total'], paypal_brasil_sum_items( $items ) ) ) !== '0.00' ) {
-			$items[] = array(
-				'name'     => __( 'Arredondamento', 'paypal-brasil-para-woocommerce' ),
-				'currency' => get_woocommerce_currency(),
-				'quantity' => 1,
-				'price'    => $diff,
-				'sku'      => 'price-adjustment',
-			);
-		}
-	}
-
-	// Calculate subtotal and shipping.
-	$discount = $only_items ? '0.00' : - $cart_totals['discount_total'];
-	$tax      = $only_items ? '0.00' : $cart_totals['total_tax'];
-	$fee      = $only_items ? '0.00' : $cart_totals['fee_total'];
-	$subtotal = paypal_brasil_math_add( $cart_totals['subtotal'], $discount, $tax );
-	$shipping = paypal_brasil_money_format( $cart_totals['shipping_total'] );
-
-	return array(
-		'items'              => $items,
-		'shipping'           => $shipping,
-		'subtotal'           => paypal_brasil_math_add( $diff, $subtotal, $fee ),
-		'has_rounding'       => $diff !== '0.00',
-		'only_digital_items' => $only_digital_items,
-		'total'              => $cart_totals['total'],
-	);
-}
-
-/**
- * Get order items prepared to API.
- *
- * @param $order WC_Order
- *
- * @return array
- */
-function paypal_brasil_get_order_items( $order ) {
-
-	$items              = array();
-	$fees               = '0.00';
-	$only_digital_items = true;
-
-	// Add all items.
-	/** @var WC_Order_Item_Product $item */
-	foreach ( $order->get_items() as $id => $item ) {
-		$product = $item->get_variation_id() ? wc_get_product( $item->get_variation_id() ) : wc_get_product( $item->get_product_id() );
-		// Force get product cents to avoid float problems.
-		$product_price = paypal_brasil_math_div( $item->get_subtotal(), $item->get_quantity(), 2 );
-
-		$items[] = array(
-			'name'     => $product->get_title(),
-			'currency' => get_woocommerce_currency(),
-			'quantity' => $item->get_quantity(),
-			'price'    => $product_price,
-			'sku'      => $product->get_sku() ? $product->get_sku() : $product->get_id(),
-			'url'      => $product->get_permalink(),
-		);
-
-		// Check if product is not digital.
-		if ( ! ( $product->is_downloadable() || $product->is_virtual() ) ) {
-			$only_digital_items = false;
-		}
-	}
-
-	// Add discounts.
-	if ( $order->get_discount_total() ) {
-		$order_discount = paypal_brasil_money_format( - $order->get_discount_total() );
-		$items[]        = array(
-			'name'     => __( 'Desconto', 'paypal-brasil-para-woocommerce' ),
-			'currency' => get_woocommerce_currency(),
-			'quantity' => 1,
-			'price'    => $order_discount,
-			'sku'      => 'discount',
-		);
-	}
-
-	// Add fees
-	if ( $order->get_fees() ) {
-		/** @var WC_Order_Item_Fee $fee */
-		foreach ( $order->get_fees() as $fee ) {
-			$items[] = array(
-				'name'     => $fee->get_name(),
-				'currency' => get_woocommerce_currency(),
-				'quantity' => 1,
-				'price'    => paypal_brasil_money_format( $fee->get_total() ),
-				'sku'      => $fee->get_id(),
-			);
-		}
-
-		// Add to subtotal.
-		$fees = paypal_brasil_math_add( $fees, $fee->get_total() );
-	}
-
-	// Add fees.
-	if ( $order->get_total_tax() ) {
-		$items[] = array(
-			'name'     => __( 'Taxas', 'paypal-brasil-para-woocommerce' ),
-			'currency' => get_woocommerce_currency(),
-			'quantity' => 1,
-			'price'    => paypal_brasil_money_format( $order->get_total_tax() ),
-			'sku'      => 'taxes',
-		);
-	}
-
-	// Calculate de difference.
-	$total_without_shipping = paypal_brasil_math_sub( $order->get_total(), $order->get_shipping_total() );
-
-	// Calculate subtotal.
-	$subtotal_without_diff = paypal_brasil_math_add( $order->get_subtotal(), $fees, $order->get_total_tax() );
-
-	// Check the difference.
-	if ( ( $diff = paypal_brasil_math_sub( $total_without_shipping, $subtotal_without_diff, - $order->get_discount_total() ) ) !== '0.00' ) {
-		$items[] = array(
-			'name'     => __( 'Arredondamento', 'paypal-brasil-para-woocommerce' ),
-			'currency' => get_woocommerce_currency(),
-			'quantity' => 1,
-			'price'    => $diff,
-			'sku'      => 'price-adjustment',
-		);
-	}
-
-	return array(
-		'items'              => $items,
-		'shipping'           => $order->get_shipping_total(),
-		'subtotal'           => paypal_brasil_math_add( $order->get_subtotal(), $diff, $fees, $order->get_total_tax(), - $order->get_discount_total() ),
-		'has_rounding'       => $diff !== '0.00',
-		'only_digital_items' => $only_digital_items,
-	);
+	return $only_digital_items;
 }
 
 /**
@@ -495,23 +309,6 @@ function paypal_brasil_math_sub( ...$values ) {
  */
 function paypal_brasil_money_format( $value, $precision = 2 ) {
 	return number_format( $value, $precision, '.', '' );
-}
-
-/**
- * Sum PayPal API items.
- *
- * @param $items
- *
- * @return string
- */
-function paypal_brasil_sum_items( $items ) {
-	$sum = '0.00';
-
-	foreach ( $items as $item ) {
-		$sum = paypal_brasil_math_add( $sum, $item['price'] * $item['quantity'] );
-	}
-
-	return $sum;
 }
 
 /**

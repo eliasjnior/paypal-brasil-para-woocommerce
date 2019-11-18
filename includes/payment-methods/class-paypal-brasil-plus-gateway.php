@@ -621,9 +621,6 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 					'payment_options' => array(
 						'allowed_payment_method' => 'IMMEDIATE_PAY',
 					),
-					'item_list'       => array(
-						'items' => array(),
-					),
 					'amount'          => array(
 						'currency' => get_woocommerce_currency(),
 					),
@@ -635,25 +632,24 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 			),
 		);
 
-		// Get items.
-		$items = paypal_brasil_get_cart_items();
+		$cart_totals = WC()->cart->get_totals();
 
 		// Set details
 		$payment_data['transactions'][0]['amount']['details'] = array(
-			'shipping' => $items['shipping'],
-			'subtotal' => $items['subtotal'],
+			'shipping' => paypal_brasil_money_format( $cart_totals['shipping_total'] ),
+			'subtotal' => paypal_brasil_math_sub( $cart_totals['total'], $cart_totals['shipping_total'] ),
 		);
 
 		// Set total Total
-		$payment_data['transactions'][0]['amount']['total'] = $items['total'];
+		$payment_data['transactions'][0]['amount']['total'] = paypal_brasil_money_format( $cart_totals['total'] );
 
-		// Add items to data.
-		$payment_data['transactions'][0]['item_list']['items'] = $items['items'];
+		// Check if is only digital items.
+		$only_digital_items = paypal_brasil_is_cart_only_digital();
 
 		// Set the application context
 		$payment_data['application_context'] = array(
 			'brand_name'          => get_bloginfo( 'name' ),
-			'shipping_preference' => $items['only_digital_items'] ? 'NO_SHIPPING' : 'SET_PROVIDED_ADDRESS',
+			'shipping_preference' => $only_digital_items ? 'NO_SHIPPING' : 'SET_PROVIDED_ADDRESS',
 		);
 
 		// Check if is order pay
@@ -662,7 +658,7 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 		// Create the address.
 		if ( ! $dummy ) {
 			// Set shipping only when isn't digital
-			if ( ! $items['only_digital_items'] ) {
+			if ( ! $only_digital_items ) {
 				// Prepare empty address_line_1
 				$address_line_1 = array();
 				// Add the address
@@ -696,7 +692,9 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 				if ( $address_line_2 ) {
 					$shipping_address['line2'] = mb_substr( implode( ', ', $address_line_2 ), 0, 100 );
 				}
-				$payment_data['transactions'][0]['item_list']['shipping_address'] = $shipping_address;
+				$payment_data['transactions'][0]['item_list'] = array(
+					'shipping_address' => $shipping_address,
+				);
 			}
 		}
 

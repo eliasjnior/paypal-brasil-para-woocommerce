@@ -797,10 +797,6 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 	 * @throws PayPal_Brasil_Connection_Exception
 	 */
 	private function process_payment_shortcut( $order ) {
-
-		// Force get product cents to avoid float problems.
-		$items = paypal_brasil_get_order_items( $order );
-
 		$data = array(
 			array(
 				'op'    => 'replace',
@@ -809,15 +805,10 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 					'total'    => $order->get_total(),
 					'currency' => $order->get_currency(),
 					'details'  => array(
-						'subtotal' => $items['subtotal'],
-						'shipping' => $items['shipping'],
+						'subtotal' => paypal_brasil_math_sub( $order->get_total(), $order->get_shipping_total() ),
+						'shipping' => paypal_brasil_money_format( $order->get_shipping_total() ),
 					),
 				),
-			),
-			array(
-				'op'    => 'replace',
-				'path'  => '/transactions/0/item_list/items',
-				'value' => $items['items'],
 			),
 			array(
 				'op'    => 'add',
@@ -912,8 +903,8 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 			return;
 		}
 
-		// Get items.
-		$items = paypal_brasil_get_order_items( $order );
+		// Check if is only digital items.
+		$only_digital_items = paypal_brasil_is_order_only_digital( $order );
 
 		// Try to get billing agreement from session.
 		$billing_agreement_id = WC()->session->get( 'paypal_brasil_billing_agreement_id' );
@@ -938,24 +929,31 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 			),
 			'application_context' => array(
 				'brand_name'          => get_bloginfo( 'name' ),
-				'shipping_preference' => $items['only_digital_items'] ? 'NO_SHIPPING' : 'SET_PROVIDED_ADDRESS',
+				'shipping_preference' => $only_digital_items ? 'NO_SHIPPING' : 'SET_PROVIDED_ADDRESS',
 			),
 			'transactions'        => array(
 				array(
 					'amount'         => array(
 						'currency' => $order->get_currency(),
-						'total'    => $order->get_total(),
+						'total'    => paypal_brasil_money_format( $order->get_total() ),
 						'details'  => array(
-							'shipping' => $items['shipping'],
-							'subtotal' => $items['subtotal'],
+							'shipping' => paypal_brasil_money_format( $order->get_shipping_total() ),
+							'subtotal' => paypal_brasil_math_sub( $order->get_total(), $order->get_shipping_total() ),
+						),
+					),
+					'item_list'      => array(
+						'items' => array(
+							array(
+								'name'     => sprintf( __( 'Pedido Loja %s', 'paypal-brasil-para-woocommerce' ), get_bloginfo( 'name' ) ),
+								'currency' => get_woocommerce_currency(),
+								'quantity' => 1,
+								'price'    => paypal_brasil_math_sub( $order->get_total(), $order->get_shipping_total() ),
+								'sku'      => 'order-items',
+							)
 						),
 					),
 					'description'    => sprintf( __( 'Pagamento do pedido #%s na loja %s', 'paypal-brasil-para-woocommerce' ), $order->get_id(), get_bloginfo( 'name' ) ),
 					'invoice_number' => sprintf( '%s%s', $this->invoice_id_prefix, $order->get_id() ),
-					'item_list'      => array(
-						'items' => $items['items'],
-					),
-
 				),
 			),
 			'redirect_urls'       => array(
@@ -965,7 +963,7 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 		);
 
 		// Add shipping address for non digital goods
-		if ( ! $items['only_digital_items'] ) {
+		if ( ! $only_digital_items ) {
 			$data['transactions'][0]['item_list']['shipping_address'] = paypal_brasil_get_shipping_address( $order );
 		}
 
@@ -1031,7 +1029,6 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 	 * @throws PayPal_Brasil_Connection_Exception
 	 */
 	private function process_payment_spb( $order ) {
-		$spb_order_id = sanitize_text_field( $_POST['paypal-brasil-spb-order-id'] );
 		$spb_payer_id = sanitize_text_field( $_POST['paypal-brasil-spb-payer-id'] );
 		$spb_pay_id   = sanitize_text_field( $_POST['paypal-brasil-spb-pay-id'] );
 
