@@ -41,56 +41,25 @@ function paypal_brasil_is_order_only_digital( $order ) {
 }
 
 /**
- * Get order items prepared to API.
+ * Check if cart is only digital items.
  *
- * @param $order WC_Order
- *
- * @return array
+ * @return bool
  */
-function paypal_brasil_get_order_items( $order ) {
+function paypal_brasil_is_cart_only_digital() {
+	// Consider as always digital.
+	$only_digital_items = true;
 
-	$items = array();
+	/** @var WC_Order_Item $item */
+	foreach ( WC()->cart->get_cart() as $id => $item ) {
+		$product = $item['variation_id'] ? wc_get_product( $item['variation_id'] ) : wc_get_product( $item['product_id'] );
 
-	// Add all items.
-	/** @var WC_Order_Item_Product $item */
-	foreach ( $order->get_items() as $id => $item ) {
-		$product = $item->get_variation_id() ? wc_get_product( $item->get_variation_id() ) : wc_get_product( $item->get_product_id() );
-		// Force get product cents to avoid float problems.
-		$product_price = number_format( paypal_brasil_math_div( $item->get_subtotal(), $item->get_quantity(), 2 ), 2, '.', '' );
-
-		$items[] = array(
-			'name'     => $product->get_title(),
-			'currency' => get_woocommerce_currency(),
-			'quantity' => $item->get_quantity(),
-			'price'    => $product_price,
-			'sku'      => $product->get_sku() ? $product->get_sku() : $product->get_id(),
-			'url'      => $product->get_permalink(),
-		);
+		// Check if product is not digital.
+		if ( ! ( $product->is_downloadable() || $product->is_virtual() ) ) {
+			$only_digital_items = false;
+		}
 	}
 
-	// Add discounts.
-	if ( $order->get_discount_total() ) {
-		$items[] = array(
-			'name'     => __( 'Desconto', 'paypal-brasil-para-woocommerce' ),
-			'currency' => get_woocommerce_currency(),
-			'quantity' => 1,
-			'price'    => number_format( - $order->get_discount_total(), 2, '.', '' ),
-			'sku'      => 'discount',
-		);
-	}
-
-	// Add fees.
-	if ( $order->get_total_tax() ) {
-		$items[] = array(
-			'name'     => __( 'Taxas', 'paypal-brasil-para-woocommerce' ),
-			'currency' => get_woocommerce_currency(),
-			'quantity' => 1,
-			'price'    => number_format( $order->get_total_tax(), 2, '.', '' ),
-			'sku'      => 'taxes',
-		);
-	}
-
-	return $items;
+	return $only_digital_items;
 }
 
 /**
@@ -236,11 +205,9 @@ function paypal_brasil_protect_metadata( $protected, $meta_key ) {
 	);
 
 	if ( 'shop_order' == get_post_type() ) {
-
 		if ( in_array( $meta_key, $keys ) ) {
 			return true;
 		}
-
 	}
 
 	return $protected;
@@ -297,29 +264,57 @@ function paypal_brasil_math_mul( $value1, $value2, $precision = 2 ) {
 /**
  * Method to add two numbers.
  *
- * @param $value1
- * @param $value2
- * @param int $precision
+ * @param array $values
  *
  * @return string
  */
-function paypal_brasil_math_add( $value1, $value2, $precision = 2 ) {
-	return paypal_brasil_money_format( $value1 + $value2, $precision );
+function paypal_brasil_math_add( ...$values ) {
+	$sum = '0.00';
+
+	foreach ( $values as $value ) {
+		$sum = paypal_brasil_money_format( $sum + $value );
+	}
+
+	return $sum;
 }
 
 /**
  * Method to sub two numbers.
  *
- * @param $value1
- * @param $value2
+ * @param array $values
+ *
+ * @return string
+ */
+function paypal_brasil_math_sub( ...$values ) {
+	$sub = $values[0];
+
+	foreach ( $values as $key => $value ) {
+		// Skip the first.
+		if ( ! $key ) {
+			continue;
+		}
+		$sub = paypal_brasil_money_format( $sub - $value );
+	}
+
+	return $sub;
+}
+
+/**
+ * Format the money for PayPal API.
+ *
+ * @param $value
  * @param int $precision
  *
  * @return string
  */
-function paypal_brasil_math_sub( $value1, $value2, $precision = 2 ) {
-	return paypal_brasil_money_format( $value1 - $value2, $precision );
-}
-
 function paypal_brasil_money_format( $value, $precision = 2 ) {
 	return number_format( $value, $precision, '.', '' );
+}
+
+/**
+ * Generate a unique id.
+ * @return int
+ */
+function paypal_brasil_unique_id() {
+	return rand( 1, 10000 );
 }

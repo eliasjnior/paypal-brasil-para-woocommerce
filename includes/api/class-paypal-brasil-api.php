@@ -94,8 +94,8 @@ class PayPal_Brasil_API {
 	 * @param bool $force
 	 *
 	 * @return array|WP_Error
-	 * @throws paypal_brasil_Api_Exception
-	 * @throws paypal_brasil_Connection_Exception
+	 * @throws PayPal_Brasil_API_Exception
+	 * @throws PayPal_Brasil_Connection_Exception
 	 * @todo: adicionar forçar um mode
 	 *
 	 */
@@ -123,7 +123,7 @@ class PayPal_Brasil_API {
 
 		// Check if is WP_Error
 		if ( is_wp_error( $response ) ) {
-			throw new paypal_brasil_Connection_Exception( $response->get_error_code(), $response->errors );
+			throw new PayPal_Brasil_Connection_Exception( $response->get_error_code(), $response->errors );
 		}
 
 		$code = wp_remote_retrieve_response_code( $response );
@@ -135,7 +135,7 @@ class PayPal_Brasil_API {
 			return $response_body['access_token'];
 		}
 
-		throw new paypal_brasil_Api_Exception( $code, __( 'Não foi possível obter o access token.', 'paypal-brasil-para-woocommerce' ), $response_body );
+		throw new PayPal_Brasil_API_Exception( $code, __( 'Não foi possível obter o access token.', 'paypal-brasil-para-woocommerce' ), $response_body );
 	}
 
 	/**
@@ -146,8 +146,8 @@ class PayPal_Brasil_API {
 	 * @param array $headers
 	 *
 	 * @return mixed
-	 * @throws paypal_brasil_Api_Exception
-	 * @throws paypal_brasil_Connection_Exception
+	 * @throws PayPal_Brasil_API_Exception
+	 * @throws PayPal_Brasil_Connection_Exception
 	 */
 	public function create_payment( $data, $headers = array(), $bn_code_key = null ) {
 		$url = $this->get_base_url() . '/payments/payment';
@@ -163,7 +163,7 @@ class PayPal_Brasil_API {
 
 		// Check if is WP_Error
 		if ( is_wp_error( $response ) ) {
-			throw new paypal_brasil_Connection_Exception( $response->get_error_code(), $response->errors );
+			throw new PayPal_Brasil_Connection_Exception( $response->get_error_code(), $response->errors );
 		}
 
 		$code = wp_remote_retrieve_response_code( $response );
@@ -173,7 +173,7 @@ class PayPal_Brasil_API {
 			return $response_body;
 		}
 
-		throw new paypal_brasil_Api_Exception( $code, __( 'Não foi possível criar o pagamento.', 'paypal-brasil-para-woocommerce' ), $response_body );
+		throw new PayPal_Brasil_API_Exception( $code, __( 'Não foi possível criar o pagamento.', 'paypal-brasil-para-woocommerce' ), $response_body );
 	}
 
 	/**
@@ -182,8 +182,8 @@ class PayPal_Brasil_API {
 	 * @param $payment_id
 	 *
 	 * @return array|mixed|object
-	 * @throws paypal_brasil_Api_Exception
-	 * @throws paypal_brasil_Connection_Exception
+	 * @throws PayPal_Brasil_API_Exception
+	 * @throws PayPal_Brasil_Connection_Exception
 	 */
 	public function get_payment( $payment_id, $headers = array(), $bn_code_key = null ) {
 		$url = $this->get_base_url() . '/payments/payment/' . $payment_id;
@@ -199,7 +199,7 @@ class PayPal_Brasil_API {
 
 		// Check if is WP_Error
 		if ( is_wp_error( $response ) ) {
-			throw new paypal_brasil_Connection_Exception( $response->get_error_code(), $response->errors );
+			throw new PayPal_Brasil_Connection_Exception( $response->get_error_code(), $response->errors );
 		}
 
 		$code = wp_remote_retrieve_response_code( $response );
@@ -209,7 +209,7 @@ class PayPal_Brasil_API {
 			return $response_body;
 		}
 
-		throw new paypal_brasil_Api_Exception( $code, __( 'Não foi possível obter o detalhamento do pagamento.', 'paypal-brasil-para-woocommerce' ), $response_body );
+		throw new PayPal_Brasil_API_Exception( $code, __( 'Não foi possível obter o detalhamento do pagamento.', 'paypal-brasil-para-woocommerce' ), $response_body );
 	}
 
 	/**
@@ -219,8 +219,8 @@ class PayPal_Brasil_API {
 	 * @param $payer_id
 	 *
 	 * @return array|mixed|object
-	 * @throws paypal_brasil_Api_Exception
-	 * @throws paypal_brasil_Connection_Exception
+	 * @throws PayPal_Brasil_API_Exception
+	 * @throws PayPal_Brasil_Connection_Exception
 	 */
 	public function execute_payment( $payment_id, $payer_id, $headers = array(), $bn_code_key = null ) {
 		$url = $this->get_base_url() . '/payments/payment/' . $payment_id . '/execute';
@@ -240,7 +240,7 @@ class PayPal_Brasil_API {
 
 		// Check if is WP_Error
 		if ( is_wp_error( $response ) ) {
-			throw new paypal_brasil_Connection_Exception( $response->get_error_code(), $response->errors );
+			throw new PayPal_Brasil_Connection_Exception( $response->get_error_code(), $response->errors );
 		}
 
 		$code = wp_remote_retrieve_response_code( $response );
@@ -250,7 +250,7 @@ class PayPal_Brasil_API {
 			return $response_body;
 		}
 
-		throw new paypal_brasil_Api_Exception( $code, __( 'Não foi possível executar o pagamento.', 'paypal-brasil-para-woocommerce' ), $response_body );
+		throw new PayPal_Brasil_API_Exception( $code, __( 'Não foi possível executar o pagamento.', 'paypal-brasil-para-woocommerce' ), $response_body );
 	}
 
 	/**
@@ -258,8 +258,8 @@ class PayPal_Brasil_API {
 	 * @param $data
 	 *
 	 * @return array|mixed|object
-	 * @throws paypal_brasil_Api_Exception
-	 * @throws paypal_brasil_Connection_Exception
+	 * @throws PayPal_Brasil_API_Exception
+	 * @throws PayPal_Brasil_Connection_Exception
 	 */
 	public function update_payment( $payment_id, $data, $headers = array(), $bn_code_key = null ) {
 		$url = $this->get_base_url() . '/payments/payment/' . $payment_id;
@@ -275,7 +275,7 @@ class PayPal_Brasil_API {
 
 		// Check if is WP_Error
 		if ( is_wp_error( $response ) ) {
-			throw new paypal_brasil_Connection_Exception( $response->get_error_code(), $response->errors );
+			throw new PayPal_Brasil_Connection_Exception( $response->get_error_code(), $response->errors );
 		}
 
 		$code = wp_remote_retrieve_response_code( $response );
@@ -285,15 +285,15 @@ class PayPal_Brasil_API {
 			return $response_body;
 		}
 
-		throw new paypal_brasil_Api_Exception( $code, __( 'Não foi possível atualizar o pagamento.', 'paypal-brasil-para-woocommerce' ), $response_body );
+		throw new PayPal_Brasil_API_Exception( $code, __( 'Não foi possível atualizar o pagamento.', 'paypal-brasil-para-woocommerce' ), $response_body );
 	}
 
 	/**
 	 * Create Billing Agreement Token
 	 *
 	 * @return array|mixed|object
-	 * @throws paypal_brasil_Api_Exception
-	 * @throws paypal_brasil_Connection_Exception
+	 * @throws PayPal_Brasil_API_Exception
+	 * @throws PayPal_Brasil_Connection_Exception
 	 */
 	public function create_billing_agreement_token() {
 		$url  = $this->get_base_url() . '/billing-agreements/agreement-tokens';
@@ -321,7 +321,7 @@ class PayPal_Brasil_API {
 
 		// Check if is WP_Error
 		if ( is_wp_error( $response ) ) {
-			throw new paypal_brasil_Connection_Exception( $response->get_error_code(), $response->errors );
+			throw new PayPal_Brasil_Connection_Exception( $response->get_error_code(), $response->errors );
 		}
 
 		$code = wp_remote_retrieve_response_code( $response );
@@ -331,7 +331,7 @@ class PayPal_Brasil_API {
 			return $response_body;
 		}
 
-		throw new paypal_brasil_Api_Exception( $code, __( 'Não foi possível criar o token de autorização de cobrança.', 'paypal-brasil-para-woocommerce' ), $response_body );
+		throw new PayPal_Brasil_API_Exception( $code, __( 'Não foi possível criar o token de autorização de cobrança.', 'paypal-brasil-para-woocommerce' ), $response_body );
 	}
 
 	public function create_billing_agreement( $token ) {
@@ -346,7 +346,7 @@ class PayPal_Brasil_API {
 
 		// Check if is WP_Error
 		if ( is_wp_error( $response ) ) {
-			throw new paypal_brasil_Connection_Exception( $response->get_error_code(), $response->errors );
+			throw new PayPal_Brasil_Connection_Exception( $response->get_error_code(), $response->errors );
 		}
 
 		$code = wp_remote_retrieve_response_code( $response );
@@ -356,7 +356,7 @@ class PayPal_Brasil_API {
 			return $response_body;
 		}
 
-		throw new paypal_brasil_Api_Exception( $code, __( 'Não foi possível criar a autorização de cobrança.', 'paypal-brasil-para-woocommerce' ), $response_body );
+		throw new PayPal_Brasil_API_Exception( $code, __( 'Não foi possível criar a autorização de cobrança.', 'paypal-brasil-para-woocommerce' ), $response_body );
 	}
 
 	public function get_calculate_financing( $billing_agreement, $value ) {
@@ -381,7 +381,7 @@ class PayPal_Brasil_API {
 
 		// Check if is WP_Error
 		if ( is_wp_error( $response ) ) {
-			throw new paypal_brasil_Connection_Exception( $response->get_error_code(), $response->errors );
+			throw new PayPal_Brasil_Connection_Exception( $response->get_error_code(), $response->errors );
 		}
 
 		$code = wp_remote_retrieve_response_code( $response );
@@ -391,7 +391,7 @@ class PayPal_Brasil_API {
 			return $response_body;
 		}
 
-		throw new paypal_brasil_Api_Exception( $code, __( 'Não foi possível obter as opções de parcelamento.', 'paypal-brasil-para-woocommerce' ), $response_body );
+		throw new PayPal_Brasil_API_Exception( $code, __( 'Não foi possível obter as opções de parcelamento.', 'paypal-brasil-para-woocommerce' ), $response_body );
 	}
 
 	/**
@@ -400,8 +400,8 @@ class PayPal_Brasil_API {
 	 * @param $data
 	 *
 	 * @return array|mixed|object
-	 * @throws paypal_brasil_Api_Exception
-	 * @throws paypal_brasil_Connection_Exception
+	 * @throws PayPal_Brasil_API_Exception
+	 * @throws PayPal_Brasil_Connection_Exception
 	 */
 	public function verify_signature( $data ) {
 		$url = $this->get_base_url() . '/notifications/verify-webhook-signature';
@@ -412,7 +412,7 @@ class PayPal_Brasil_API {
 
 		// Check if is WP_Error
 		if ( is_wp_error( $response ) ) {
-			throw new paypal_brasil_Connection_Exception( $response->get_error_code(), $response->errors );
+			throw new PayPal_Brasil_Connection_Exception( $response->get_error_code(), $response->errors );
 		}
 
 		$code = wp_remote_retrieve_response_code( $response );
@@ -422,15 +422,15 @@ class PayPal_Brasil_API {
 			return $response_body;
 		}
 
-		throw new paypal_brasil_Api_Exception( $code, __( 'Não foi possível verificar a assinatura do PayPal.', 'paypal-brasil-para-woocommerce' ), $response_body );
+		throw new PayPal_Brasil_API_Exception( $code, __( 'Não foi possível verificar a assinatura do PayPal.', 'paypal-brasil-para-woocommerce' ), $response_body );
 	}
 
 	/**
 	 * Get webhook list.
 	 *
 	 * @return array|mixed|object
-	 * @throws paypal_brasil_Api_Exception
-	 * @throws paypal_brasil_Connection_Exception
+	 * @throws PayPal_Brasil_API_Exception
+	 * @throws PayPal_Brasil_Connection_Exception
 	 */
 	public function get_webhooks() {
 		$url = $this->get_base_url() . '/notifications/webhooks';
@@ -441,7 +441,7 @@ class PayPal_Brasil_API {
 
 		// Check if is WP_Error
 		if ( is_wp_error( $response ) ) {
-			throw new paypal_brasil_Connection_Exception( $response->get_error_code(), $response->errors );
+			throw new PayPal_Brasil_Connection_Exception( $response->get_error_code(), $response->errors );
 		}
 
 		$code = wp_remote_retrieve_response_code( $response );
@@ -451,7 +451,7 @@ class PayPal_Brasil_API {
 			return $response_body;
 		}
 
-		throw new paypal_brasil_Api_Exception( $code, __( 'Não foi possível obter os webhooks.', 'paypal-brasil-para-woocommerce' ), $response_body );
+		throw new PayPal_Brasil_API_Exception( $code, __( 'Não foi possível obter os webhooks.', 'paypal-brasil-para-woocommerce' ), $response_body );
 	}
 
 	/**
@@ -461,8 +461,8 @@ class PayPal_Brasil_API {
 	 * @param $events
 	 *
 	 * @return array|mixed|object
-	 * @throws paypal_brasil_Api_Exception
-	 * @throws paypal_brasil_Connection_Exception
+	 * @throws PayPal_Brasil_API_Exception
+	 * @throws PayPal_Brasil_Connection_Exception
 	 */
 	public function create_webhook( $webhook_url, $events ) {
 		$url = $this->get_base_url() . '/notifications/webhooks';
@@ -486,7 +486,7 @@ class PayPal_Brasil_API {
 
 		// Check if is WP_Error
 		if ( is_wp_error( $response ) ) {
-			throw new paypal_brasil_Connection_Exception( $response->get_error_code(), $response->errors );
+			throw new PayPal_Brasil_Connection_Exception( $response->get_error_code(), $response->errors );
 		}
 
 		$code = wp_remote_retrieve_response_code( $response );
@@ -496,7 +496,7 @@ class PayPal_Brasil_API {
 			return $response_body;
 		}
 
-		throw new paypal_brasil_Api_Exception( $code, __( 'Não foi possível criar o webhook.', 'paypal-brasil-para-woocommerce' ), $response_body );
+		throw new PayPal_Brasil_API_Exception( $code, __( 'Não foi possível criar o webhook.', 'paypal-brasil-para-woocommerce' ), $response_body );
 	}
 
 	/**
@@ -507,8 +507,8 @@ class PayPal_Brasil_API {
 	 * @param null $currency
 	 *
 	 * @return array|mixed|object
-	 * @throws paypal_brasil_Api_Exception
-	 * @throws paypal_brasil_Connection_Exception
+	 * @throws PayPal_Brasil_API_Exception
+	 * @throws PayPal_Brasil_Connection_Exception
 	 */
 	public function refund_payment( $payment_id, $total = null, $currency = null ) {
 		$url = $this->get_base_url() . '/payments/sale/' . $payment_id . '/refund';
@@ -532,7 +532,7 @@ class PayPal_Brasil_API {
 
 		// Check if is WP_Error
 		if ( is_wp_error( $response ) ) {
-			throw new paypal_brasil_Connection_Exception( $response->get_error_code(), $response->errors );
+			throw new PayPal_Brasil_Connection_Exception( $response->get_error_code(), $response->errors );
 		}
 
 		$code = wp_remote_retrieve_response_code( $response );
@@ -542,7 +542,7 @@ class PayPal_Brasil_API {
 			return $response_body;
 		}
 
-		throw new paypal_brasil_Api_Exception( $code, __( 'Não foi possível fazer o reembolso.', 'paypal-brasil-para-woocommerce' ), $response_body );
+		throw new PayPal_Brasil_API_Exception( $code, __( 'Não foi possível fazer o reembolso.', 'paypal-brasil-para-woocommerce' ), $response_body );
 	}
 
 	/**
@@ -554,8 +554,8 @@ class PayPal_Brasil_API {
 	 * @param array $headers Request headers.
 	 *
 	 * @return array            Request response.
-	 * @throws paypal_brasil_Api_Exception
-	 * @throws paypal_brasil_Connection_Exception
+	 * @throws PayPal_Brasil_API_Exception
+	 * @throws PayPal_Brasil_Connection_Exception
 	 */
 	protected function do_request( $url, $method = 'POST', $data = array(), $headers = array(), $log = true ) {
 

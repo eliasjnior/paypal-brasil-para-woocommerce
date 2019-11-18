@@ -5,20 +5,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Class paypal_brasil_Api_Exception.
+ * Class PayPal_Brasil_API_Exception.
  */
-class paypal_brasil_Api_Exception extends Exception {
+class PayPal_Brasil_API_Exception extends Exception {
 	protected $error_code;
 	protected $data;
 
 	/**
-	 * paypal_brasil_Api_Exception constructor.
+	 * PayPal_Brasil_API_Exception constructor.
 	 *
 	 * @param mixed $error_code
 	 * @param string $error_message
 	 * @param mixed $data
 	 */
-	public function __construct( $error_code = '', $error_message = '', $data = null ) {
+	public function __construct( $error_code = 0, $error_message = '', $data = null ) {
 		$this->error_code = $error_code;
 		$this->data       = $data;
 		parent::__construct( $error_message, $error_code );

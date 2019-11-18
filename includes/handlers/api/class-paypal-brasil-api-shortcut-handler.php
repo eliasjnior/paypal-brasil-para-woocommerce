@@ -67,6 +67,9 @@ class PayPal_Brasil_API_Shortcut_Mini_Cart_Handler extends PayPal_Brasil_API_Han
 				$this->send_error_response( __( 'Você não pode fazer o pagamento de um pedido vazio.', 'paypal-brasil-para-woocommerce' ) );
 			}
 
+			$cart_totals        = WC()->cart->get_totals();
+			$only_digital_items = paypal_brasil_is_cart_only_digital();
+
 			$data = array(
 				'intent'        => 'sale',
 				'payer'         => array(
@@ -78,7 +81,15 @@ class PayPal_Brasil_API_Shortcut_Mini_Cart_Handler extends PayPal_Brasil_API_Han
 							'allowed_payment_method' => 'IMMEDIATE_PAY',
 						),
 						'item_list'       => array(
-							'items' => array(),
+							'items' => array(
+								array(
+									'name'     => sprintf( __( 'Pedido Loja %s', 'paypal-brasil-para-woocommerce' ), get_bloginfo( 'name' ) ),
+									'currency' => get_woocommerce_currency(),
+									'quantity' => 1,
+									'price'    => paypal_brasil_math_sub( $cart_totals['total'], $cart_totals['shipping_total'] ),
+									'sku'      => 'order-items',
+								)
+							),
 						),
 						'amount'          => array(
 							'currency' => get_woocommerce_currency(),
@@ -91,52 +102,18 @@ class PayPal_Brasil_API_Shortcut_Mini_Cart_Handler extends PayPal_Brasil_API_Han
 				),
 			);
 
-			$items        = array();
-			$only_digital = true;
-
-			// Add all items.
-			foreach ( WC()->cart->get_cart() as $key => $item ) {
-				$product = $item['variation_id'] ? wc_get_product( $item['variation_id'] ) : wc_get_product( $item['product_id'] );
-
-				// Force get product cents to avoid float problems.
-				$product_price = paypal_brasil_math_div( $item['line_subtotal'], $item['quantity'] );
-
-				$items[] = array(
-					'name'     => $product->get_title(),
-					'currency' => get_woocommerce_currency(),
-					'quantity' => $item['quantity'],
-					'price'    => $product_price,
-					'sku'      => $product->get_sku() ? $product->get_sku() : $product->get_id(),
-					'url'      => $product->get_permalink(),
-				);
-
-				// Check if product is not digital.
-				if ( ! ( $product->is_downloadable() || $product->is_virtual() ) ) {
-					$only_digital = false;
-				}
-			}
-
-			// Add all discounts.
-			$cart_totals = WC()->cart->get_totals();
-
 			// Set details
-			// Force get product cents to avoid float problems.
-			$subtotal = paypal_brasil_money_format( $cart_totals['subtotal'] );
-
 			$data['transactions'][0]['amount']['details'] = array(
-				'subtotal' => $subtotal,
+				'subtotal' => paypal_brasil_math_sub( $cart_totals['total'], $cart_totals['shipping_total'] ),
 			);
 
 			// Set total Total
-			$data['transactions'][0]['amount']['total'] = $subtotal;
-
-			// Add items to data.
-			$data['transactions'][0]['item_list']['items'] = $items;
+			$data['transactions'][0]['amount']['total'] = $cart_totals['total'];
 
 			// Set the application context
 			$data['application_context'] = array(
 				'brand_name'          => get_bloginfo( 'name' ),
-				'shipping_preference' => $only_digital ? 'NO_SHIPPING' : 'GET_FROM_FILE',
+				'shipping_preference' => $only_digital_items ? 'NO_SHIPPING' : 'GET_FROM_FILE',
 				'user_action'         => 'continue',
 			);
 

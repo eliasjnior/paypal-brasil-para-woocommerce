@@ -51,6 +51,8 @@ class WC_PPP_Brasil_Checkout {
         this.$body.on('updated_checkout', this.onUpdatedCheckout);
         // Listen for the form submit.
         this.$form.on('submit', this.onSubmitForm);
+        // Listen for change on payment method change.
+        this.$form.on('change', '[name=payment_method]', this.forceUpdateCheckout);
         // Listen for window messages (only in debug mode).
         if (wc_ppp_brasil_data.debug_mode) {
             window.addEventListener('message', this.messageListener, false);
@@ -144,6 +146,19 @@ class WC_PPP_Brasil_Checkout {
         this.triggerUpdateCheckout();
     };
 
+    /**
+     * Force to update checkout.
+     *
+     * @param event
+     */
+    forceUpdateCheckout = (event: any = null) => {
+        if (event) {
+            event.preventDefault();
+        }
+
+        this.log('info', 'Updating checkout...');
+        this.$body.trigger('update_checkout');
+    };
 
     /**
      * Debounce the trigger checkout.
@@ -151,8 +166,7 @@ class WC_PPP_Brasil_Checkout {
      * @type {()=>any}
      */
     triggerUpdateCheckout = this.debounce(() => {
-        this.log('info', 'Updating checkout...');
-        this.$body.trigger('update_checkout');
+        this.forceUpdateCheckout();
     }, 1000);
 
     /**

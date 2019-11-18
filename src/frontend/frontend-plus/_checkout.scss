@@ -56,6 +56,20 @@
       margin-bottom: 15px;
     }
   }
+
+  ul.missing-items {
+    list-style: none;
+    color: red;
+    margin: 10px 0 0;
+    text-align: center;
+
+    li {
+      &:before {
+        content: '-';
+        margin-right: 5px;
+      }
+    }
+  }
 }
 
 #wc-ppp-brasil-container-loading {
