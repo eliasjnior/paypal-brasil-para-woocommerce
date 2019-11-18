@@ -55,6 +55,7 @@ try {
 				echo sprintf( '<p>%s</p>', get_woocommerce_currency() === 'BRL' ? $string2_br : $string2_us );
 				?>
             </div>
+            <ul class="missing-items"></ul>
         </div>
 	<?php endif; ?>
 </div>

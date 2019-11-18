@@ -5,19 +5,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Class paypal_brasil_Connection_Exception.
+ * Class PayPal_Brasil_Connection_Exception.
  */
-class paypal_brasil_Connection_Exception extends Exception {
+class PayPal_Brasil_Connection_Exception extends Exception {
 	protected $error_code;
 	protected $data;
 
 	/**
-	 * paypal_brasil_Connection_Exception constructor.
+	 * PayPal_Brasil_Connection_Exception constructor.
 	 *
 	 * @param mixed $error_code
 	 * @param mixed $data
 	 */
-	public function __construct( $error_code = '', $data = null ) {
+	public function __construct( $error_code = 0, $data = null ) {
 		$this->error_code = $error_code;
 		$this->data       = $data;
 		parent::__construct( __( 'Houve um erro de conexão com o PayPal.', 'paypal-brasil-para-woocommerce' ), $error_code );

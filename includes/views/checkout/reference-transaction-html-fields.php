@@ -47,12 +47,12 @@ $billing_agreement_error = false;
         </li>
 		<?php
 		$has_billing_agreement = true;
-	} catch ( paypal_brasil_Api_Exception $ex ) {
+	} catch ( PayPal_Brasil_API_Exception $ex ) {
 		$billing_agreement_error = true;
 		if ( $user_billing_agreement_id ) {
 			wc_print_notice( __( 'Encontramos um erro no seu termo de aceite PayPal, por favor crie um novo.', 'paypal-brasil-para-woocommerce' ), 'notice' );
 		}
-	} catch ( paypal_brasil_Connection_Exception $ex ) {
+	} catch ( PayPal_Brasil_Connection_Exception $ex ) {
 		// Handle any connection error.
 		wc_add_notice( $ex->getMessage() );
 	}
