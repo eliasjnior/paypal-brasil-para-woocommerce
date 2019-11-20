@@ -203,6 +203,9 @@ class WC_PPP_Brasil_Checkout {
                 if (data.invalid.length !== 0) {
                     this.log('error', `There's some invalid data. Iframe will render dummy version:`);
                     this.log('data', data.invalid);
+
+                    let html = '(' + Object.values(data.invalid).join(', ') + ')';
+                    this.$overlay.find('div.missing-items').html(html);
                 }
                 this.createIframe(data);
             }

@@ -52,10 +52,10 @@ try {
 				$string1_us = 'Please fill correctly the previously asked information.';
 				$string2_us = 'If they are already filled,  <a href="#" data-action="update-checkout">click here</a>.';
 				echo sprintf( '<p>%s</p>', get_woocommerce_currency() === 'BRL' ? $string1_br : $string1_us );
+				echo '<div class="missing-items"></div>';
 				echo sprintf( '<p>%s</p>', get_woocommerce_currency() === 'BRL' ? $string2_br : $string2_us );
 				?>
             </div>
-            <ul class="missing-items"></ul>
         </div>
 	<?php endif; ?>
 </div>
