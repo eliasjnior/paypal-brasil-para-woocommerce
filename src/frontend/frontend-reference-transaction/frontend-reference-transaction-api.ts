@@ -19,10 +19,29 @@ export const paymentReferenceTransaction = {
     },
 
     approve: (data) => {
-        // Fill the input data with the billing agreement token.
-        jQuery('[name=paypal_brasil_billing_agreement_token]').val(data.billingToken);
         // Forte update checkout to create billing agreement.
-        PaypalPayments.triggerUpdateCheckout();
+        if (paypal_brasil_settings.is_order_pay_page) {
+            // Block with loading.
+            jQuery('form#order_review').block({
+                message: null,
+                overlayCSS: {
+                    background: '#fff',
+                    opacity: 0.6
+                }
+            });
+            // Make request to save billing agreement.
+            PaypalPayments.makeRequest('save-billing-agreement', {
+                billing_agreement_token: data.billingToken,
+            }).always(function () {
+                // Reload page.
+                document.location.reload();
+            });
+        } else {
+            // Fill the input data with the billing agreement token.
+            jQuery('[name=paypal_brasil_billing_agreement_token]').val(data.billingToken);
+            // Update the checkout.
+            PaypalPayments.triggerUpdateCheckout();
+        }
     },
 
     error: (response) => {

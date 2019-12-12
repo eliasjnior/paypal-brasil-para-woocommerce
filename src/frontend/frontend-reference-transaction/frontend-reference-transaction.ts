@@ -10,7 +10,7 @@ class PaypalPaymentsReferenceTransaction extends PaypalPayments {
     constructor() {
         super();
         const $body = jQuery('body');
-        const $form = jQuery('form.woocommerce-checkout');
+        const $form = jQuery('form.woocommerce-checkout, form#order_review');
         // Update checkout button when WooCommerce checkout is updated.
         $body.on('updated_checkout', this.updateCheckoutButton);
         // Update checkout button when payment method is changed.
@@ -22,6 +22,10 @@ class PaypalPaymentsReferenceTransaction extends PaypalPayments {
         // Insert uuid
         this.insertUuid();
         $body.on('updated_checkout', this.insertUuid);
+        // If is order pay page, trigger checkout update.
+        if (paypal_brasil_settings.is_order_pay_page) {
+            jQuery('body').trigger('updated_checkout');
+        }
     }
 
     /**

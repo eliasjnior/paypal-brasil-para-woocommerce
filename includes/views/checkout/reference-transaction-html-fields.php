@@ -15,13 +15,17 @@ if ( is_user_logged_in() ) {
 }
 $has_billing_agreement   = false;
 $billing_agreement_error = false;
+
+$order = get_query_var( 'order-pay' ) ? wc_get_order( get_query_var( 'order-pay' ) ) : null;
+$total = $order ? $order->get_total() : WC()->cart->get_totals()['total'];
+
 ?>
 <ul class="paypal-brasil-billing-agreement-options">
     <!-- USER DEFAULT BILLING AGREEMENT -->
 	<?php
 	try {
 		if ( $user_billing_agreement_id ):
-			$calculated_financing = $this->api->get_calculate_financing( $user_billing_agreement_id, WC()->cart->get_totals()['total'] );
+			$calculated_financing = $this->api->get_calculate_financing( $user_billing_agreement_id, $total );
 			?>
             <li>
                 <label>
@@ -62,7 +66,7 @@ $billing_agreement_error = false;
 
 	<?php if ( ! $user_billing_agreement_id || $billing_agreement_error ): ?>
         <img src="<?php echo esc_url( plugins_url( 'assets/images/saiba-mais.png', PAYPAL_PAYMENTS_MAIN_FILE ) ); ?>"
-             style="max-width: 100%; max-height: 100%; float: none;">
+             style="max-width: 500px; margin: 0 auto; max-height: 100%; float: none;">
         <input type="radio"
                class="paypal-brasil-billing-agreement-option-radio"
                style="display: none;"
