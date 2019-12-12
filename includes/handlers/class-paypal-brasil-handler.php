@@ -28,7 +28,7 @@ class PayPal_Brasil_Handler {
 		include dirname( __FILE__ ) . '/api/class-paypal-brasil-api-checkout-handler.php';
 		include dirname( __FILE__ ) . '/api/class-paypal-brasil-api-webhook-handler.php';
 		include dirname( __FILE__ ) . '/api/class-paypal-brasil-api-shortcut-cart-handler.php';
-		include dirname( __FILE__ ) . '/api/class-paypal-brasil-api-shortcut-handler.php';
+		include dirname( __FILE__ ) . '/api/class-paypal-brasil-api-shortcut-mini-cart-handler.php';
 		include dirname( __FILE__ ) . '/api/class-paypal-brasil-api-billing-agreement-token.php';
 	}
 

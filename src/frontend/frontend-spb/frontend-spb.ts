@@ -19,6 +19,10 @@ class PaypalPaymentsSpb extends PaypalPayments {
         jQuery('form#order_review').on('change', '[name=payment_method]', this.updateCheckoutButton);
         // Render button when WooCommerce checkout is updated.
         $body.on('updated_checkout', this.renderPayPalButton);
+        // If is order pay page, trigger checkout update.
+        if (paypal_brasil_settings.is_order_pay_page) {
+            jQuery('body').trigger('updated_checkout');
+        }
     }
 
     /**

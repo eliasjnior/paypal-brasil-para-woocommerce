@@ -78,7 +78,7 @@ export class PaypalPayments {
      * Submit form.
      */
     static submitForm() {
-        jQuery('form.woocommerce-checkout').submit();
+        jQuery('form.woocommerce-checkout, form#order_review').submit();
     }
 
     /**
