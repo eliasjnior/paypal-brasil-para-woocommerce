@@ -311,6 +311,7 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 			$result_success = false;
 			switch ( $sale['state'] ) {
 				case 'completed';
+					$order->add_order_note( sprintf( __( 'Pagamento processado pelo PayPal. ID da transação: %s', 'paypal-brasil-para-woocommerce' ), $sale['id'] ) );
 					$order->payment_complete();
 					$result_success = true;
 					break;
@@ -541,7 +542,7 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 		$invalid = $this->validate_data( $data );
 		// if its invalid, return demo data.
 		// Also check if we are on our payment method. If not, render demo data.
-		if ( $post_data['payment_method'] !== $this->id ) {
+		if ( ! $order && $post_data['payment_method'] !== $this->id ) {
 			$invalid['wrong-payment-method'] = __( 'Não está selecionado o método de pagamento do PayPal Plus.', 'paypal-brasil-para-woocommerce' );
 		}
 
@@ -573,7 +574,8 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 			return $data;
 		}
 		// Create the payment.
-		$payment = $this->create_payment( $data, $data['dummy'] );
+		$payment = $order ? $this->create_payment_for_order( $data, $order, $data['dummy'] ) : $this->create_payment_for_cart( $data, $data['dummy'] );
+
 		// Get old session.
 		$old_session = WC()->session->get( 'wc-ppp-brasil-payment-id' );
 		// Check if old session exists and it's an array.
@@ -597,6 +599,128 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 	}
 
 	/**
+	 * @param $data
+	 * @param $order WC_Order
+	 * @param bool $dummy
+	 *
+	 * @return mixed
+	 * @throws PayPal_Brasil_Connection_Exception
+	 */
+	public function create_payment_for_order( $data, $order, $dummy = false ) {
+		// Get the order if was given order ID.
+		if ( ! is_a( $order, 'WC_Order' ) ) {
+			$order = wc_get_order( $order );
+		}
+
+		// Don' log if is dummy data.
+		if ( $dummy ) {
+			$this->debug = false;
+		}
+
+		$payment_data = array(
+			'intent'        => 'sale',
+			'payer'         => array(
+				'payment_method' => 'paypal',
+			),
+			'transactions'  => array(
+				array(
+					'payment_options' => array(
+						'allowed_payment_method' => 'IMMEDIATE_PAY',
+					),
+					'amount'          => array(
+						'currency' => get_woocommerce_currency(),
+					),
+				),
+			),
+			'redirect_urls' => array(
+				'return_url' => home_url(),
+				'cancel_url' => home_url(),
+			),
+		);
+
+		// Set details
+		$payment_data['transactions'][0]['amount']['details'] = array(
+			'shipping' => paypal_brasil_money_format( $order->get_shipping_total() ),
+			'subtotal' => paypal_brasil_math_sub( $order->get_total(), $order->get_shipping_total() ),
+		);
+
+		// Set total Total
+		$payment_data['transactions'][0]['amount']['total'] = paypal_brasil_money_format( $order->get_total() );
+
+		// Check if is only digital items.
+		$only_digital_items = paypal_brasil_is_order_only_digital( $order );
+
+		// Set the application context
+		$payment_data['application_context'] = array(
+			'brand_name'          => get_bloginfo( 'name' ),
+			'shipping_preference' => $only_digital_items ? 'NO_SHIPPING' : 'SET_PROVIDED_ADDRESS',
+		);
+
+		// Check if is order pay
+		$exception_data = array();
+
+		// Create the address.
+		if ( ! $dummy ) {
+			// Set shipping only when isn't digital
+			if ( ! $only_digital_items ) {
+				// Prepare empty address_line_1
+				$address_line_1 = array();
+				// Add the address
+				if ( $data['address'] ) {
+					$address_line_1[] = $data['address'];
+				}
+				// Add the number
+				if ( $data['number'] ) {
+					$address_line_1[] = $data['number'];
+				}
+				// Prepare empty line 2.
+				$address_line_2 = array();
+				// Add neighborhood to line 2
+				if ( $data['neighborhood'] ) {
+					$address_line_2[] = $data['neighborhood'];
+				}
+				// Add shipping address line 2
+				if ( $data['address_2'] ) {
+					$address_line_2[] = $data['address_2'];
+				}
+				$shipping_address = array(
+					'recipient_name' => $data['first_name'] . ' ' . $data['last_name'],
+					'country_code'   => $data['country'],
+					'postal_code'    => $data['postcode'],
+					'line1'          => mb_substr( implode( ', ', $address_line_1 ), 0, 100 ),
+					'city'           => $data['city'],
+					'state'          => $data['state'],
+					'phone'          => $data['phone'],
+				);
+				// If is anything on address line 2, add to shipping address.
+				if ( $address_line_2 ) {
+					$shipping_address['line2'] = mb_substr( implode( ', ', $address_line_2 ), 0, 100 );
+				}
+				$payment_data['transactions'][0]['item_list'] = array(
+					'shipping_address' => $shipping_address,
+				);
+			}
+		}
+
+		try {
+			// Create the payment.
+			$result = $this->api->create_payment( $payment_data );
+
+			return $result;
+		} catch ( PayPal_Brasil_API_Exception $ex ) { // Catch any PayPal error.
+			$error_data = $ex->getData();
+			if ( $error_data['name'] === 'VALIDATION_ERROR' ) {
+				$exception_data = $error_data['details'];
+			}
+		}
+
+		$exception       = new Exception( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir entre em contato. (#56)', 'paypal-brasil-para-woocommerce' ) );
+		$exception->data = $exception_data;
+
+		throw $exception;
+	}
+
+	/**
 	 * Create the PayPal payment.
 	 *
 	 * @param $data
@@ -605,7 +729,7 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 	 * @return mixed
 	 * @throws Exception
 	 */
-	public function create_payment( $data, $dummy = false ) {
+	public function create_payment_for_cart( $data, $dummy = false ) {
 		// Don' log if is dummy data.
 		if ( $dummy ) {
 			$this->debug = false;

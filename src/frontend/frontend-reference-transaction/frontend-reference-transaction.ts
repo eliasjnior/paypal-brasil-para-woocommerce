@@ -38,6 +38,7 @@ class PaypalPaymentsReferenceTransaction extends PaypalPayments {
      * Update the status of checkout button.
      */
     updateCheckoutButton() {
+        console.log('changed payment method');
         // If the Paypal Payments is selected and is to create a new billing agreement, show the PayPal button.
         if (PaypalPayments.isPaypalPaymentsSelected() && PaypalPaymentsReferenceTransaction.isCreateBillingAgreementSelected()) {
             PaypalPayments.showPaypalButton();

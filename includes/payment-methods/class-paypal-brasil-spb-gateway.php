@@ -148,7 +148,9 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 
 			// Add custom submit button.
 			add_action( 'woocommerce_review_order_before_submit', array( $this, 'html_before_submit_button' ) );
+			add_action( 'woocommerce_pay_order_before_submit', array( $this, 'html_before_submit_button' ) );
 			add_action( 'woocommerce_review_order_after_submit', array( $this, 'html_after_submit_button' ) );
+			add_action( 'woocommerce_pay_order_after_submit', array( $this, 'html_after_submit_button' ) );
 		}
 
 		// If it's first load, add a instance of this.
