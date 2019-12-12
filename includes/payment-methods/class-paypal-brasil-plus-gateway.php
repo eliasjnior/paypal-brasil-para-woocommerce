@@ -907,6 +907,10 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 	 * Enqueue scripts in checkout.
 	 */
 	public function checkout_scripts() {
+		if ( ! $this->is_available() ) {
+			return;
+		}
+
 		// Just load this script in checkout and if isn't in order-receive.
 		if ( is_checkout() && ! get_query_var( 'order-received' ) ) {
 			if ( 'yes' === $this->debug ) {
