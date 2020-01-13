@@ -122,7 +122,7 @@ abstract class PayPal_Brasil_Gateway extends WC_Payment_Gateway {
 	 * @return string|null
 	 */
 	public function get_webhook_id() {
-		return defined('PAYPAL_BRASIL_WEBHOOK_ID') ? PAYPAL_BRASIL_WEBHOOK_ID : get_option( 'paypal_brasil_webhook_url-' . $this->id, null );
+		return defined( 'PAYPAL_BRASIL_WEBHOOK_ID' ) ? PAYPAL_BRASIL_WEBHOOK_ID : get_option( 'paypal_brasil_webhook_url-' . $this->id, null );
 	}
 
 	/**
@@ -189,7 +189,10 @@ abstract class PayPal_Brasil_Gateway extends WC_Payment_Gateway {
 		// Return URL always with https.
 		$ensure_https = str_replace( 'http:', 'https:', add_query_arg( 'wc-api', $this->id, $base_url ) );
 
-		return preg_replace( '/(\:[\d]+)/', '', $ensure_https );
+		// Ensure trailing slash
+		$ensure_trailing_slash = rtrim( $ensure_https, '/?' );
+
+		return preg_replace( '/(\:[\d]+)/', '', $ensure_trailing_slash );
 	}
 
 	public function update_credentials() {
