@@ -3,13 +3,13 @@
 Contributors: [apuhlmann](https://profiles.wordpress.org/apuhlmann)
 Tags: paypal, paypal plus, woocommerce, woo commerce, checkout transparente, transparente, pagamento, gateway, paypal brasil, ecommerce, e-commerce
 Requires at least: 4.4
-Tested up to: 5.2
+Tested up to: 5.3
 Stable tag: 1.0.5
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI:  [http://www.gnu.org/licenses/gpl-2.0.html](http://www.gnu.org/licenses/gpl-2.0.html)
 WC requires at least: 3.0
-WC tested up to:  3.7
+WC tested up to:  3.8
 
 Adicione facilmente opções de pagamento do PayPal à sua loja do WooCommerce.
 
@@ -62,7 +62,7 @@ Recomendamos a utilização de um plugin, por exemplo o “[Brazilian Market on 
 
 = Compatibilidade =
 
-Compatível à partir da versão 3.0 até a 3.7 do WooCommerce.
+Compatível à partir da versão 3.0 até a 3.8 do WooCommerce.
 
 = Instalação =
 
@@ -108,11 +108,19 @@ Caso tenha alguma dúvida ou dificuldade na utilização do plugin acesse a seç
 
 = 1.0.5 =
 * Modificado tratamentos das ações no Checkout Transparente.
+* Corrigido possível problema de webhooks para algumas instalações.
+* Atualizações de seguranças para pacotes de dependências.
+* Corrigido página de pagamento para pedido manual.
+* Removido scripts quando o método de pagamento não está ativado.
 
 == Upgrade Notice ==
 
 = 1.0.5 =
 * Modificado tratamentos das ações no Checkout Transparente.
+* Corrigido possível problema de webhooks para algumas instalações.
+* Atualizações de seguranças para pacotes de dependências.
+* Corrigido página de pagamento para pedido manual.
+* Removido scripts quando o método de pagamento não está ativado.
 
 == Screenshots ==
 
