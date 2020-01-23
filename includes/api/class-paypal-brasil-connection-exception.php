@@ -20,7 +20,7 @@ class PayPal_Brasil_Connection_Exception extends Exception {
 	public function __construct( $error_code = 0, $data = null ) {
 		$this->error_code = $error_code;
 		$this->data       = $data;
-		parent::__construct( __( 'Houve um erro de conexão com o PayPal.', 'paypal-brasil-para-woocommerce' ), $error_code );
+		parent::__construct( __( 'Houve um erro de conexão com o PayPal.', 'paypal-brasil-para-woocommerce' ), is_int( $error_code ) ? $error_code : 0 );
 	}
 
 	/**
