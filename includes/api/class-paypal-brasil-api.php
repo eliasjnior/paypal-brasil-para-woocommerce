@@ -606,7 +606,9 @@ class PayPal_Brasil_API {
 			if ( isset( $body['access_token'] ) ) {
 				$body['access_token'] = 'xxxxxxxxxxxxxxxxxxxxxxxx';
 			}
+
 			$this->gateway->log( "Resposta da requisição:\n" . json_encode( $body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . "\n" );
+			$this->gateway->log( "Resposta da requisição completa:\n" . $request['http_response']->get_response_object()->raw . "\n" );
 		}
 
 		return $request;
