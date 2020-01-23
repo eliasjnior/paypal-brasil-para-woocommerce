@@ -4,20 +4,20 @@ Source code of plugin [PayPal Brasil para WooCommerce](https://wordpress.org/plu
 
 ## Build
 
-To build you need first to install dependences with and then run build.
+To build run following commands to install dependencies, then command to build for development or production:
 
 ```
 npm install
 npm run build
 ```
 
-To build for production you can use:
+To build for production:
 
 ```
 npm run build:prod
 ```
 
-And for development with watch you can use:
+For development watcher:
 
 ```
 npm run watch
