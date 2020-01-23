@@ -80,7 +80,6 @@ export default class AdminOptionsSpb extends Vue {
     beforeMount() {
         // @ts-ignore
         const options: paypal_brasil_admin_options_spb = JSON.parse(this.$el.getAttribute('data-options'));
-        console.log('options', options);
         this.enabled = options.enabled || '';
         this.title = options.title || '';
         this.titleComplement = options.title_complement || '';

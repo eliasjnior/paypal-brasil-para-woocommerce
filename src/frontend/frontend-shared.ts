@@ -13,7 +13,6 @@ export class PaypalPayments {
      * Set global notices.
      */
     static setNotices(message) {
-        console.log('notice', message);
         jQuery('.woocommerce-notices-wrapper:first').html(message);
     }
 
