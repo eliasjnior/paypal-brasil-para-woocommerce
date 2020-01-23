@@ -62,7 +62,7 @@ Recomendamos a utilização de um plugin, por exemplo o “[Brazilian Market on 
 
 = Compatibilidade =
 
-Compatível à partir da versão 3.0 até a 3.8 do WooCommerce.
+Compatível à partir da versão 3.0 até a 3.9 do WooCommerce.
 
 = Instalação =
 

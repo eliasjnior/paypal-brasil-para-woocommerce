@@ -11,7 +11,7 @@
  * Text Domain: paypal-brasil-para-woocommerce
  * Domain Path: /languages/
  * WC requires at least: 3.0
- * WC tested up to: 3.8
+ * WC tested up to: 3.9
  * Requires PHP: 5.6
  */
 
