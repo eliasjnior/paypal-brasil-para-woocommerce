@@ -148,7 +148,9 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 
 			// Add custom submit button.
 			add_action( 'woocommerce_review_order_before_submit', array( $this, 'html_before_submit_button' ) );
+			add_action( 'woocommerce_pay_order_before_submit', array( $this, 'html_before_submit_button' ) );
 			add_action( 'woocommerce_review_order_after_submit', array( $this, 'html_after_submit_button' ) );
+			add_action( 'woocommerce_pay_order_after_submit', array( $this, 'html_after_submit_button' ) );
 		}
 
 		// If it's first load, add a instance of this.
@@ -1278,6 +1280,126 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 	}
 
 	/**
+	 * @param $order WC_Order
+	 *
+	 * @return array
+	 * @throws PayPal_Brasil_API_Exception
+	 * @throws PayPal_Brasil_Connection_Exception
+	 */
+	public function create_spb_ec_for_order( $order ) {
+		$only_digital_items = paypal_brasil_is_order_only_digital( $order );
+
+		$data = array(
+			'intent'        => 'sale',
+			'payer'         => array(
+				'payment_method' => 'paypal',
+			),
+			'transactions'  => array(
+				array(
+					'payment_options' => array(
+						'allowed_payment_method' => 'IMMEDIATE_PAY',
+					),
+					'item_list'       => array(
+						'items' => array(
+							array(
+								'name'     => sprintf( __( 'Pedido Loja %s', 'paypal-brasil-para-woocommerce' ), get_bloginfo( 'name' ) ),
+								'currency' => get_woocommerce_currency(),
+								'quantity' => 1,
+								'price'    => paypal_brasil_math_sub( $order->get_total(), $order->get_shipping_total() ),
+								'sku'      => 'order-items',
+							)
+						),
+					),
+					'amount'          => array(
+						'currency' => $order->get_currency(),
+					),
+
+				),
+			),
+			'redirect_urls' => array(
+				'return_url' => home_url(),
+				'cancel_url' => home_url(),
+			),
+		);
+
+		// Set details
+		$data['transactions'][0]['amount']['details'] = array(
+			'shipping' => paypal_brasil_money_format( $order->get_shipping_total() ),
+			'subtotal' => paypal_brasil_math_sub( $order->get_total(), $order->get_shipping_total() ),
+		);
+
+		// Set total Total
+		$data['transactions'][0]['amount']['total'] = paypal_brasil_money_format( $order->get_total() );
+
+		// Prepare address
+		$address_line_1 = array();
+		$address_line_2 = array();
+
+		if ( $order->get_shipping_address_1() ) {
+			$address_line_1[] = $order->get_shipping_address_1();
+		}
+
+		if ( $number = get_post_meta( $order->get_id(), 'shipping_number', true ) ) {
+			$address_line_1[] = $number;
+		}
+
+		if ( $neighborhood = get_post_meta( $order->get_id(), 'shipping_neighborhood', true ) ) {
+			$addres_line_2[] = $neighborhood;
+		}
+
+		if ( $order->get_shipping_address_2() ) {
+			$addres_line_2[] = $order->get_shipping_address_2();
+		}
+
+		// Prepare shipping address.
+		$shipping_address = array(
+			'recipient_name' => $order->get_formatted_shipping_full_name(),
+			'country_code'   => $order->get_shipping_country(),
+			'postal_code'    => $order->get_shipping_postcode(),
+			'line1'          => mb_substr( implode( ', ', $address_line_1 ), 0, 100 ),
+			'city'           => $order->get_shipping_city(),
+			'state'          => $order->get_shipping_state(),
+			'phone'          => $order->get_billing_phone(),
+		);
+
+		// If is anything on address line 2, add to shipping address.
+		if ( $address_line_2 ) {
+			$shipping_address['line2'] = mb_substr( implode( ', ', $address_line_2 ), 0, 100 );
+		}
+
+		// Add shipping address for non digital goods
+		if ( ! $only_digital_items ) {
+			$data['transactions'][0]['item_list']['shipping_address'] = $shipping_address;
+		}
+
+		// Set the application context
+		$data['application_context'] = array(
+			'brand_name'          => get_bloginfo( 'name' ),
+			'shipping_preference' => $only_digital_items ? 'NO_SHIPPING' : 'SET_PROVIDED_ADDRESS',
+		);
+
+		// Create the payment in API.
+		$create_payment = $this->api->create_payment( $data, array(), 'ec' );
+
+		// Get the response links.
+		$links = $this->api->parse_links( $create_payment['links'] );
+
+		// Extract EC token from response.
+		preg_match( '/(EC-\w+)/', $links['approval_url'], $ec_token );
+
+		// Separate data.
+		$data = array(
+			'pay_id'   => $create_payment['id'],
+			'ec'       => $ec_token[0],
+		);
+
+		// Store the requested data in session.
+		WC()->session->set( 'paypal_brasil_spb_data', $data );
+
+		return $data;
+	}
+
+	/**
 	 * Enqueue scripts in checkout.
 	 */
 	public function checkout_scripts() {
@@ -1310,6 +1432,7 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 			'paypal-brasil-shared',
 			'paypal_brasil_settings',
 			array(
+				'is_order_pay_page'         => is_checkout_pay_page(),
 				'nonce'                     => wp_create_nonce( 'paypal-brasil-checkout' ),
 				'is_reference_transaction'  => $this->is_reference_enabled(),
 				'current_user_id'           => get_current_user_id(),

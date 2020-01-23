@@ -599,14 +599,16 @@ class PayPal_Brasil_API {
 		$request = wp_safe_remote_request( $url, $params );
 
 		if ( is_wp_error( $request ) ) {
-			$this->gateway->log( 'Erro HTTP ao fazer a requisição.' );
+			$this->gateway->log( "Erro HTTP ao fazer a requisição.\n" );
 		} else {
 			// Only log response when $log exists.
 			$body = json_decode( wp_remote_retrieve_body( $request ), true );
 			if ( isset( $body['access_token'] ) ) {
 				$body['access_token'] = 'xxxxxxxxxxxxxxxxxxxxxxxx';
 			}
+
 			$this->gateway->log( "Resposta da requisição:\n" . json_encode( $body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . "\n" );
+			$this->gateway->log( "Resposta da requisição completa:\n" . $request['http_response']->get_response_object()->raw . "\n" );
 		}
 
 		return $request;

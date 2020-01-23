@@ -6,6 +6,12 @@ declare const paypal_brasil_spb_settings: any;
 export const paymentSpb = {
 
     create: () => {
+        // If is order pay page, return the generated EC.
+        if (paypal_brasil_settings.is_order_pay_page) {
+            return jQuery('#paypal-spb-fields [name=paypal-brasil-spb-order-pay-ec]').val()
+        }
+
+        // If is checkout, make the request.
         return new Promise((resolve, reject) => {
             PaypalPayments.makeRequest('checkout', {
                 nonce: paypal_brasil_settings.nonce,

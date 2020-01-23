@@ -8,7 +8,6 @@ export const paymentShortcut = {
     miniCart: {
 
         create: () => {
-            console.log('create');
             return new Promise((resolve, reject) => {
                 PaypalPayments.makeRequest('shortcut', {
                     nonce: paypal_brasil_settings.nonce,

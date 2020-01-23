@@ -47,15 +47,23 @@ try {
             <div class="icon-lock"></div>
             <div class="text">
 				<?php
-				$string1_br = 'Favor preencher corretamente as informações dos passos anteriores.';
+				$string1_br = 'Favor preencher corretamente as informações dos passos anteriores:';
 				$string2_br = 'Caso já tenha preenchido, <a href="#" data-action="update-checkout">clique aqui</a>.';
+				$string3_br = 'Por favor entre em contato conosco. Há informações inválidas no pedido:';
 				$string1_us = 'Please fill correctly the previously asked information.';
 				$string2_us = 'If they are already filled,  <a href="#" data-action="update-checkout">click here</a>.';
-				echo sprintf( '<p>%s</p>', get_woocommerce_currency() === 'BRL' ? $string1_br : $string1_us );
-				echo sprintf( '<p>%s</p>', get_woocommerce_currency() === 'BRL' ? $string2_br : $string2_us );
+				$string3_us = 'Please contact us. There are invalid information on order:';
+				if ( is_checkout_pay_page() ) {
+					echo get_woocommerce_currency() === 'BRL' ? $string3_br : $string3_us;
+				} else {
+					echo sprintf( '<p>%s</p>', get_woocommerce_currency() === 'BRL' ? $string1_br : $string1_us );
+				}
+				echo '<div class="missing-items"></div>';
+				if ( ! is_checkout_pay_page() ) {
+					echo sprintf( '<p>%s</p>', get_woocommerce_currency() === 'BRL' ? $string2_br : $string2_us );
+				}
 				?>
             </div>
-            <ul class="missing-items"></ul>
         </div>
 	<?php endif; ?>
 </div>

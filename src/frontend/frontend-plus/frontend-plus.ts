@@ -203,6 +203,9 @@ class WC_PPP_Brasil_Checkout {
                 if (data.invalid.length !== 0) {
                     this.log('error', `There's some invalid data. Iframe will render dummy version:`);
                     this.log('data', data.invalid);
+
+                    let html = '(' + Object.values(data.invalid).join(', ') + ')';
+                    this.$overlay.find('div.missing-items').html(html);
                 }
                 this.createIframe(data);
             }
@@ -237,33 +240,6 @@ class WC_PPP_Brasil_Checkout {
                 country: wc_ppp_brasil_data.country,
                 payerEmail: data.email,
                 rememberedCards: data.remembered_cards,
-                onError: (err) => {
-                    console.log('There was an error: ', err);
-                    const message = JSON.stringify(err.cause);
-                    this.treatIframeError(message);
-                },
-                enableContinue: (data) => {
-                    console.log('enableContinue', data);
-                    this.enableSubmitButton();
-                },
-                disableContinue: (data) => {
-                    console.log('disableContinue', data);
-                    this.disableSubmitButton();
-                },
-                onLoad: () => this.hideLoading(),
-                onContinue: (rememberedCardsToken, payerId, token, term) => {
-                    const data = {
-                        payer_id: payerId,
-                        remembered_cards_token: rememberedCardsToken,
-                        term: term,
-                        token: token,
-                    };
-                    this.log('Continue allowed:', data);
-                    // Add the data in the inputs
-                    this.$inputResponse.val(JSON.stringify(data));
-                    // Submit the form
-                    this.forceSubmitForm();
-                }
             };
             if (wc_ppp_brasil_data['form_height']) {
                 settings['iframeHeight'] = wc_ppp_brasil_data['form_height'];
@@ -317,9 +293,50 @@ class WC_PPP_Brasil_Checkout {
             const message = JSON.parse(event.data);
             this.log('info', 'Received a message:');
             this.log('data', message);
+
+            // Check if is iframe error handling or is just an action.
+            if (typeof message['cause'] !== 'undefined') {
+                this.log('error', 'This message is an iframe error!');
+                this.treatIframeError(message);
+            } else {
+                this.treatIframeAction(message);
+            }
         } catch (err) {
         }
     };
+
+    treatIframeAction(message: any) {
+        switch (message['action']) {
+            // When call to enable the continue button.
+            case 'enableContinueButton':
+                this.enableSubmitButton();
+                break;
+            // When call to disable continue button.
+            case 'disableContinueButton':
+                this.disableSubmitButton();
+                break;
+            // When the iframe was submitted and we have the payment info.
+            case 'checkout':
+                const data = {
+                    payer_id: message['result']['payer']['payer_info']['payer_id'],
+                    remembered_cards_token: message['result']['rememberedCards'],
+                };
+                this.log('info', ['Continue allowed:', data]);
+                this.log('info', 'Success message received from iframe:');
+                // Add the data in the inputs
+                this.$inputResponse.val(JSON.stringify(data));
+                // Submit the form
+                this.forceSubmitForm();
+                break;
+            // In case we get some error.
+            case 'onError':
+                this.$inputResponse.val('');
+                break;
+            case 'loaded':
+                this.hideLoading();
+                break;
+        }
+    }
 
     /**
      * Treat the iframe errors.

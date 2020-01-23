@@ -13,7 +13,6 @@ export class PaypalPayments {
      * Set global notices.
      */
     static setNotices(message) {
-        console.log('notice', message);
         jQuery('.woocommerce-notices-wrapper:first').html(message);
     }
 
@@ -78,7 +77,7 @@ export class PaypalPayments {
      * Submit form.
      */
     static submitForm() {
-        jQuery('form.woocommerce-checkout').submit();
+        jQuery('form.woocommerce-checkout, form#order_review').submit();
     }
 
     /**

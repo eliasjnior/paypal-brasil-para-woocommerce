@@ -15,38 +15,44 @@ if ( is_user_logged_in() ) {
 }
 $has_billing_agreement   = false;
 $billing_agreement_error = false;
+
+$order = get_query_var( 'order-pay' ) ? wc_get_order( get_query_var( 'order-pay' ) ) : null;
+$total = $order ? $order->get_total() : WC()->cart->get_totals()['total'];
+
 ?>
 <ul class="paypal-brasil-billing-agreement-options">
     <!-- USER DEFAULT BILLING AGREEMENT -->
 	<?php
 	try {
-		$calculated_financing = $this->api->get_calculate_financing( $user_billing_agreement_id, WC()->cart->get_totals()['total'] );
-		?>
-        <li>
-            <label>
-                <input type="radio"
-                       class="paypal-brasil-billing-agreement-option-radio"
-                       name="paypal_brasil_billing_agreement"
-                       value="<?php echo esc_attr( $user_billing_agreement_id ); ?>"
-                       checked="checked">
-				<?php echo sprintf( __( 'Conta PayPal vinculada: %s', 'paypal-brasil' ), '<strong>' . $user_billing_agreement_payer_info['email'] . '</strong>' ); ?>
+		if ( $user_billing_agreement_id ):
+			$calculated_financing = $this->api->get_calculate_financing( $user_billing_agreement_id, $total );
+			?>
+            <li>
+                <label>
+                    <input type="radio"
+                           class="paypal-brasil-billing-agreement-option-radio"
+                           name="paypal_brasil_billing_agreement"
+                           value="<?php echo esc_attr( $user_billing_agreement_id ); ?>"
+                           checked="checked">
+					<?php echo sprintf( __( 'Conta PayPal vinculada: %s', 'paypal-brasil' ), '<strong>' . $user_billing_agreement_payer_info['email'] . '</strong>' ); ?>
 
-                <select class="paypal-brasil-billing-agreement-financing"
-                        name="paypal_brasil_billing_agreement_installment">
-					<?php foreach ( $calculated_financing['financing_options'][0]['qualifying_financing_options'] as $financing ): ?>
-                        <option value="<?php echo esc_attr( json_encode( paypal_brasil_prepare_installment_option( $financing ), JSON_UNESCAPED_SLASHES ) ); ?>">
-							<?php echo sprintf( '%dx de %s (Total: %s)', $financing['credit_financing']['term'], wc_price( $financing['monthly_payment']['value'] ), wc_price( $financing['total_cost']['value'] ) ); ?>
-							<?php if ( isset( $financing['discount_amount'] ) && $discount = floatval( $financing['discount_amount']['value'] ) ): ?>
-								<?php echo sprintf( __( ' - Desconto de %s %%(-%s)', 'paypal-brasil' ), floatval( $financing['discount_percentage'] ), wc_price( $discount ) ); ?>
-							<?php endif; ?>
-                        </option>
-					<?php endforeach; ?>
-                </select>
+                    <select class="paypal-brasil-billing-agreement-financing"
+                            name="paypal_brasil_billing_agreement_installment">
+						<?php foreach ( $calculated_financing['financing_options'][0]['qualifying_financing_options'] as $financing ): ?>
+                            <option value="<?php echo esc_attr( json_encode( paypal_brasil_prepare_installment_option( $financing ), JSON_UNESCAPED_SLASHES ) ); ?>">
+								<?php echo sprintf( '%dx de %s (Total: %s)', $financing['credit_financing']['term'], wc_price( $financing['monthly_payment']['value'] ), wc_price( $financing['total_cost']['value'] ) ); ?>
+								<?php if ( isset( $financing['discount_amount'] ) && $discount = floatval( $financing['discount_amount']['value'] ) ): ?>
+									<?php echo sprintf( __( ' - Desconto de %s %%(-%s)', 'paypal-brasil' ), floatval( $financing['discount_percentage'] ), wc_price( $discount ) ); ?>
+								<?php endif; ?>
+                            </option>
+						<?php endforeach; ?>
+                    </select>
 
-            </label>
-        </li>
-		<?php
-		$has_billing_agreement = true;
+                </label>
+            </li>
+			<?php
+			$has_billing_agreement = true;
+		endif;
 	} catch ( PayPal_Brasil_API_Exception $ex ) {
 		$billing_agreement_error = true;
 		if ( $user_billing_agreement_id ) {
@@ -60,7 +66,7 @@ $billing_agreement_error = false;
 
 	<?php if ( ! $user_billing_agreement_id || $billing_agreement_error ): ?>
         <img src="<?php echo esc_url( plugins_url( 'assets/images/saiba-mais.png', PAYPAL_PAYMENTS_MAIN_FILE ) ); ?>"
-             style="max-width: 100%; max-height: 100%; float: none;">
+             style="max-width: 500px; margin: 0 auto; max-height: 100%; float: none;">
         <input type="radio"
                class="paypal-brasil-billing-agreement-option-radio"
                style="display: none;"
