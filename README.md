@@ -1,4 +1,6 @@
-# PayPal Payments
+# PayPal Brasil para WooCommerce
+
+Source code of plugin [PayPal Brasil para WooCommerce](https://wordpress.org/plugins/paypal-brasil-para-woocommerce/) available on official plugins repository for WordPress.
 
 ## Build
 
