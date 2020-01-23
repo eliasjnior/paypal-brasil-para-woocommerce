@@ -112,6 +112,7 @@ Caso tenha alguma dúvida ou dificuldade na utilização do plugin acesse a seç
 * Atualizações de seguranças para pacotes de dependências.
 * Corrigido página de pagamento para pedido manual.
 * Removido scripts quando o método de pagamento não está ativado.
+* Corrigido problema com produtos virtuais.
 
 == Upgrade Notice ==
 
@@ -121,6 +122,7 @@ Caso tenha alguma dúvida ou dificuldade na utilização do plugin acesse a seç
 * Atualizações de seguranças para pacotes de dependências.
 * Corrigido página de pagamento para pedido manual.
 * Removido scripts quando o método de pagamento não está ativado.
+* Corrigido problema com produtos virtuais.
 
 == Screenshots ==
 
