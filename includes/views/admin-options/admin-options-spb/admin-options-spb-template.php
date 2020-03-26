@@ -1,5 +1,19 @@
 <div class="admin-options-container">
 
+	<?php
+	$partner_client_id     = get_option( $this->get_option_key() . '_partner_client_id' );
+	$partner_client_secret = get_option( $this->get_option_key() . '_partner_client_id' );
+	$errors                = get_settings_errors( 'paypal-partner' );
+	?>
+
+	<?php if ( $partner_client_id && $partner_client_secret ): ?>
+        <div id="message" class="notice notice-success inline">
+            <p>
+                <strong><?php _e( 'Você conectou com sua conta PayPal. Suas credenciais foram preenchidas automaticamente. Revise as configurações e salve para finalizar.', 'paypal-brasil-para-woocommerce' ); ?></strong>
+            </p>
+        </div>
+	<?php endif; ?>
+
 	<?php if ( ( empty( $_POST ) && $this->enabled === 'yes' ) || ( isset( $_POST ) && $this->get_updated_values()['enabled'] === 'yes' ) ): ?>
 
         <!-- CREDENTIALS ERROR -->
@@ -48,6 +62,12 @@
 
 	<?php echo wp_kses_post( wpautop( $this->get_method_description() ) ); ?>
 
+    <a target="_blank"
+       data-paypal-popup-close="onPayPalConnectClosed"
+       data-paypal-onboard-complete="onPayPalConnectFinish"
+       href="<?php echo esc_url( paypal_brasil_partners_url( $this->partner_id, $this->partner_client_id, $this->id ) ); ?>"
+       data-paypal-button="PPLtBlue"><?php _e( 'Conectar com PayPal', 'paypal-brasil-para-woocommerce' ); ?></a>
+
     <table class="form-table">
 
         <tbody>
@@ -91,7 +111,8 @@
                            id="<?php echo esc_attr( $this->get_field_key( 'title_complement' ) ); ?>"
                            v-model="titleComplement"
                            placeholder="Exemplo: (Parcelado em até 12x)">
-                    <p class="description">Será exibido no checkout: PayPal {{titleComplement ? '(' + titleComplement + ')':
+                    <p class="description">Será exibido no checkout: PayPal {{titleComplement ? '(' + titleComplement +
+                        ')':
                         ''}}</p>
                 </fieldset>
             </td>
@@ -122,7 +143,7 @@
 
         <!-- CLIENT ID LIVE -->
 
-        <tr valign="top" :class="{hidden: !isLive()}">
+        <tr valign="top" :class="{hidden: !isLive(), highlight: partnerReady}">
             <th scope="row" class="titledesc">
                 <label for="<?php echo esc_attr( $this->get_field_key( 'client_live' ) ); ?>">Client ID
                     (produção)</label>
@@ -145,7 +166,7 @@
 
         <!-- CLIENT ID SANDBOX -->
 
-        <tr valign="top" :class="{hidden: isLive()}">
+        <tr valign="top" :class="{hidden: isLive(), highlight: partnerReady}">
             <th scope="row" class="titledesc">
                 <label for="<?php echo esc_attr( $this->get_field_key( 'client_sandbox' ) ); ?>">Client ID
                     (sandbox) </label>
@@ -169,7 +190,7 @@
 
         <!-- SECRET LIVE -->
 
-        <tr valign="top" :class="{hidden: !isLive()}">
+        <tr valign="top" :class="{hidden: !isLive(), highlight: partnerReady}">
             <th scope="row" class="titledesc">
                 <label for="<?php echo esc_attr( $this->get_field_key( 'secret_live' ) ); ?>">Secret (produção)</label>
             </th>
@@ -191,7 +212,7 @@
 
         <!-- SECRET SANDBOX -->
 
-        <tr valign="top" :class="{hidden: isLive()}">
+        <tr valign="top" :class="{hidden: isLive(), highlight: partnerReady}">
             <th scope="row" class="titledesc">
                 <label for="<?php echo esc_attr( $this->get_field_key( 'secret_sandbox' ) ); ?>">Secret
                     (sandbox)</label>

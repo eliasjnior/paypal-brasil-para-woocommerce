@@ -14,6 +14,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @property string secret
  * @property string partner_attribution_id
  * @property PayPal_Brasil_Gateway gateway
+ * @property string partner_id
+ * @property string partner_client_id
  */
 class PayPal_Brasil_API {
 
@@ -543,6 +545,63 @@ class PayPal_Brasil_API {
 		}
 
 		throw new PayPal_Brasil_API_Exception( $code, __( 'Não foi possível fazer o reembolso.', 'paypal-brasil-para-woocommerce' ), $response_body );
+	}
+
+	public function oauth_partner( $shared_id, $auth_code, $nonce ) {
+		$url = $this->get_base_url() . '/oauth2/token';
+
+		$headers = array(
+			'Authorization'                 => 'Basic ' . base64_encode( $shared_id . ':' ),
+			'Content-Type'                  => 'application/x-www-form-urlencoded',
+			'PayPal-Partner-Attribution-Id' => $this->bn_code['default'],
+		);
+
+		$data = "grant_type=authorization_code&code={$auth_code}&code_verifier={$nonce}";
+
+		$response      = $this->do_request( $url, 'POST', $data, $headers );
+		$response_body = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		// Check if is WP_Error
+		if ( is_wp_error( $response ) ) {
+			throw new PayPal_Brasil_Connection_Exception( $response->get_error_code(), $response->errors );
+		}
+
+		$code = wp_remote_retrieve_response_code( $response );
+
+		// Check if response was ok.
+		if ( $code === 200 ) {
+			return $response_body['access_token'];
+		}
+
+		throw new PayPal_Brasil_API_Exception( $code, __( 'Não foi possível obter o access token do PayPal Partners.', 'paypal-brasil-para-woocommerce' ), $response_body );
+	}
+
+	public function get_credentials( $access_token ) {
+		$url = $this->get_base_url() . '/customer/partners/' . $this->gateway->partner_id . '/merchant-integrations/credentials/';
+
+		// Body is default empty for full refund.
+		$headers = array(
+			'Authorization'                 => 'Bearer ' . $access_token,
+			'PayPal-Partner-Attribution-Id' => $this->bn_code['default'],
+		);
+
+		// Get response.
+		$response      = $this->do_request( $url, 'GET', null, $headers );
+		$response_body = json_decode( wp_remote_retrieve_body( $response ), true );
+
+		// Check if is WP_Error
+		if ( is_wp_error( $response ) ) {
+			throw new PayPal_Brasil_Connection_Exception( $response->get_error_code(), $response->errors );
+		}
+
+		$code = wp_remote_retrieve_response_code( $response );
+
+		// Check if response was created.
+		if ( $code === 200 ) {
+			return $response_body;
+		}
+
+		throw new PayPal_Brasil_API_Exception( $code, __( 'Não foi possível obter as credenciais pelo PayPal Partners.', 'paypal-brasil-para-woocommerce' ), $response_body );
 	}
 
 	/**

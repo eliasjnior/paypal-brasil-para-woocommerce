@@ -318,3 +318,104 @@ function paypal_brasil_money_format( $value, $precision = 2 ) {
 function paypal_brasil_unique_id() {
 	return rand( 1, 10000 );
 }
+
+/**
+ * Generate partners URL
+ */
+function paypal_brasil_partners_url( $partner_id, $partner_client_id, $gateway ) {
+	$url_regex = "/((https?:\/\/localhost)|(https?:\/\/.+\.localhost[^.]))/";
+
+	// Mai
+	$settings_url = admin_url( 'admin.php' );
+
+	// Override with a fake URL if is on localhost.
+	if ( preg_match( $url_regex, $settings_url ) ) {
+		$settings_url = 'https://paypal.com.br';
+	}
+
+	$nonce = bin2hex( random_bytes( 50 ) );
+
+	$return_url = urlencode( add_query_arg( array(
+		'page'            => 'wc-settings',
+		'tab'             => 'checkout',
+		'section'         => 'paypal-brasil-spb-gateway',
+		'paypal-partners' => $gateway,
+		'paypal-nonce'    => $nonce,
+	), $settings_url ) );
+
+	$showPermissions = false;
+
+	return "https://www.paypal.com/BR/merchantsignup/partner/onboardingentry?showPermissions={$showPermissions}&channelId=partner&partnerId={$partner_id}&productIntentId=addipmt&integrationType=FO&features=PAYMENT,REFUND&partnerClientId={$partner_client_id}&returnToPartnerUrl={$return_url}&displayMode=minibrowser&sellerNonce={$nonce}";
+}
+
+add_action( 'admin_init', 'teste_func' );
+
+function teste_func() {
+	// Check if is on admin.
+	if ( ! is_admin() ) {
+		return;
+	}
+
+	// Check if is requesting PayPal Partners
+	if ( isset( $_GET['paypal-partners'] ) && $gateway_name = sanitize_text_field( $_GET['paypal-partners'] ) ) {
+
+		// Check the cookie
+		$cookies = array(
+			'paypal-partners-shared-id',
+			'paypal-partners-auth-code',
+		);
+
+		$all_cookies = true;
+
+		foreach ( $cookies as $cookie ) {
+			if ( ! isset( $_COOKIE[ $cookie ] ) || ! $_COOKIE[ $cookie ] ) {
+				$all_cookies = false;
+				break;
+			}
+		}
+
+		// Return if is missing cookie.
+		if ( ! $all_cookies ) {
+			return;
+		}
+
+		$shared_id = $_COOKIE[ $cookies[0] ];
+		$auth_code = $_COOKIE[ $cookies[1] ];
+		$nonce     = $_GET['paypal-nonce'] ?? '';
+		$gateway   = $gateway_name === 'paypal-brasil-spb-gateway' ? new PayPal_Brasil_SPB_Gateway() : null;
+
+		if ( ! $gateway ) {
+			return;
+		}
+
+		$api = new PayPal_Brasil_API( null, null, 'live', $gateway );
+
+		$access_token = $api->oauth_partner( $shared_id, $auth_code, $nonce );
+		$credentials  = $api->get_credentials( $access_token );
+
+		// Redirect to the URL without the partners.
+		$redirect_url = remove_query_arg( array(
+			'paypal-partners',
+			'merchantId',
+			'merchantIdInPayPal',
+			'permissionsGranted',
+			'consentStatus',
+			'productIntentId',
+			'productIntentID',
+			'isEmailConfirmed',
+			'accountStatus',
+		) );
+
+		$redirect_url = add_query_arg( 'partner-updated', true, $redirect_url, '/' );
+
+		update_option( $gateway->get_option_key() . '_partner_client_id', $credentials['client_id'] );
+		update_option( $gateway->get_option_key() . '_partner_client_secret', $credentials['client_secret'] );
+
+		foreach ( $cookies as $cookie ) {
+			setcookie( $cookie, '', time() - 3600 );
+		}
+
+		wp_redirect( $redirect_url );
+		exit;
+	}
+}

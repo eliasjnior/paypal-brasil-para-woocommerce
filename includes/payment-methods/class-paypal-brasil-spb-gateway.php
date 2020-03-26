@@ -46,6 +46,10 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 		$this->init_form_fields();
 		$this->init_settings();
 
+		// Partner
+		$this->partner_id        = 'NDV8KK6B53FTE';
+		$this->partner_client_id = 'AfP7nMFLDWCjbHTYx2Oa-MOCKYZBYdkC9UykJY8pnmNGH1t_mwPFHMVpFmAwwp-Hm1BtD9RyI1QcI4jo';
+
 		// Get available options.
 		$this->enabled          = $this->get_option( 'enabled' );
 		$this->title            = __( 'PayPal Brasil - Carteira Digital', 'paypal-brasil-para-woocommerce' );
@@ -361,6 +365,9 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 	}
 
 	public function before_process_admin_options() {
+		// Clear Partner
+		$this->clear_partner();
+
 		// Check first if is enabled
 		$enabled = $this->get_field_value( 'enabled', $this->form_fields['enabled'] );
 		if ( $enabled !== 'yes' ) {
@@ -378,6 +385,11 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 
 		// create webhooks
 		$this->create_webhooks();
+	}
+
+	private function clear_partner() {
+		update_option( $this->get_option_key() . '_partner_client_id', '' );
+		update_option( $this->get_option_key() . '_partner_client_secret', '' );
 	}
 
 	/**
@@ -1162,17 +1174,21 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 	}
 
 	private function get_fields_values() {
+		$partner_client_id     = get_option( $this->get_option_key() . '_partner_client_id' );
+		$partner_client_secret = get_option( $this->get_option_key() . '_partner_client_secret' );
+
 		return array(
 			'enabled'              => $this->enabled,
 			'shortcut_enabled'     => $this->shortcut_enabled,
 			'reference_enabled'    => $this->reference_enabled,
 			'mode'                 => $this->mode,
+			'partner_ready'        => $partner_client_id && $partner_client_secret,
 			'client'               => array(
-				'live'    => $this->client_live,
+				'live'    => $partner_client_id ? $partner_client_id : $this->client_live,
 				'sandbox' => $this->client_sandbox,
 			),
 			'secret'               => array(
-				'live'    => $this->secret_live,
+				'live'    => $partner_client_secret ? $partner_client_secret : $this->secret_live,
 				'sandbox' => $this->secret_sandbox,
 			),
 			'button'               => array(
@@ -1210,6 +1226,7 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 
 			// Enqueue admin options and localize settings.
 			wp_enqueue_script( $this->id . '_script', plugins_url( 'assets/dist/js/admin-options-spb.js', PAYPAL_PAYMENTS_MAIN_FILE ), array(), PAYPAL_PAYMENTS_VERSION, true );
+
 			wp_localize_script( $this->id . '_script', 'paypal_brasil_admin_options_spb', array(
 				'template'             => $this->get_admin_options_template(),
 				'enabled'              => $this->enabled,
@@ -1389,8 +1406,8 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 
 		// Separate data.
 		$data = array(
-			'pay_id'   => $create_payment['id'],
-			'ec'       => $ec_token[0],
+			'pay_id' => $create_payment['id'],
+			'ec'     => $ec_token[0],
 		);
 
 		// Store the requested data in session.

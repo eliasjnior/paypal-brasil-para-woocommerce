@@ -11,6 +11,7 @@ declare const paypal_brasil_admin_options_spb: {
     title: string,
     title_complement: string,
     mode: string,
+    partner_ready: string,
     client: {
         live: string,
         sandbox: string,
@@ -44,6 +45,7 @@ export default class AdminOptionsSpb extends Vue {
     title = '';
     titleComplement = '';
     mode = '';
+    partnerReady = false;
     client = {live: '', sandbox: ''};
     secret = {live: '', sandbox: ''};
     button = {format: '', color: ''};
@@ -66,6 +68,8 @@ export default class AdminOptionsSpb extends Vue {
         success: false,
     };
 
+    partnersFinished = false;
+
     constructor() {
         super();
 
@@ -84,6 +88,7 @@ export default class AdminOptionsSpb extends Vue {
         this.title = options.title || '';
         this.titleComplement = options.title_complement || '';
         this.mode = options.mode || 'live';
+        this.partnerReady = options.partner_ready || false;
         this.client = {
             live: options.client.live || '',
             sandbox: options.client.sandbox || '',
@@ -105,6 +110,42 @@ export default class AdminOptionsSpb extends Vue {
             enable_signup_and_login_from_checkout: options.woocommerce_settings.enable_signup_and_login_from_checkout,
             enable_guest_checkout: options.woocommerce_settings.enable_guest_checkout,
         }
+    }
+
+    mounted() {
+        (function (d, s, id) {
+            var js, ref = d.getElementsByTagName(s)[0];
+            if (!d.getElementById(id)) {
+                js = d.createElement(s);
+                js.id = id;
+                js.async = true;
+                js.src = "https://www.paypal.com/webapps/merchantboarding/js/lib/lightbox/partner.js";
+                ref.parentNode.insertBefore(js, ref);
+            }
+        }(document, "script", "paypal-js"));
+
+        window['onPayPalConnectClosed'] = () => {
+            if (!this.partnersFinished) {
+                alert('Você cancelou a conexão com PayPal');
+            }
+        };
+
+        window['onPayPalConnectFinish'] = (authCode, sharedId) => {
+            console.log('onPayPalConnectFinish', authCode, sharedId);
+            this.setCookie('paypal-partners-auth-code', authCode);
+            this.setCookie('paypal-partners-shared-id', sharedId);
+            this.partnersFinished = true
+        };
+    }
+
+    private setCookie(name, value, minutes = 60) {
+        let expires = "";
+        if (minutes) {
+            const date = new Date();
+            date.setTime(date.getTime() + (minutes * 60 * 1000));
+            expires = "; expires=" + date.toUTCString();
+        }
+        document.cookie = name + "=" + (value || "") + expires + "; path=/";
     }
 
     isLive() {

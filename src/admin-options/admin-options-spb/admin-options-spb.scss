@@ -1,5 +1,27 @@
 .admin-options-container {
 
+  .highlight {
+    background-color: #1b9ddb;
+
+    label,
+    .description {
+      color: #fff;
+
+      a {
+        color: darken(#fff, 5%);
+
+      }
+    }
+
+    th {
+      padding-left: 10px;
+    }
+
+    & + .highlight {
+      border-top: 1px solid darken(#1b9ddb, 10%);
+    }
+  }
+
   .banner {
     width: 100%;
     max-width: 720px;
