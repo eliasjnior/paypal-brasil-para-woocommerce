@@ -77,7 +77,7 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 		), 20 );
 
 		// Enqueue scripts.
-		add_action( 'wp_enqueue_scripts', array( $this, 'checkout_scripts' ) );
+		add_action( 'wp_enqueue_scripts', array( $this, 'checkout_scripts' ), 20 );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_scripts' ) );
 	}
 
@@ -913,9 +913,19 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 
 		// Just load this script in checkout and if isn't in order-receive.
 		if ( is_checkout() && ! get_query_var( 'order-received' ) ) {
+
+			// Remove old plugin scripts
+			wp_deregister_script( 'pretty-web-console' );
+			wp_deregister_script( 'ppp-script' );
+			wp_deregister_script( 'wc-ppp-brasil-script' );
+			wp_deregister_style( 'wc-ppp-brasil-style' );
+
+			// Add pretty web console if is debugging
 			if ( 'yes' === $this->debug ) {
 				wp_enqueue_script( 'pretty-web-console', plugins_url( 'assets/js/libs/pretty-web-console.lib.js', PAYPAL_PAYMENTS_MAIN_FILE ), array(), '0.10.1', true );
 			}
+
+			// Enqueue necessary scripts
 			wp_enqueue_script( 'ppp-script', '//www.paypalobjects.com/webstatic/ppplusdcc/ppplusdcc.min.js', array(), PAYPAL_PAYMENTS_VERSION, true );
 			wp_localize_script( 'ppp-script', 'wc_ppp_brasil_data', array(
 				'id'                => $this->id,
@@ -930,8 +940,8 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 				),
 				'debug_mode'        => 'yes' === $this->debug,
 			) );
-			wp_enqueue_script( 'wc-ppp-brasil-script', plugins_url( 'assets/dist/js/frontend-plus.js', PAYPAL_PAYMENTS_MAIN_FILE ), array( 'jquery' ), PAYPAL_PAYMENTS_VERSION, true );
-			wp_enqueue_style( 'wc-ppp-brasil-style', plugins_url( 'assets/dist/css/frontend-plus.css', PAYPAL_PAYMENTS_MAIN_FILE ), array(), PAYPAL_PAYMENTS_VERSION, 'all' );
+			wp_enqueue_script( $this->id . '_script', plugins_url( 'assets/dist/js/frontend-plus.js', PAYPAL_PAYMENTS_MAIN_FILE ), array( 'jquery' ), PAYPAL_PAYMENTS_VERSION, true );
+			wp_enqueue_style( $this->id . '_stylep_enZ', plugins_url( 'assets/dist/css/frontend-plus.css', PAYPAL_PAYMENTS_MAIN_FILE ), array(), PAYPAL_PAYMENTS_VERSION, 'all' );
 		}
 	}
 
