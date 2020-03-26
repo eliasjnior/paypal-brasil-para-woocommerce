@@ -931,17 +931,17 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 				'id'                => $this->id,
 				'order_pay'         => ! ! get_query_var( 'order-pay' ),
 				'mode'              => $this->mode === 'sandbox' ? 'sandbox' : 'live',
-				'form_height'       => $this->get_form_height(),
+				'form_height'       => apply_filters( 'paypal_brasil_plus_height', $this->get_form_height() ),
 				'show_payer_tax_id' => paypal_brasil_needs_cpf(),
-				'language'          => get_woocommerce_currency() === 'BRL' ? 'pt_BR' : 'en_US',
-				'country'           => $this->get_woocommerce_country(),
+				'language'          => apply_filters( 'paypal_brasil_plus_language', get_woocommerce_currency() === 'BRL' ? 'pt_BR' : 'en_US' ),
+				'country'           => apply_filters( 'paypal_brasil_plus_country', $this->get_woocommerce_country() ),
 				'messages'          => array(
 					'check_entry' => __( 'Verifique os dados informados e tente novamente.', 'paypal-brasil-para-woocommerce' ),
 				),
 				'debug_mode'        => 'yes' === $this->debug,
 			) );
 			wp_enqueue_script( $this->id . '_script', plugins_url( 'assets/dist/js/frontend-plus.js', PAYPAL_PAYMENTS_MAIN_FILE ), array( 'jquery' ), PAYPAL_PAYMENTS_VERSION, true );
-			wp_enqueue_style( $this->id . '_stylep_enZ', plugins_url( 'assets/dist/css/frontend-plus.css', PAYPAL_PAYMENTS_MAIN_FILE ), array(), PAYPAL_PAYMENTS_VERSION, 'all' );
+			wp_enqueue_style( $this->id . '_style', plugins_url( 'assets/dist/css/frontend-plus.css', PAYPAL_PAYMENTS_MAIN_FILE ), array(), PAYPAL_PAYMENTS_VERSION, 'all' );
 		}
 	}
 
