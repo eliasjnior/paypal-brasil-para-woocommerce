@@ -117,12 +117,14 @@ Caso tenha alguma dúvida ou dificuldade na utilização do plugin acesse a seç
 = 1.0.6 =
 * Corrigido alguns problemas com webhooks.
 * Corrigido conflito com o plugin Checkout Transparente do PayPal
+* Corrigido problema de estilização na Carteira Digital.
 
 == Upgrade Notice ==
 
 = 1.0.6 =
 * Corrigido alguns problemas com webhooks.
 * Corrigido conflito com o plugin Checkout Transparente do PayPal
+* Corrigido problema de estilização na Carteira Digital.
 
 == Screenshots ==
 
