@@ -104,15 +104,16 @@ if ( ! class_exists( 'PayPal_Brasil_Webhooks_Handler' ) ) {
 			}
 
 			// Check if is partial refund.
-			$partial_refund = wc_format_decimal( $order->get_total() - $order->get_total_refunded() ) !== paypal_brasil_money_format( $event['resource']['amount']['total'] );
-
-			// Check if is total refund
-			if ( ! $partial_refund ) {
-				$order->update_status( 'refunded', __( 'PayPal: A transação foi reembolsada por completo.', 'paypal-brasil-para-woocommerce' ) );
-			}
+			$partial_refund = paypal_brasil_money_format( $order->get_total() - $order->get_total_refunded() ) !== paypal_brasil_money_format( $event['resource']['amount']['total'] );
 
 			// Check if the current status isn't refunded.
 			if ( ! in_array( $order->get_status(), array( 'refunded' ), true ) ) {
+				// Check if is total refund
+				if ( ! $partial_refund ) {
+					$order->update_status( 'refunded', __( 'PayPal: A transação foi reembolsada por completo.', 'paypal-brasil-para-woocommerce' ) );
+				}
+
+				// Create the refund.
 				$refund = wc_create_refund( array(
 					'amount'         => wc_format_decimal( $event['resource']['amount']['total'] ),
 					'reason'         => $partial_refund ? __( 'PayPal: transação parcialmente reembolsada.', 'paypal-brasil-para-woocommerce' ) : __( 'PayPal: transação reembolsada por completo.', 'paypal-brasil-para-woocommerce' ),
