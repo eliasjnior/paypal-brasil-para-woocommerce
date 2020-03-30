@@ -83,7 +83,7 @@ if ( ! class_exists( 'PayPal_Brasil_Webhooks_Handler' ) ) {
 			if ( ! $order ) {
 				return;
 			}
-			
+
 			// Check if the current status isn't failed.
 			if ( ! in_array( $order->get_status(), array( 'failed', 'completed', 'processing' ), true ) ) {
 				$order->update_status( 'failed', __( 'PayPal: A transação foi rejeitada pela empresa de cartão ou por fraude.', 'paypal-brasil-para-woocommerce' ) );
@@ -109,7 +109,9 @@ if ( ! class_exists( 'PayPal_Brasil_Webhooks_Handler' ) ) {
 			// Check if the current status isn't refunded.
 			if ( ! in_array( $order->get_status(), array( 'refunded' ), true ) ) {
 				// Check if is total refund
-				if ( ! $partial_refund ) {
+				if ( $partial_refund ) {
+					$order->add_order_note( __( 'PayPal: A transação foi reembolsada parcialmente.', 'paypal-brasil-para-woocommerce' ) );
+				} else {
 					$order->update_status( 'refunded', __( 'PayPal: A transação foi reembolsada por completo.', 'paypal-brasil-para-woocommerce' ) );
 				}
 
