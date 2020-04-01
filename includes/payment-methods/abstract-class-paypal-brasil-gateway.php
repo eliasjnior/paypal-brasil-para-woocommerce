@@ -74,7 +74,7 @@ abstract class PayPal_Brasil_Gateway extends WC_Payment_Gateway {
 
 		try {
 			// Instance the handler.
-			$handler = new PayPal_Brasil_Webhooks_Handler( $this->id );
+			$handler = new PayPal_Brasil_Webhooks_Handler( $this->id, $this );
 
 			// Get the data.
 			$headers = array_change_key_case( getallheaders(), CASE_UPPER );
