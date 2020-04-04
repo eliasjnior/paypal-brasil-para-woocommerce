@@ -1389,8 +1389,8 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 
 		// Separate data.
 		$data = array(
-			'pay_id'   => $create_payment['id'],
-			'ec'       => $ec_token[0],
+			'pay_id' => $create_payment['id'],
+			'ec'     => $ec_token[0],
 		);
 
 		// Store the requested data in session.
@@ -1403,6 +1403,10 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 	 * Enqueue scripts in checkout.
 	 */
 	public function checkout_scripts() {
+		if ( ! $this->is_available() ) {
+			return;
+		}
+
 		if ( ! $this->is_credentials_validated() ) {
 			return;
 		}
