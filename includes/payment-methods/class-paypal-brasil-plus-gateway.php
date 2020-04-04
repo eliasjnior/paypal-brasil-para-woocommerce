@@ -275,6 +275,16 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 			$response_data  = isset( $_POST['wc-ppp-brasil-response'] ) ? json_decode( wp_unslash( $_POST['wc-ppp-brasil-response'] ), true ) : null;
 			$payer_id       = $response_data['payer_id'];
 			$remember_cards = $response_data['remembered_cards_token'];
+			// Check if there is no $response data, so iframe wasn't processed
+			if ( empty( $response_data ) ) {
+				$this->log( 'The iframe could not be intercepted to process payment.' );
+				wc_add_notice( __( 'Não foi possível finalizar o pagamento através do PayPal, por favor tente novamente. Se o erro persistir, entre em contato.', 'paypal-brasil-para-woocommerce' ), 'error' );
+				// Set refresh totals to trigger update_checkout on frontend.
+				WC()->session->set( 'refresh_totals', true );
+				do_action( 'wc_ppp_brasil_process_payment_error', 'PAYER_ID', $order_id, null );
+
+				return null;
+			}
 			// Check if the payment id
 			if ( empty( $payer_id ) ) {
 				wc_add_notice( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir entre em contato. (#67)', 'paypal-brasil-para-woocommerce' ), 'error' );
