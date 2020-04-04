@@ -277,7 +277,7 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 			$remember_cards = $response_data['remembered_cards_token'];
 			// Check if there is no $response data, so iframe wasn't processed
 			if ( empty( $response_data ) ) {
-				$this->log( 'The iframe could not be intercepted to process payment.' );
+				$this->log( "The iframe could not be intercepted to process payment.\n" );
 				wc_add_notice( __( 'Não foi possível finalizar o pagamento através do PayPal, por favor tente novamente. Se o erro persistir, entre em contato.', 'paypal-brasil-para-woocommerce' ), 'error' );
 				// Set refresh totals to trigger update_checkout on frontend.
 				WC()->session->set( 'refresh_totals', true );
