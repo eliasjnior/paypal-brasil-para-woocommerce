@@ -7,7 +7,7 @@
  * Author: PayPal
  * Author URI: https://paypal.com.br
  * Requires at least: 4.4
- * Tested up to: 5.3
+ * Tested up to: 5.4
  * Text Domain: paypal-brasil-para-woocommerce
  * Domain Path: /languages/
  * WC requires at least: 3.0
