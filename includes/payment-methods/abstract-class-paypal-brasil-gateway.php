@@ -74,7 +74,7 @@ abstract class PayPal_Brasil_Gateway extends WC_Payment_Gateway {
 
 		try {
 			// Instance the handler.
-			$handler = new PayPal_Brasil_Webhooks_Handler( $this->id );
+			$handler = new PayPal_Brasil_Webhooks_Handler( $this->id, $this );
 
 			// Get the data.
 			$headers = array_change_key_case( getallheaders(), CASE_UPPER );
@@ -186,13 +186,14 @@ abstract class PayPal_Brasil_Gateway extends WC_Payment_Gateway {
 			$base_url = 'https://example.com/';
 		}
 
-		// Return URL always with https.
-		$ensure_https = str_replace( 'http:', 'https:', add_query_arg( 'wc-api', $this->id, $base_url ) );
-
 		// Ensure trailing slash
-		$ensure_trailing_slash = rtrim( $ensure_https, '/?' );
+		$ensure_trailing_slash = rtrim( $base_url, '/' ) . '/';
 
-		return preg_replace( '/(\:[\d]+)/', '', $ensure_trailing_slash );
+		// Return URL always with https.
+		$ensure_https = str_replace( 'http:', 'https:', add_query_arg( 'wc-api', $this->id, $ensure_trailing_slash ) );
+
+		// Return without the port in URL.
+		return preg_replace( '/(\:[\d]+)/', '', $ensure_https );
 	}
 
 	public function update_credentials() {

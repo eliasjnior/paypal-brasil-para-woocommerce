@@ -77,7 +77,7 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 		), 20 );
 
 		// Enqueue scripts.
-		add_action( 'wp_enqueue_scripts', array( $this, 'checkout_scripts' ) );
+		add_action( 'wp_enqueue_scripts', array( $this, 'checkout_scripts' ), 20 );
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_scripts' ) );
 	}
 
@@ -275,6 +275,16 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 			$response_data  = isset( $_POST['wc-ppp-brasil-response'] ) ? json_decode( wp_unslash( $_POST['wc-ppp-brasil-response'] ), true ) : null;
 			$payer_id       = $response_data['payer_id'];
 			$remember_cards = $response_data['remembered_cards_token'];
+			// Check if there is no $response data, so iframe wasn't processed
+			if ( empty( $response_data ) ) {
+				$this->log( "The iframe could not be intercepted to process payment.\n" );
+				wc_add_notice( __( 'Não foi possível finalizar o pagamento através do PayPal, por favor tente novamente. Se o erro persistir, entre em contato.', 'paypal-brasil-para-woocommerce' ), 'error' );
+				// Set refresh totals to trigger update_checkout on frontend.
+				WC()->session->set( 'refresh_totals', true );
+				do_action( 'wc_ppp_brasil_process_payment_error', 'PAYER_ID', $order_id, null );
+
+				return null;
+			}
 			// Check if the payment id
 			if ( empty( $payer_id ) ) {
 				wc_add_notice( __( 'Ocorreu um erro inesperado, por favor tente novamente. Se o erro persistir entre em contato. (#67)', 'paypal-brasil-para-woocommerce' ), 'error' );
@@ -913,25 +923,35 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 
 		// Just load this script in checkout and if isn't in order-receive.
 		if ( is_checkout() && ! get_query_var( 'order-received' ) ) {
+
+			// Remove old plugin scripts
+			wp_deregister_script( 'pretty-web-console' );
+			wp_deregister_script( 'ppp-script' );
+			wp_deregister_script( 'wc-ppp-brasil-script' );
+			wp_deregister_style( 'wc-ppp-brasil-style' );
+
+			// Add pretty web console if is debugging
 			if ( 'yes' === $this->debug ) {
 				wp_enqueue_script( 'pretty-web-console', plugins_url( 'assets/js/libs/pretty-web-console.lib.js', PAYPAL_PAYMENTS_MAIN_FILE ), array(), '0.10.1', true );
 			}
+
+			// Enqueue necessary scripts
 			wp_enqueue_script( 'ppp-script', '//www.paypalobjects.com/webstatic/ppplusdcc/ppplusdcc.min.js', array(), PAYPAL_PAYMENTS_VERSION, true );
 			wp_localize_script( 'ppp-script', 'wc_ppp_brasil_data', array(
 				'id'                => $this->id,
 				'order_pay'         => ! ! get_query_var( 'order-pay' ),
 				'mode'              => $this->mode === 'sandbox' ? 'sandbox' : 'live',
-				'form_height'       => $this->get_form_height(),
+				'form_height'       => apply_filters( 'paypal_brasil_plus_height', $this->get_form_height() ),
 				'show_payer_tax_id' => paypal_brasil_needs_cpf(),
-				'language'          => get_woocommerce_currency() === 'BRL' ? 'pt_BR' : 'en_US',
-				'country'           => $this->get_woocommerce_country(),
+				'language'          => apply_filters( 'paypal_brasil_plus_language', get_woocommerce_currency() === 'BRL' ? 'pt_BR' : 'en_US' ),
+				'country'           => apply_filters( 'paypal_brasil_plus_country', $this->get_woocommerce_country() ),
 				'messages'          => array(
 					'check_entry' => __( 'Verifique os dados informados e tente novamente.', 'paypal-brasil-para-woocommerce' ),
 				),
 				'debug_mode'        => 'yes' === $this->debug,
 			) );
-			wp_enqueue_script( 'wc-ppp-brasil-script', plugins_url( 'assets/dist/js/frontend-plus.js', PAYPAL_PAYMENTS_MAIN_FILE ), array( 'jquery' ), PAYPAL_PAYMENTS_VERSION, true );
-			wp_enqueue_style( 'wc-ppp-brasil-style', plugins_url( 'assets/dist/css/frontend-plus.css', PAYPAL_PAYMENTS_MAIN_FILE ), array(), PAYPAL_PAYMENTS_VERSION, 'all' );
+			wp_enqueue_script( $this->id . '_script', plugins_url( 'assets/dist/js/frontend-plus.js', PAYPAL_PAYMENTS_MAIN_FILE ), array( 'jquery' ), PAYPAL_PAYMENTS_VERSION, true );
+			wp_enqueue_style( $this->id . '_style', plugins_url( 'assets/dist/css/frontend-plus.css', PAYPAL_PAYMENTS_MAIN_FILE ), array(), PAYPAL_PAYMENTS_VERSION, 'all' );
 		}
 	}
 

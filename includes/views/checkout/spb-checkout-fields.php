@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<?php endif; ?>
 
         <img src="<?php echo esc_url( plugins_url( 'assets/images/saiba-mais.png', PAYPAL_PAYMENTS_MAIN_FILE ) ); ?>"
-             style="max-width: 500px; margin: 0 auto; max-height: 100%; float: none;">
+             style="width: 500px; max-width: 100%; margin: 0 auto; max-height: 100%; float: none;">
 	<?php } catch ( Exception $ex ) { ?>
 		<?php wc_print_notice( __( 'Houve um erro ao criar o token de pagamento. Por favor, tente novamente.', 'paypal-brasil-para-woocommerce' ), 'error' ); ?>
 	<?php } ?>

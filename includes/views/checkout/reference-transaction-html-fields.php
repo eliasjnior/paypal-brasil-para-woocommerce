@@ -66,7 +66,7 @@ $total = $order ? $order->get_total() : WC()->cart->get_totals()['total'];
 
 	<?php if ( ! $user_billing_agreement_id || $billing_agreement_error ): ?>
         <img src="<?php echo esc_url( plugins_url( 'assets/images/saiba-mais.png', PAYPAL_PAYMENTS_MAIN_FILE ) ); ?>"
-             style="max-width: 500px; margin: 0 auto; max-height: 100%; float: none;">
+             style="width: 500px; max-width: 100%; margin: 0 auto; max-height: 100%; float: none;">
         <input type="radio"
                class="paypal-brasil-billing-agreement-option-radio"
                style="display: none;"
