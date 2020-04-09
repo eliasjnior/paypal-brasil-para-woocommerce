@@ -91,6 +91,28 @@
 
 }
 
+#paypal-brasil-support-table {
+  .table-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+
+    .button-copy {
+      margin-right: 0;
+      margin-left: auto;
+    }
+  }
+
+  .table-body {
+    display: flex;
+    align-items: center;
+  }
+
+  td:last-child {
+    width: 100%;
+  }
+}
+
 @-ms-keyframes spin {
   from {
     -ms-transform: rotate(0deg);

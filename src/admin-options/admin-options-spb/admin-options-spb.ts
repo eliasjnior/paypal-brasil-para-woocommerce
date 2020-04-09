@@ -70,6 +70,8 @@ export default class AdminOptionsSpb extends Vue {
 
     partnersFinished = false;
 
+    supportTableOpen = false;
+
     constructor() {
         super();
 
@@ -154,6 +156,10 @@ export default class AdminOptionsSpb extends Vue {
 
     isEnabled() {
         return this.enabled === '1';
+    }
+
+    toggleSupportTable() {
+        this.supportTableOpen = !this.supportTableOpen;
     }
 
     updateSettings() {

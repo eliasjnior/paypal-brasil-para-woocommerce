@@ -462,4 +462,109 @@
 
     </table>
 
+    <h2><?php _e( 'Suporte', 'paypal-brasil-para-woocommerce' ); ?></h2>
+
+    <p>Essas informações serão necessárias caso você precise abrir um ticket de suporte. Para podermos auxiliá-lo
+        melhor, clique no botão "copiar dados" e nos envie no momento da abertura do ticket.</p>
+
+	<?php
+	$report      = wc()->api->get_endpoint_data( '/wc/v3/system_status' );
+	$environment = $report['environment'];
+
+	$informations = array(
+		array(
+			'title' => __( 'PHP version', 'woocommerce' ),
+			'value' => $environment['php_version'],
+		),
+		array(
+			'title' => __( 'WordPress version', 'woocommerce' ),
+			'value' => $environment['wp_version'],
+		),
+		array(
+			'title' => __( 'WordPress address (URL)', 'woocommerce' ),
+			'value' => $environment['site_url'],
+		),
+		array(
+			'title' => __( 'Site address (URL)', 'woocommerce' ),
+			'value' => $environment['home_url'],
+		),
+		array(
+			'title' => __( 'cURL Version', 'woocommerce' ),
+			'value' => $environment['curl_version'],
+		),
+		array(
+			'title' => __( 'Log directory writable', 'woocommerce' ),
+			'value' => $environment['log_directory_writable']
+				? '<mark class="yes"><span class="dashicons dashicons-yes"></span> <code class="private">' . esc_html( $environment['log_directory'] ) . '</code></mark> '
+				: '<mark class="error"><span class="dashicons dashicons-warning"></span> ' . sprintf( esc_html__( 'To allow logging, make %1$s writable or define a custom %2$s.', 'woocommerce' ), '<code>' . esc_html( $environment['log_directory'] ) . '</code>', '<code>WC_LOG_DIR</code>' ) . '</mark>',
+		),
+		array(
+			'title' => __( 'Remote get', 'paypal-brasil-para-woocommerce' ),
+			'value' => $environment['remote_get_successful']
+				? '<mark class="yes"><span class="dashicons dashicons-yes"></span></mark>'
+				: '<mark class="error"><span class="dashicons dashicons-warning"></span> ' . sprintf( esc_html__( '%s failed. Contact your hosting provider.', 'woocommerce' ), 'wp_remote_get()' ) . ' ' . esc_html( $environment['remote_get_response'] ) . '</mark>',
+		),
+		array(
+			'title' => __( 'Remote post', 'paypal-brasil-para-woocommerce' ),
+			'value' => $environment['remote_post_successful']
+				? '<mark class="yes"><span class="dashicons dashicons-yes"></span></mark>'
+				: '<mark class="error"><span class="dashicons dashicons-warning"></span> ' . sprintf( esc_html__( '%s failed. Contact your hosting provider.', 'woocommerce' ), 'wp_remote_get()' ) . ' ' . esc_html( $environment['remote_get_response'] ) . '</mark>',
+		),
+		array(
+			'title' => __( 'fsockopen/cURL', 'paypal-brasil-para-woocommerce' ),
+			'value' => $environment['fsockopen_or_curl_enabled']
+				? '<mark class="yes"><span class="dashicons dashicons-yes"></span></mark>'
+				: '<mark class="error"><span class="dashicons dashicons-warning"></span> ' . esc_html__( 'Your server does not have fsockopen or cURL enabled - PayPal IPN and other scripts which communicate with other servers will not work. Contact your hosting provider.', 'woocommerce' ) . '</mark>',
+		),
+	);
+	?>
+
+    <table class="wc_status_table widefat" cellspacing="0" id="paypal-brasil-support-table">
+        <thead>
+        <tr>
+            <th colspan="2">
+                <div class="table-header">
+                    <h2><?php _e( 'Informações para suporte', 'paypal-brasil-para-woocommerce' ); ?></h2>
+                    <button type="button"
+                            class="button button-copy"><?php _e( 'Copiar dados', 'paypal-brasil-para-woocommerce' ); ?></button>
+                </div>
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+		<?php foreach ( $informations as $information ): ?>
+            <tr v-if="supportTableOpen">
+                <td><?php echo sprintf( '%s:', $information['title'] ); ?></td>
+                <td>
+					<?php echo esc_html( $information['value'] ); ?>
+                </td>
+            </tr>
+		<?php endforeach; ?>
+        <tr v-if="!supportTableOpen">
+            <td colspan="2">
+                <p><?php _e( 'Essas informações serão necessárias caso você precise abrir um ticket de suporte. Para podermos
+                    auxiliá-lo melhor, clique no botão "copiar dados" e nos envie no momento da abertura do ticket.', 'paypal-brasil-para-woocommerce' ); ?></p>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <div class="table-body">
+                    <button type="button"
+                            v-if="supportTableOpen"
+                            @click="toggleSupportTable"
+                            class="button">
+						<?php _e( 'Ocultar informações' ); ?>
+                    </button>
+                    <button type="button"
+                            v-if="!supportTableOpen"
+                            @click="toggleSupportTable"
+                            class="button">
+						<?php _e( 'Exibir informações' ); ?>
+                    </button>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
 </div>
