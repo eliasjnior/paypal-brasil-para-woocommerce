@@ -215,6 +215,22 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 		$order      = wc_get_order( $order_id );
 		$session    = WC()->session->get( 'wc-ppp-brasil-payment-id' );
 		$payment_id = $session['payment_id'];
+
+		// First check if is paying the same cart
+		if ( empty( get_query_var( 'order-pay' ) ) ) {
+			$current_cart_hash = $order->get_cart_hash();
+			$session_cart_hash = WC()->session->get( 'paypal_brasil-cart_hash' );
+			if ( $current_cart_hash !== $session_cart_hash ) {
+				// Add notice.
+				wc_add_notice( __( 'Identificamos uma diferença entre o valor do carrinho e o valor do pedido. Por favor refaça o processo de compra.', 'paypal-brasil-para-woocommerce' ), 'error' );
+
+				// Refresh totals in frontend.
+				WC()->session->set( 'refresh_totals', true );
+
+				return null;
+			}
+		}
+
 		// Check if is a iframe error
 		if ( isset( $_POST['wc-ppp-brasil-error'] ) && ! empty( $_POST['wc-ppp-brasil-error'] ) ) {
 			switch ( $_POST['wc-ppp-brasil-error'] ) {
@@ -833,6 +849,12 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 		}
 
 		try {
+			// Get cart hash
+			$cart_hash = WC()->cart->get_cart_hash();
+
+			// Store cart hash in session
+			WC()->session->set( 'paypal_brasil-cart_hash', $cart_hash );
+
 			// Create the payment.
 			$result = $this->api->create_payment( $payment_data );
 
