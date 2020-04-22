@@ -4,7 +4,7 @@ Contributors: [apuhlmann](https://profiles.wordpress.org/apuhlmann)
 Tags: paypal, paypal plus, woocommerce, woo commerce, checkout transparente, transparente, pagamento, gateway, paypal brasil, ecommerce, e-commerce
 Requires at least: 4.4
 Tested up to: 5.4
-Stable tag: 1.0.6
+Stable tag: 1.1
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI:  [http://www.gnu.org/licenses/gpl-2.0.html](http://www.gnu.org/licenses/gpl-2.0.html)
@@ -119,12 +119,13 @@ Caso tenha alguma dúvida ou dificuldade na utilização do plugin acesse a seç
 * Corrigido conflito com o plugin Checkout Transparente do PayPal
 * Corrigido problema de estilização na Carteira Digital.
 
+= 1.1.0 =
+* Adicionado validação nos valores do pedido do Checkout Transparente.
+
 == Upgrade Notice ==
 
-= 1.0.6 =
-* Corrigido alguns problemas com webhooks.
-* Corrigido conflito com o plugin Checkout Transparente do PayPal
-* Corrigido problema de estilização na Carteira Digital.
+= 1.1.0 =
+* Adicionado validação nos valores do pedido do Checkout Transparente.
 
 == Screenshots ==
 
