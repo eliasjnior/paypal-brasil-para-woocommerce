@@ -321,12 +321,21 @@ function paypal_brasil_unique_id() {
 
 /**
  * Generate partners URL
+ *
+ * @param $partner_id
+ * @param $partner_client_id
+ * @param $gateway
+ * @param bool $sandbox
+ *
+ * @return string
+ * @throws Exception
  */
-function paypal_brasil_partners_url( $partner_id, $partner_client_id, $gateway ) {
+function paypal_brasil_partners_url( $partner_id, $partner_client_id, $gateway, $sandbox = false ) {
 	$url_regex = "/((https?:\/\/localhost)|(https?:\/\/.+\.localhost[^.]))/";
 
 	// Mai
 	$settings_url = admin_url( 'admin.php' );
+	$settings_url = 'https://paypal.eliasjr.dev/wp-admin/admin.php';
 
 	// Override with a fake URL if is on localhost.
 	if ( preg_match( $url_regex, $settings_url ) ) {
@@ -338,19 +347,21 @@ function paypal_brasil_partners_url( $partner_id, $partner_client_id, $gateway )
 	$return_url = urlencode( add_query_arg( array(
 		'page'            => 'wc-settings',
 		'tab'             => 'checkout',
-		'section'         => 'paypal-brasil-spb-gateway',
+		'section'         => $gateway->id,
+		'mode'            => $sandbox ? 'sandbox' : 'live',
 		'paypal-partners' => $gateway,
 		'paypal-nonce'    => $nonce,
 	), $settings_url ) );
 
 	$showPermissions = false;
 
-	return "https://www.paypal.com/BR/merchantsignup/partner/onboardingentry?showPermissions={$showPermissions}&channelId=partner&partnerId={$partner_id}&productIntentId=addipmt&integrationType=FO&features=PAYMENT,REFUND&partnerClientId={$partner_client_id}&returnToPartnerUrl={$return_url}&displayMode=minibrowser&sellerNonce={$nonce}";
+	return "https://" . ( $sandbox ? 'sandbox' : 'www' ) . ".paypal.com/BR/merchantsignup/partner/onboardingentry?showPermissions={$showPermissions}&channelId=partner&partnerId={$partner_id}&productIntentId=addipmt&integrationType=FO&features=PAYMENT,REFUND&partnerClientId={$partner_client_id}&displayMode=minibrowser&sellerNonce={$nonce}";
 }
 
-add_action( 'admin_init', 'teste_func' );
-
-function teste_func() {
+/**
+ * Process PayPal Connect
+ */
+function paypal_brasil_process_connect() {
 	// Check if is on admin.
 	if ( ! is_admin() ) {
 		return;
@@ -381,14 +392,19 @@ function teste_func() {
 
 		$shared_id = $_COOKIE[ $cookies[0] ];
 		$auth_code = $_COOKIE[ $cookies[1] ];
-		$nonce     = $_GET['paypal-nonce'] ?? '';
-		$gateway   = $gateway_name === 'paypal-brasil-spb-gateway' ? new PayPal_Brasil_SPB_Gateway() : null;
+		$mode      = $_GET['mode'] ? sanitize_text_field( $_GET['mode'] ) : '';
+		$nonce     = $_GET['paypal-nonce'] ? sanitize_text_field( $_GET['paypal-nonce'] ) : '';
+		$gateway   = $gateway_name === 'paypal-brasil-spb-gateway' ? new PayPal_Brasil_SPB_Gateway() : ( $gateway_name === 'paypal-brasil-plus-gateway' ? new PayPal_Brasil_Plus_Gateway() : null );
 
 		if ( ! $gateway ) {
 			return;
 		}
 
-		$api = new PayPal_Brasil_API( null, null, 'live', $gateway );
+		if ( ! in_array( $mode, array( 'live', 'sandbox' ) ) ) {
+			return;
+		}
+
+		$api = new PayPal_Brasil_API( null, null, $mode, $gateway );
 
 		$access_token = $api->oauth_partner( $shared_id, $auth_code, $nonce );
 		$credentials  = $api->get_credentials( $access_token );
@@ -419,3 +435,5 @@ function teste_func() {
 		exit;
 	}
 }
+
+add_action( 'admin_init', 'paypal_brasil_process_connect' );

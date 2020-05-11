@@ -145,7 +145,7 @@
 				<a target="_blank"
 					 data-paypal-popup-close="onPayPalConnectClosed"
 					 data-paypal-onboard-complete="onPayPalConnectFinish"
-					 href="<?php echo esc_url( paypal_brasil_partners_url( $this->partner_id, $this->partner_client_id, $this->id ) ); ?>"
+					 href="<?php echo esc_url( paypal_brasil_partners_url( $this->partner_id, $this->partner_client_id, $this->id, true ) ); ?>"
 					 data-paypal-button="PPLtBlue"><?php _e( 'Conectar com PayPal', 'paypal-brasil-para-woocommerce' ); ?></a>
 				<p class="description">Utilize a sua conta PayPal para configurar as credenciais de API automaticamente. Caso
 					esteja utilizando o modo Sandbox, não se esqueça de acessar utilizando uma conta Sandbox do tipo empresa.</p>
