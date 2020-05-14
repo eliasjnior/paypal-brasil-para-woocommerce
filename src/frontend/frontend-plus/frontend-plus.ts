@@ -53,10 +53,8 @@ class WC_PPP_Brasil_Checkout {
         this.$form.on('submit', this.onSubmitForm);
         // Listen for change on payment method change.
         this.$form.on('change', '[name=payment_method]', this.forceUpdateCheckout);
-        // Listen for window messages (only in debug mode).
-        if (wc_ppp_brasil_data.debug_mode) {
-            window.addEventListener('message', this.messageListener, false);
-        }
+        // Add event listener.
+        window.addEventListener('message', this.messageListener, false);
         // Trigger update checkout on order pay page
         if (wc_ppp_brasil_data['order_pay']) {
             jQuery(function ($) {
