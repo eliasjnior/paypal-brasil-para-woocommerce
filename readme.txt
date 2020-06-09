@@ -9,7 +9,7 @@ Requires PHP: 5.6
 License: GPLv2 or later
 License URI:  [http://www.gnu.org/licenses/gpl-2.0.html](http://www.gnu.org/licenses/gpl-2.0.html)
 WC requires at least: 3.0
-WC tested up to:  4.0
+WC tested up to:  4.2
 
 Adicione facilmente opções de pagamento do PayPal à sua loja do WooCommerce.
 
@@ -62,7 +62,7 @@ Recomendamos a utilização de um plugin, por exemplo o “[Brazilian Market on 
 
 = Compatibilidade =
 
-Compatível à partir da versão 3.0 até a 4.0 do WooCommerce.
+Compatível à partir da versão 3.0 do WooCommerce.
 
 = Instalação =
 
@@ -122,10 +122,15 @@ Caso tenha alguma dúvida ou dificuldade na utilização do plugin acesse a seç
 = 1.1.0 =
 * Adicionado validação nos valores do pedido do Checkout Transparente.
 
+= 1.1.1 =
+* Corrigido erros no checkout.
+* Corrigido bug que duplicava botão no checkout.
+
 == Upgrade Notice ==
 
-= 1.1.0 =
-* Adicionado validação nos valores do pedido do Checkout Transparente.
+= 1.1.1 =
+* Corrigido erros no checkout.
+* Corrigido bug que duplicava botão no checkout.
 
 == Screenshots ==
 
