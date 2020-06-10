@@ -30,7 +30,7 @@
 									 || ( empty( $_POST ) && $this->reference_enabled === 'yes' && get_option( $this->get_option_key() . '_reference_transaction_validator' ) === 'no' ) ): ?>
 			<div id="message" class="error inline">
 				<p>
-					<strong><?php _e( 'Não foi possível ativar a funcionalidade "Salvar Carteira Digital" pois verificamos que a sua conta PayPal não tem permissão para utilizar este produto. Entre em contato pelo 0800-047-4482 do PayPal e solicite a sua liberação.',
+					<strong><?php _e( 'Não foi possível ativar a funcionalidade "Salvar Carteira Digital" pois verificamos que a sua conta PayPal não tem permissão para utilizar este produto. Entre em contato pelo 0800 721 6959 do PayPal e solicite a sua liberação.',
 							'paypal-brasil-para-woocommerce' ); ?></strong>
 				</p>
 			</div>

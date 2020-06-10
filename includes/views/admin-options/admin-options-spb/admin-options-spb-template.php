@@ -13,7 +13,7 @@
 		               || ( empty( $_POST ) && $this->reference_enabled === 'yes' && get_option( $this->get_option_key() . '_reference_transaction_validator' ) === 'no' ) ): ?>
             <div id="message" class="error inline">
                 <p>
-                    <strong><?php _e( 'Não foi possível ativar a funcionalidade "Salvar Carteira Digital" pois verificamos que a sua conta PayPal não tem permissão para utilizar este produto. Entre em contato pelo 0800-047-4482 do PayPal e solicite a sua liberação.', 'paypal-brasil-para-woocommerce' ); ?></strong>
+                    <strong><?php _e( 'Não foi possível ativar a funcionalidade "Salvar Carteira Digital" pois verificamos que a sua conta PayPal não tem permissão para utilizar este produto. Entre em contato pelo 0800 721 6959 do PayPal e solicite a sua liberação.', 'paypal-brasil-para-woocommerce' ); ?></strong>
                 </p>
             </div>
 		<?php endif; ?>
@@ -317,7 +317,7 @@
                     <p class="description">A conveniência de salvar a carteira digital PayPal de seu cliente em sua
                         loja. Assim ele não precisa mais se autenticar em sua conta PayPal, garantindo uma compra mais
                         rápida e segura. <b>Esta funcionalidade requer aprovação PayPal. Entre em contato pelo
-                            0800-047-4482
+                        0800 721 6959
                             e solicite a sua liberação.</b></p>
                 </fieldset>
                 <div class="reference-active-description" v-bind:class="{hidden: referenceEnabled != 'yes'}">

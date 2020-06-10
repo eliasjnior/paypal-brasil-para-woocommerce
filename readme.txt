@@ -27,7 +27,7 @@ Um pacote completo de soluções de pagamento para a sua loja. Além do Checkout
 * **PayPal no Carrinho:** a carteira digital PayPal disponível diretamente no carrinho de sua loja. O cliente pula algumas etapas do processo e efetua a compra diretamente do carrinho, oferecendo uma experiência mais ágil e segura;
 * **Salvar carteira digital\*:** ganhe agilidade salvando a carteira digital PayPal de seu cliente em seu cadastro, assim, em sua próxima compra ele não precisará mais se logar em sua conta PayPal para aprovar o pedido.
 
-*\* Esta funcionalidade requer aprovação do PayPal, entre em contato pelo 0800 047 4482 e solicite agora mesmo.*
+*\* Esta funcionalidade requer aprovação do PayPal, entre em contato pelo 0800 721 6959 e solicite agora mesmo.*
 
 = Vantagens do PayPal =
 
@@ -51,8 +51,7 @@ Já a Carteira Digital, você pode utilizar tanto com uma conta empresa quanto u
 
 Algumas das soluções PayPal requerem aprovação comercial para serem utilizadas:
 
-* **Checkout Transparente:** [clique aqui](https://www.paypal.com/br/webapps/mpp/paypal-payments-pro/woocomerce#woocommerce) e preencha o formulário;
-* **Salvar carteira digital:** entre em contato pelo 0800 047 4482 e solicite agora mesmo.
+* **Checkout Transparente & Salvar carteira digital:** entre em contato pelo 0800 721 6959 e solicite agora mesmo.
 
 = Requisitos =
 
@@ -125,12 +124,16 @@ Caso tenha alguma dúvida ou dificuldade na utilização do plugin acesse a seç
 = 1.1.1 =
 * Corrigido erros no checkout.
 * Corrigido bug que duplicava botão no checkout.
+* Adicionado mensagem de autorização para recursos do Checkout Transparente.
+* Alterado telefone de suporte.
 
 == Upgrade Notice ==
 
 = 1.1.1 =
 * Corrigido erros no checkout.
 * Corrigido bug que duplicava botão no checkout.
+* Adicionado mensagem de autorização para recursos do Checkout Transparente.
+* Alterado telefone de suporte.
 
 == Screenshots ==
 
