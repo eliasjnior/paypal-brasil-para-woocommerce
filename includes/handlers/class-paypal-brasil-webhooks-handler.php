@@ -160,7 +160,7 @@ if ( ! class_exists( 'PayPal_Brasil_Webhooks_Handler' ) ) {
 					'amount'         => wc_format_decimal( $event['resource']['amount']['total'] ),
 					'reason'         => $partial_refund ? __( 'PayPal: transação parcialmente reembolsada.', 'paypal-brasil-para-woocommerce' ) : __( 'PayPal: transação reembolsada por completo.', 'paypal-brasil-para-woocommerce' ),
 					'order_id'       => $order->get_id(),
-					'refund_payment' => true,
+					'refund_payment' => false,
 				) );
 
 				if ( is_wp_error( $refund ) ) {
@@ -201,7 +201,7 @@ if ( ! class_exists( 'PayPal_Brasil_Webhooks_Handler' ) ) {
 					'amount'         => wc_format_decimal( $order->get_total() - $order->get_total_refunded() ),
 					'reason'         => __( 'PayPal: transação revertida.', 'paypal-brasil-para-woocommerce' ),
 					'order_id'       => $order->get_id(),
-					'refund_payment' => true,
+					'refund_payment' => false,
 				) );
 
 				if ( is_wp_error( $refund ) ) {
