@@ -39,6 +39,8 @@ export default class AdminOptionsPlus extends Vue {
     invoiceIdPrefix = '';
     debugMode = '';
 
+    showAlert = true
+
     constructor() {
         super();
         this.$options.el = '#admin-options-plus';
@@ -71,6 +73,10 @@ export default class AdminOptionsPlus extends Vue {
     isEnabled() {
         return this.enabled === '1';
     }
+
+    closeAlert() {
+    	this.showAlert = false;
+		}
 
 }
 

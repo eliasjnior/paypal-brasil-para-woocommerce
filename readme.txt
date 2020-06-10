@@ -4,12 +4,12 @@ Contributors: [apuhlmann](https://profiles.wordpress.org/apuhlmann)
 Tags: paypal, paypal plus, woocommerce, woo commerce, checkout transparente, transparente, pagamento, gateway, paypal brasil, ecommerce, e-commerce
 Requires at least: 4.4
 Tested up to: 5.4
-Stable tag: 1.0.6
+Stable tag: 1.1
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI:  [http://www.gnu.org/licenses/gpl-2.0.html](http://www.gnu.org/licenses/gpl-2.0.html)
 WC requires at least: 3.0
-WC tested up to:  4.0
+WC tested up to:  4.2
 
 Adicione facilmente opções de pagamento do PayPal à sua loja do WooCommerce.
 
@@ -27,7 +27,7 @@ Um pacote completo de soluções de pagamento para a sua loja. Além do Checkout
 * **PayPal no Carrinho:** a carteira digital PayPal disponível diretamente no carrinho de sua loja. O cliente pula algumas etapas do processo e efetua a compra diretamente do carrinho, oferecendo uma experiência mais ágil e segura;
 * **Salvar carteira digital\*:** ganhe agilidade salvando a carteira digital PayPal de seu cliente em seu cadastro, assim, em sua próxima compra ele não precisará mais se logar em sua conta PayPal para aprovar o pedido.
 
-*\* Esta funcionalidade requer aprovação do PayPal, entre em contato pelo 0800 047 4482 e solicite agora mesmo.*
+*\* Esta funcionalidade requer aprovação do PayPal, entre em contato pelo 0800 721 6959 e solicite agora mesmo.*
 
 = Vantagens do PayPal =
 
@@ -51,8 +51,7 @@ Já a Carteira Digital, você pode utilizar tanto com uma conta empresa quanto u
 
 Algumas das soluções PayPal requerem aprovação comercial para serem utilizadas:
 
-* **Checkout Transparente:** [clique aqui](https://www.paypal.com/br/webapps/mpp/paypal-payments-pro/woocomerce#woocommerce) e preencha o formulário;
-* **Salvar carteira digital:** entre em contato pelo 0800 047 4482 e solicite agora mesmo.
+* **Checkout Transparente & Salvar carteira digital:** entre em contato pelo 0800 721 6959 e solicite agora mesmo.
 
 = Requisitos =
 
@@ -62,7 +61,7 @@ Recomendamos a utilização de um plugin, por exemplo o “[Brazilian Market on 
 
 = Compatibilidade =
 
-Compatível à partir da versão 3.0 até a 4.0 do WooCommerce.
+Compatível à partir da versão 3.0 do WooCommerce.
 
 = Instalação =
 
@@ -119,12 +118,22 @@ Caso tenha alguma dúvida ou dificuldade na utilização do plugin acesse a seç
 * Corrigido conflito com o plugin Checkout Transparente do PayPal
 * Corrigido problema de estilização na Carteira Digital.
 
+= 1.1.0 =
+* Adicionado validação nos valores do pedido do Checkout Transparente.
+
+= 1.1.1 =
+* Corrigido erros no checkout.
+* Corrigido bug que duplicava botão no checkout.
+* Adicionado mensagem de autorização para recursos do Checkout Transparente.
+* Alterado telefone de suporte.
+
 == Upgrade Notice ==
 
-= 1.0.6 =
-* Corrigido alguns problemas com webhooks.
-* Corrigido conflito com o plugin Checkout Transparente do PayPal
-* Corrigido problema de estilização na Carteira Digital.
+= 1.1.1 =
+* Corrigido erros no checkout.
+* Corrigido bug que duplicava botão no checkout.
+* Adicionado mensagem de autorização para recursos do Checkout Transparente.
+* Alterado telefone de suporte.
 
 == Screenshots ==
 

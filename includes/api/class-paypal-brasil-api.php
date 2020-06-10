@@ -587,8 +587,6 @@ class PayPal_Brasil_API {
 			$params['body'] = $data;
 		}
 
-//		$this->gateway->log( "Request params:\n" . print_r( $params, true ) );
-
 		// Only log response when $log exists.
 		if ( isset( $params['body'] ) ) {
 			$this->gateway->log( "Fazendo requisição ({$method}) para {$url}:\n" . $data . "\n" );
@@ -607,8 +605,12 @@ class PayPal_Brasil_API {
 				$body['access_token'] = 'xxxxxxxxxxxxxxxxxxxxxxxx';
 			}
 
-			$this->gateway->log( "Resposta da requisição:\n" . json_encode( $body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . "\n" );
-			$this->gateway->log( "Resposta da requisição completa:\n" . $request['http_response']->get_response_object()->raw . "\n" );
+			// Don't log access token request.
+			$raw_response = $request['http_response']->get_response_object()->raw;
+			if( ! preg_match('/\/v1\/oauth2\/token$/', $url ) ) {
+				$this->gateway->log( "Resposta da requisição:\n" . json_encode( $body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . "\n" );
+				$this->gateway->log( "Resposta da requisição completa:\n" . $raw_response . "\n" );
+			}
 		}
 
 		return $request;

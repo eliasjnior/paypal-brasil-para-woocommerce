@@ -40,6 +40,7 @@ class PaypalPaymentsSpb extends PaypalPayments {
      * Render PayPal Button.
      */
     renderPayPalButton() {
+        document.getElementById('paypal-button').innerHTML = ''
         paypal.Buttons({
             locale: 'pt_BR',
             style: {
