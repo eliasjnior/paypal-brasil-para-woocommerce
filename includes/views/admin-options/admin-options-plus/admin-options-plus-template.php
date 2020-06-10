@@ -11,7 +11,6 @@
 			<p>Se você está visualizando o sinal de "proibido", a sua conta não está
 				liberada para utilização.</p>
 			<div class="dialog-actions">
-				<button class="close-button outlined" type="button" v-on:click="closeAlert">Não exibir novamente</button>
 				<button class="close-button" type="button" v-on:click="closeAlert">Ok</button>
 			</div>
 		</div>
