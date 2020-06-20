@@ -6,14 +6,16 @@
 		<?php if ( get_option( $this->get_option_key() . '_validator' ) === 'no' ): ?>
             <div id="message" class="error inline">
                 <p>
-                    <strong><?php _e( 'Suas credenciais não são válidas. Por favor, verifique os dados informados.', 'paypal-brasil-para-woocommerce' ); ?></strong>
+                    <strong><?php _e( 'Suas credenciais não são válidas. Por favor, verifique os dados informados.',
+							'paypal-brasil-para-woocommerce' ); ?></strong>
                 </p>
             </div>
 		<?php elseif ( ( ! empty( $_POST ) && $this->get_updated_values()['reference_enabled'] === 'yes' && get_option( $this->get_option_key() . '_reference_transaction_validator' ) === 'no' )
 		               || ( empty( $_POST ) && $this->reference_enabled === 'yes' && get_option( $this->get_option_key() . '_reference_transaction_validator' ) === 'no' ) ): ?>
             <div id="message" class="error inline">
                 <p>
-                    <strong><?php _e( 'Não foi possível ativar a funcionalidade "Salvar Carteira Digital" pois verificamos que a sua conta PayPal não tem permissão para utilizar este produto. Entre em contato pelo 0800 721 6959 do PayPal e solicite a sua liberação.', 'paypal-brasil-para-woocommerce' ); ?></strong>
+                    <strong><?php _e( 'Não foi possível ativar a funcionalidade "Salvar Carteira Digital" pois verificamos que a sua conta PayPal não tem permissão para utilizar este produto. Entre em contato pelo 0800 721 6959 do PayPal e solicite a sua liberação.',
+							'paypal-brasil-para-woocommerce' ); ?></strong>
                 </p>
             </div>
 		<?php endif; ?>
@@ -23,7 +25,8 @@
 			<?php if ( ! paypal_brasil_wc_settings_valid() ): ?>
                 <div id="message-reference-transaction-settings" class="error inline">
                     <p>
-                        <strong><?php _e( 'Não foi possível ativar a funcionalidade "Salvar Carteira Digital" pois as configurações obrigatórias não foram aplicadas.', 'paypal-brasil-para-woocommerce' ); ?></strong>
+                        <strong><?php _e( 'Não foi possível ativar a funcionalidade "Salvar Carteira Digital" pois as configurações obrigatórias não foram aplicadas.',
+								'paypal-brasil-para-woocommerce' ); ?></strong>
                     </p>
                 </div>
 			<?php endif; ?>
@@ -33,7 +36,8 @@
 		<?php if ( ! $this->get_webhook_id() ): ?>
             <div id="paypal-brasil-message-webhook" class="error inline">
                 <p>
-                    <strong><?php _e( 'Não foi possível criar as configurações de webhook. Tente salvar novamente.', 'paypal-brasil-para-woocommerce' ); ?></strong>
+                    <strong><?php _e( 'Não foi possível criar as configurações de webhook. Tente salvar novamente.',
+							'paypal-brasil-para-woocommerce' ); ?></strong>
                 </p>
             </div>
 		<?php endif; ?>
@@ -41,7 +45,8 @@
 	<?php endif; ?>
 
     <img class="banner"
-         srcset="<?php echo esc_attr( plugins_url( 'assets/images/banner-spb-2x.png', PAYPAL_PAYMENTS_MAIN_FILE ) ); ?> 2x"
+         srcset="<?php echo esc_attr( plugins_url( 'assets/images/banner-spb-2x.png',
+		     PAYPAL_PAYMENTS_MAIN_FILE ) ); ?> 2x"
          src="<?php echo esc_attr( plugins_url( 'assets/images/banner-spb.png', PAYPAL_PAYMENTS_MAIN_FILE ) ); ?>"
          title="<?php _e( 'PayPal Brasil', 'paypal-brasil-para-woocommerce' ); ?>"
          alt="<?php _e( 'PayPal Brasil', 'paypal-brasil-para-woocommerce' ); ?>">
@@ -91,7 +96,8 @@
                            id="<?php echo esc_attr( $this->get_field_key( 'title_complement' ) ); ?>"
                            v-model="titleComplement"
                            placeholder="Exemplo: (Parcelado em até 12x)">
-                    <p class="description">Será exibido no checkout: PayPal {{titleComplement ? '(' + titleComplement + ')':
+                    <p class="description">Será exibido no checkout: PayPal {{titleComplement ? '(' + titleComplement +
+                        ')':
                         ''}}</p>
                 </fieldset>
             </td>
@@ -317,7 +323,7 @@
                     <p class="description">A conveniência de salvar a carteira digital PayPal de seu cliente em sua
                         loja. Assim ele não precisa mais se autenticar em sua conta PayPal, garantindo uma compra mais
                         rápida e segura. <b>Esta funcionalidade requer aprovação PayPal. Entre em contato pelo
-                        0800 721 6959
+                            0800 721 6959
                             e solicite a sua liberação.</b></p>
                 </fieldset>
                 <div class="reference-active-description" v-bind:class="{hidden: referenceEnabled != 'yes'}">
@@ -431,11 +437,15 @@
                                false-value="">
                         Habilitar</label><br>
                     <p class="description">Os logs serão salvos no caminho: <a target="_blank"
-                                                                               href="<?php echo esc_url( admin_url( sprintf( 'admin.php?page=wc-status&tab=logs&log_file=%s', paypal_brasil_get_log_file( $this->id ) ) ) ); ?>">Status
+                                                                               href="<?php echo esc_url( admin_url( sprintf( 'admin.php?page=wc-status&tab=logs&log_file=%s',
+						                                                           paypal_brasil_get_log_file( $this->id ) ) ) ); ?>">Status
                             do Sistema &gt; Logs</a>.</p>
                 </fieldset>
             </td>
         </tr>
+
+        <!-- SUPORTE -->
+		<?php include( dirname( PAYPAL_PAYMENTS_MAIN_FILE ) . '/includes/views/admin-options/common/support.php' ); ?>
 
         </tbody>
 

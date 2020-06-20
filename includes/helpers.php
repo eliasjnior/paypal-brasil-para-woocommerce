@@ -86,7 +86,7 @@ function paypal_brasil_get_shipping_address( $order ) {
 		if ( $shipping_address_2 = $order->get_shipping_address_2() ) {
 			$line1[] = $shipping_address_2;
 		}
-	} else if ( $shipping_address_2 = $order->get_shipping_address_2() ) {
+	} elseif ( $shipping_address_2 = $order->get_shipping_address_2() ) {
 		$line2[] = $shipping_address_2;
 	}
 
@@ -97,7 +97,8 @@ function paypal_brasil_get_shipping_address( $order ) {
 		'state'          => $order->get_shipping_state(),
 		'postal_code'    => $order->get_shipping_postcode(),
 		'country_code'   => $order->get_shipping_country(),
-		'recipient_name' => trim( sprintf( '%s %s', $order->get_shipping_first_name(), $order->get_shipping_last_name() ) ),
+		'recipient_name' => trim( sprintf( '%s %s', $order->get_shipping_first_name(),
+			$order->get_shipping_last_name() ) ),
 	);
 
 	return $shipping_address;
@@ -166,7 +167,9 @@ function paypal_brasil_wc_settings_ajax() {
 	echo json_encode( array(
 		'success' => true,
 		'choice'  => $choice,
-		'message' => $choice === 'yes' ? __( 'As configurações do WooCommerce foram alteradas com sucesso.', 'paypal-brasil-para-woocommerce' ) : __( 'As configurações do WooCommerce não foram alteradas.', 'paypal-brasil-para-woocommerce' ),
+		'message' => $choice === 'yes' ? __( 'As configurações do WooCommerce foram alteradas com sucesso.',
+			'paypal-brasil-para-woocommerce' ) : __( 'As configurações do WooCommerce não foram alteradas.',
+			'paypal-brasil-para-woocommerce' ),
 	) );
 
 	wp_die();
@@ -236,49 +239,6 @@ function paypal_brasil_get_log_file( $id ) {
 }
 
 /**
- * Method to div two values.
- *
- * @param $value1
- * @param $value2
- * @param int $precision
- *
- * @return string
- */
-function paypal_brasil_math_div( $value1, $value2, $precision = 2 ) {
-	return paypal_brasil_money_format( $value1 / $value2, $precision );
-}
-
-/**
- * Method to multiply two values.
- *
- * @param $value1
- * @param $value2
- * @param int $precision
- *
- * @return string
- */
-function paypal_brasil_math_mul( $value1, $value2, $precision = 2 ) {
-	return paypal_brasil_money_format( $value1 * $value2, $precision );
-}
-
-/**
- * Method to add two numbers.
- *
- * @param array $values
- *
- * @return string
- */
-function paypal_brasil_math_add( ...$values ) {
-	$sum = '0.00';
-
-	foreach ( $values as $value ) {
-		$sum = paypal_brasil_money_format( $sum + $value );
-	}
-
-	return $sum;
-}
-
-/**
  * Method to sub two numbers.
  *
  * @param array $values
@@ -312,9 +272,15 @@ function paypal_brasil_money_format( $value, $precision = 2 ) {
 }
 
 /**
- * Generate a unique id.
- * @return int
+ * Reduce support dat to a string.
+ *
+ * @param $value
+ * @param $item
+ *
+ * @return string
  */
-function paypal_brasil_unique_id() {
-	return rand( 1, 10000 );
+function paypal_brasil_reduce_support_data( $value, $item ) {
+	$prefix = ! $value ? '' : $value . "\n";
+
+	return $prefix . $item['title'] . ' ' . ( isset( $item['text_value'] ) ? $item['text_value'] : $item['value'] );
 }

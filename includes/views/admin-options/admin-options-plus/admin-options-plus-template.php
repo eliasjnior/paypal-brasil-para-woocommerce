@@ -300,7 +300,10 @@
 			</td>
 		</tr>
 
-		</tbody>
+        <!-- SUPORTE -->
+		<?php include( dirname( PAYPAL_PAYMENTS_MAIN_FILE ) . '/includes/views/admin-options/common/support.php' ); ?>
+
+        </tbody>
 
 	</table>
 
