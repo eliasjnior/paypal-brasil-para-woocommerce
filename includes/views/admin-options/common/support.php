@@ -85,6 +85,8 @@ $raw_data = array_reduce( $data, 'paypal_brasil_reduce_support_data', '' );
 			<?php endforeach; ?>
             </tbody>
         </table>
-        <textarea readonly style="width: 100%; height: 200px;"><?php echo esc_html( $raw_data ); ?></textarea>
+        <textarea id="support-resume" readonly
+                  onclick="this.focus(); this.select(); document.execCommand('copy'); alert('Informações copiadas!')"
+                  style="width: 100%; height: 100px;"><?php echo esc_html( $raw_data ); ?></textarea>
     </td>
 </tr>
