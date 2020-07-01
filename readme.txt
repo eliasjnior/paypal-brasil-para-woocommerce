@@ -127,13 +127,13 @@ Caso tenha alguma dúvida ou dificuldade na utilização do plugin acesse a seç
 * Adicionado mensagem de autorização para recursos do Checkout Transparente.
 * Alterado telefone de suporte.
 
+= 1.1.2 =
+* Removido segundo botão abaixo do "Pague com PayPal".
+
 == Upgrade Notice ==
 
-= 1.1.1 =
-* Corrigido erros no checkout.
-* Corrigido bug que duplicava botão no checkout.
-* Adicionado mensagem de autorização para recursos do Checkout Transparente.
-* Alterado telefone de suporte.
+= 1.1.2 =
+* Removido segundo botão abaixo do "Pague com PayPal".
 
 == Screenshots ==
 
