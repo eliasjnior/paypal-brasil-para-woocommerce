@@ -170,7 +170,7 @@ class PayPal_Brasil {
 	public static function woocommerce_incompatible() {
 		$version = get_option( 'woocommerce_version' );
 
-		return version_compare( $version, '3.0.0', "<" );
+		return version_compare( $version, '3.6.0', "<" );
 	}
 
 	/**
