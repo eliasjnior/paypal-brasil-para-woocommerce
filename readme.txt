@@ -9,7 +9,7 @@ Requires PHP: 5.6
 License: GPLv2 or later
 License URI:  [http://www.gnu.org/licenses/gpl-2.0.html](http://www.gnu.org/licenses/gpl-2.0.html)
 WC requires at least: 3.6
-WC tested up to:  4.2
+WC tested up to:  4.3
 
 Adicione facilmente opções de pagamento do PayPal à sua loja do WooCommerce.
 
