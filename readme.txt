@@ -130,14 +130,17 @@ Caso tenha alguma dúvida ou dificuldade na utilização do plugin acesse a seç
 = 1.1.2 =
 * Removido segundo botão abaixo do "Pague com PayPal".
 
-== Upgrade Notice ==
-
-= 1.1.2 =
-* Removido segundo botão abaixo do "Pague com PayPal".
-
 = 1.1.3 =
 * Corrigido warnings.
 * Atualizado versão de suporte.
+
+= 1.1.4 =
+* Corrigido problema de fechar a janela do PayPal.
+
+== Upgrade Notice ==
+
+= 1.1.4 =
+* Corrigido problema de fechar a janela do PayPal.
 
 == Screenshots ==
 
