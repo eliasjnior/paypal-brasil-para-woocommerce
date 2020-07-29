@@ -24,13 +24,13 @@ class PayPal_Brasil_Handler {
 	 * Include all API files.
 	 */
 	private function includes() {
-		include dirname( __FILE__ ) . '/abstratct-class-paypal-brasil-api-handler.php';
-		include dirname( __FILE__ ) . '/api/class-paypal-brasil-api-checkout-handler.php';
-		include dirname( __FILE__ ) . '/api/class-paypal-brasil-api-webhook-handler.php';
-		include dirname( __FILE__ ) . '/api/class-paypal-brasil-api-shortcut-cart-handler.php';
-		include dirname( __FILE__ ) . '/api/class-paypal-brasil-api-shortcut-mini-cart-handler.php';
-		include dirname( __FILE__ ) . '/api/class-paypal-brasil-api-billing-agreement-token.php';
-		include dirname( __FILE__ ) . '/api/class-paypal-brasil-api-save-billing-agreement.php';
+		include_once dirname( __FILE__ ) . '/abstratct-class-paypal-brasil-api-handler.php';
+		include_once dirname( __FILE__ ) . '/api/class-paypal-brasil-api-checkout-handler.php';
+		include_once dirname( __FILE__ ) . '/api/class-paypal-brasil-api-webhook-handler.php';
+		include_once dirname( __FILE__ ) . '/api/class-paypal-brasil-api-shortcut-cart-handler.php';
+		include_once dirname( __FILE__ ) . '/api/class-paypal-brasil-api-shortcut-mini-cart-handler.php';
+		include_once dirname( __FILE__ ) . '/api/class-paypal-brasil-api-billing-agreement-token.php';
+		include_once dirname( __FILE__ ) . '/api/class-paypal-brasil-api-save-billing-agreement.php';
 	}
 
 	/**
