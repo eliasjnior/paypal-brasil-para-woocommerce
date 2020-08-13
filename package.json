@@ -33,7 +33,7 @@
     "mixin-deep": "^2.0.1",
     "node-sass": "^4.13.1",
     "postcss-loader": "^3.0.0",
-    "serialize-javascript": "^3.0.0",
+    "serialize-javascript": "^3.1.0",
     "set-value": "^3.0.2",
     "url-loader": "^4.0.0"
   }
