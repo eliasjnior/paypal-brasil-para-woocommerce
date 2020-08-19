@@ -137,10 +137,13 @@ Caso tenha alguma dúvida ou dificuldade na utilização do plugin acesse a seç
 = 1.1.4 =
 * Corrigido problema de fechar a janela do PayPal.
 
+= 1.1.5 =
+* Ajustes das chamadas para API do PayPal.
+
 == Upgrade Notice ==
 
-= 1.1.4 =
-* Corrigido problema de fechar a janela do PayPal.
+= 1.1.5 =
+* Ajustes das chamadas para API do PayPal.
 
 == Screenshots ==
 
