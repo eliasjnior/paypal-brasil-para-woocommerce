@@ -21,6 +21,7 @@ class PayPal_Brasil_API {
 		'reference' => 'WooCommerceBrazil_Ecom_RT',
 		'ec'        => 'WooCommerceBrazil_Ecom_EC',
 		'shortcut'  => 'WooCommerceBrazil_Ecom_ECS',
+		'plus'      => 'WooCommerceBR_Ecom_PPPlus',
 		'default'   => 'WooCommerceBrazil_Ecom_EC',
 	);
 
@@ -96,7 +97,6 @@ class PayPal_Brasil_API {
 	 * @return array|WP_Error
 	 * @throws PayPal_Brasil_API_Exception
 	 * @throws PayPal_Brasil_Connection_Exception
-	 * @todo: adicionar forçar um mode
 	 *
 	 */
 	public function get_access_token( $force = false ) {
