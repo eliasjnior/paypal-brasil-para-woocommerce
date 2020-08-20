@@ -139,11 +139,13 @@ Caso tenha alguma dúvida ou dificuldade na utilização do plugin acesse a seç
 
 = 1.1.5 =
 * Ajustes das chamadas para API do PayPal.
+* Corrigido formatação de endereço.
 
 == Upgrade Notice ==
 
 = 1.1.5 =
 * Ajustes das chamadas para API do PayPal.
+* Corrigido formatação de endereço.
 
 == Screenshots ==
 
