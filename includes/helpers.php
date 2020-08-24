@@ -62,6 +62,32 @@ function paypal_brasil_is_cart_only_digital() {
 	return $only_digital_items;
 }
 
+function paypal_brasil_get_order_data( $order ) {
+	$shipping_address_1    = $order->get_shipping_address_1();
+	$shipping_number       = get_post_meta( $order->get_id(), '_shipping_number', true );
+	$shipping_neighborhood = get_post_meta( $order->get_id(), '_shipping_neighborhood', true );
+	$shipping_address_2    = $order->get_shipping_address_2();
+	$shipping_city         = $order->get_shipping_city();
+	$shipping_state        = $order->get_shipping_state();
+	$shipping_postcode     = $order->get_shipping_postcode();
+	$shipping_country      = $order->get_shipping_country();
+	$shipping_name         = trim( $order->get_formatted_shipping_full_name() );
+
+	return array(
+		'address_1'    => $shipping_address_1 ? $shipping_address_1 : $order->get_billing_address_1(),
+		'address_2'    => $shipping_address_2 ? $shipping_address_2 : $order->get_billing_address_2(),
+		'number'       => $shipping_number ? $shipping_number : get_post_meta( $order->get_id(), '_billing_number',
+			true ),
+		'neighborhood' => $shipping_neighborhood ? $shipping_neighborhood : get_post_meta( $order->get_id(),
+			'_billing_neighborhood', true ),
+		'city'         => $shipping_city ? $shipping_city : $order->get_billing_city(),
+		'state'        => $shipping_state ? $shipping_state : $order->get_billing_state(),
+		'postcode'     => $shipping_postcode ? $shipping_postcode : $order->get_billing_postcode(),
+		'country'      => $shipping_country ? $shipping_country : $order->get_billing_country(),
+		'name'         => $shipping_name ? $shipping_name : $order->get_formatted_billing_full_name(),
+	);
+}
+
 /**
  * Prepare the shipping address to send in API from an order.
  *
@@ -73,31 +99,33 @@ function paypal_brasil_get_shipping_address( $order ) {
 	$line1 = array();
 	$line2 = array();
 
-	if ( $shipping_address_1 = $order->get_shipping_address_1() ) {
-		$line1[] = $shipping_address_1;
+	$order_data = paypal_brasil_get_order_data( $order );
+
+	if ( $order_data['address_1'] ) {
+		$line1[] = $order_data['address_1'];
 	}
 
-	if ( $shipping_number = get_post_meta( $order->get_id(), '_shipping_number', true ) ) {
-		$line1[] = $shipping_number;
+	if ( $order_data['number'] ) {
+		$line1[] = $order_data['number'];
 	}
 
-	if ( $shipping_neighborhood = get_post_meta( $order->get_id(), '_shipping_neighborhood', true ) ) {
-		$line2[] = $shipping_neighborhood;
-		if ( $shipping_address_2 = $order->get_shipping_address_2() ) {
-			$line1[] = $shipping_address_2;
+	if ( $order_data['neighborhood'] ) {
+		$line2[] = $order_data['neighborhood'];
+		if ( $order_data['address_2'] ) {
+			$line1[] = $order_data['address_2'];
 		}
-	} else if ( $shipping_address_2 = $order->get_shipping_address_2() ) {
-		$line2[] = $shipping_address_2;
+	} elseif ( $order_data['address_2'] ) {
+		$line2[] = $order_data['address_2'];
 	}
 
 	$shipping_address = array(
 		'line1'          => implode( ', ', $line1 ),
 		'line2'          => implode( ', ', $line2 ),
-		'city'           => $order->get_shipping_city(),
-		'state'          => $order->get_shipping_state(),
-		'postal_code'    => $order->get_shipping_postcode(),
-		'country_code'   => $order->get_shipping_country(),
-		'recipient_name' => trim( sprintf( '%s %s', $order->get_shipping_first_name(), $order->get_shipping_last_name() ) ),
+		'city'           => $order_data['city'],
+		'state'          => $order_data['state'],
+		'postal_code'    => $order_data['postcode'],
+		'country_code'   => $order_data['country'],
+		'recipient_name' => $order_data['name'],
 	);
 
 	return $shipping_address;
@@ -166,7 +194,9 @@ function paypal_brasil_wc_settings_ajax() {
 	echo json_encode( array(
 		'success' => true,
 		'choice'  => $choice,
-		'message' => $choice === 'yes' ? __( 'As configurações do WooCommerce foram alteradas com sucesso.', 'paypal-brasil-para-woocommerce' ) : __( 'As configurações do WooCommerce não foram alteradas.', 'paypal-brasil-para-woocommerce' ),
+		'message' => $choice === 'yes' ? __( 'As configurações do WooCommerce foram alteradas com sucesso.',
+			'paypal-brasil-para-woocommerce' ) : __( 'As configurações do WooCommerce não foram alteradas.',
+			'paypal-brasil-para-woocommerce' ),
 	) );
 
 	wp_die();

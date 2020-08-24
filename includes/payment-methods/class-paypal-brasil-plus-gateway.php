@@ -459,8 +459,8 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 				'value' => sprintf( __( 'Pedido #%s realizado na loja %s', 'paypal-brasil-para-woocommerce' ), $order->get_id(), get_bloginfo( 'name' ) ),
 			),
 		);
-		$this->api->update_payment( $payment_id, $patch_data );
-		$execution_response = $this->api->execute_payment( $payment_id, $payer_id );
+		$this->api->update_payment( $payment_id, $patch_data, array(), 'plus' );
+		$execution_response = $this->api->execute_payment( $payment_id, $payer_id, array(), 'plus' );
 
 		return $execution_response;
 	}
@@ -730,7 +730,7 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 
 		try {
 			// Create the payment.
-			$result = $this->api->create_payment( $payment_data );
+			$result = $this->api->create_payment( $payment_data, array(), 'plus' );
 
 			return $result;
 		} catch ( PayPal_Brasil_API_Exception $ex ) { // Catch any PayPal error.
@@ -856,7 +856,7 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 			WC()->session->set( 'paypal_brasil-cart_hash', $cart_hash );
 
 			// Create the payment.
-			$result = $this->api->create_payment( $payment_data );
+			$result = $this->api->create_payment( $payment_data, array(), 'plus' );
 
 			return $result;
 		} catch ( PayPal_Brasil_API_Exception $ex ) { // Catch any PayPal error.
