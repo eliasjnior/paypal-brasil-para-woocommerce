@@ -141,11 +141,13 @@ Caso tenha alguma dúvida ou dificuldade na utilização do plugin acesse a seç
 * Ajustes das chamadas para API do PayPal.
 * Corrigido formatação de endereço.
 
+= 1.2.1 =
+* Otimizado validação de estados.
+
 == Upgrade Notice ==
 
-= 1.2.0 =
-* Ajustes das chamadas para API do PayPal.
-* Corrigido formatação de endereço.
+= 1.2.1 =
+* Otimizado validação de estados.
 
 == Screenshots ==
 
