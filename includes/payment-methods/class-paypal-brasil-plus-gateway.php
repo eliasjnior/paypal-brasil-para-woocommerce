@@ -899,11 +899,12 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 		if ( empty( $data['city'] ) ) {
 			$errors['city'] = __( 'Cidade', 'paypal-brasil-para-woocommerce' );
 		}
-		if ( empty( $data['state'] ) ) {
-			$errors['state'] = __( 'Estado', 'paypal-brasil-para-woocommerce' );
-		}
-		if ( empty( $data['country'] ) ) {
+		$states = WC()->countries->get_states($data['country']);
+		if ( empty( $data['country'] ) || $states === false ) {
 			$errors['country'] = __( 'País', 'paypal-brasil-para-woocommerce' );
+		}
+		if ( empty( $data['state'] ) && $states ) {
+			$errors['state'] = __( 'Estado', 'paypal-brasil-para-woocommerce' );
 		}
 		if ( empty( $data['postcode'] ) ) {
 			$errors['postcode'] = __( 'CEP', 'paypal-brasil-para-woocommerce' );
