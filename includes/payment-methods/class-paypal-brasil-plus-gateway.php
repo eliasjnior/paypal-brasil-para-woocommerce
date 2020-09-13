@@ -880,41 +880,57 @@ class PayPal_Brasil_Plus_Gateway extends PayPal_Brasil_Gateway {
 	 * @return array
 	 */
 	private function validate_data( $data ) {
+		$states = WC()->countries->get_states($data['country']);
 		$errors = array();
+
 		// Check first name.
 		if ( empty( $data['first_name'] ) ) {
 			$errors['first_name'] = __( 'Nome', 'paypal-brasil-para-woocommerce' );
 		}
+
 		// Check last name.
 		if ( empty( $data['last_name'] ) ) {
 			$errors['last_name'] = __( 'Sobrenome', 'paypal-brasil-para-woocommerce' );
 		}
+
 		// Check phone.
 		if ( empty( $data['phone'] ) ) {
 			$errors['phone'] = __( 'Telefone', 'paypal-brasil-para-woocommerce' );
 		}
+
+		// Check address.
 		if ( empty( $data['address'] ) ) {
 			$errors['address'] = __( 'Endereço', 'paypal-brasil-para-woocommerce' );
 		}
+
+		// Check city.
 		if ( empty( $data['city'] ) ) {
 			$errors['city'] = __( 'Cidade', 'paypal-brasil-para-woocommerce' );
 		}
-		$states = WC()->countries->get_states($data['country']);
+
+		// Check country.
 		if ( empty( $data['country'] ) || $states === false ) {
 			$errors['country'] = __( 'País', 'paypal-brasil-para-woocommerce' );
 		}
+
+		// Check state.
 		if ( empty( $data['state'] ) && $states ) {
 			$errors['state'] = __( 'Estado', 'paypal-brasil-para-woocommerce' );
 		}
+
+		// Check postcode.
 		if ( empty( $data['postcode'] ) ) {
 			$errors['postcode'] = __( 'CEP', 'paypal-brasil-para-woocommerce' );
 		}
+
 		// Check email.
 		if ( ! is_email( $data['email'] ) ) {
 			$errors['email'] = __( 'Email', 'paypal-brasil-para-woocommerce' );
 		}
-		// Only if require CPF/CNPJ
-		if ( paypal_brasil_needs_cpf() ) {
+
+		// Check CPF/CNPJ.
+		// Only if require CPF/CNPJ.
+		if ( $data['country'] === 'BR' && paypal_brasil_needs_cpf() ) {
 			// Check address number (only with CPF/CPNJ)
 			if ( empty( $data['number'] ) ) {
 				$errors['number'] = __( 'Número', 'paypal-brasil-para-woocommerce' );
