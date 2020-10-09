@@ -143,11 +143,13 @@ Caso tenha alguma dúvida ou dificuldade na utilização do plugin acesse a seç
 
 = 1.2.1 =
 * Otimizado validação de estados.
+* Melhorado suporte para múltiplas moedas.
 
 == Upgrade Notice ==
 
 = 1.2.1 =
 * Otimizado validação de estados.
+* Melhorado suporte para múltiplas moedas.
 
 == Screenshots ==
 

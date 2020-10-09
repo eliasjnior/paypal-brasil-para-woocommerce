@@ -1465,7 +1465,7 @@ class PayPal_Brasil_SPB_Gateway extends PayPal_Brasil_Gateway {
 
 		// PayPal SDK arguments.
 		$paypal_args = array(
-			'currency'        => 'BRL',
+			'currency'        => get_woocommerce_currency(),
 			'client-id'       => $this->get_client_id(),
 			'commit'          => 'false',
 			'locale'          => get_locale(),
