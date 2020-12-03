@@ -66,7 +66,7 @@ class PayPal_Brasil_API_Checkout_Handler extends PayPal_Brasil_API_Handler {
 				'name'       => __( 'estado', 'paypal-brasil-para-woocommerce' ),
 				'key'        => 'state',
 				'sanitize'   => 'sanitize_text_field',
-				'validation' => array( $this, 'required_text' ),
+				'validation' => array( $this, 'required_state' ),
 			),
 			array(
 				'name'       => __( 'endereço', 'paypal-brasil-para-woocommerce' ),
@@ -204,8 +204,8 @@ class PayPal_Brasil_API_Checkout_Handler extends PayPal_Brasil_API_Handler {
 				'postal_code'    => $posted_data['postcode'],
 				'line1'          => mb_substr( implode( ', ', $address_line_1 ), 0, 100 ),
 				'city'           => $posted_data['city'],
-				'state'          => $posted_data['state'],
 				'phone'          => $posted_data['phone'],
+				'state' 				 => $posted_data['state'],
 			);
 
 			// If is anything on address line 2, add to shipping address.
@@ -261,6 +261,23 @@ class PayPal_Brasil_API_Checkout_Handler extends PayPal_Brasil_API_Handler {
 
 	public function required_country( $data, $key, $name ) {
 		return $this->required_text( $data, $key, $name );
+	}
+
+	public function required_state($data, $key, $name, $input) {
+		$country = isset( $input['country'] ) && !empty( $input['country'] ) ? $input['country'] : '';
+		$states = WC()->countries->get_states($country);
+
+		if ( ! $states ) {
+			return true;
+		}
+
+		if ( empty( $data ) ) {
+			return sprintf( __( 'O campo <strong>%s</strong> é obrigatório.', 'paypal-brasil-para-woocommerce' ), $name );
+		} else if ( ! isset( $states[ $data ] ) ) {
+			return sprintf( __( 'O campo <strong>%s</strong> é inválido.', 'paypal-brasil-para-woocommerce' ), $name );
+		}
+
+		return true;
 	}
 
 	public function required_postcode( $data, $key, $name ) {
